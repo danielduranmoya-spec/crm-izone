@@ -1,0 +1,1940 @@
+<title>CRM Bodas IZONE</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&family=Outfit:wght@300;400;500;600;700&display=swap">
+<style>
+/* Layout: barra lateral de cristal + área de trabajo; en móvil, barra inferior con botón central "Añadir boda". Fondo con manchas magenta difuminadas bajo paneles liquid glass. */
+:root{
+  --bg:#f7f4f6;
+  --ink:#121012;
+  --ink-2:#4b4249;
+  --muted:#857a82;
+  --accent:#b9006b;
+  --accent-ink:#ffffff;
+  --accent-soft:rgba(185,0,107,.10);
+  --blob-1:rgba(214,51,141,.55);
+  --blob-2:rgba(255,170,214,.75);
+  --blob-3:rgba(190,170,255,.45);
+  --glass:rgba(255,255,255,.52);
+  --glass-strong:rgba(255,255,255,.74);
+  --glass-line:rgba(255,255,255,.85);
+  --glass-hi:rgba(255,255,255,.95);
+  --line:rgba(40,10,30,.10);
+  --field:rgba(255,255,255,.62);
+  --shadow:rgba(80,10,50,.18);
+  --paper:#ffffff;
+  --paper-ink:#151215;
+  --ok:#11795a; --ok-soft:rgba(17,121,90,.12);
+  --warn:#a35a00; --warn-soft:rgba(214,130,0,.14);
+  --bad:#c0262d; --bad-soft:rgba(192,38,45,.11);
+  --f-display:"Doto", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --f-body:"Outfit", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0d0a0c; --ink:#f6eff4; --ink-2:#cdbfc8; --muted:#97899276;
+  --muted:#9a8c95; --accent:#ec4fa4; --accent-ink:#1a0711; --accent-soft:rgba(236,79,164,.16);
+  --blob-1:rgba(185,0,107,.50); --blob-2:rgba(120,20,80,.55); --blob-3:rgba(80,50,150,.40);
+  --glass:rgba(32,22,29,.52); --glass-strong:rgba(38,26,34,.82); --glass-line:rgba(255,255,255,.12); --glass-hi:rgba(255,255,255,.14);
+  --line:rgba(255,255,255,.10); --field:rgba(255,255,255,.06); --shadow:rgba(0,0,0,.55);
+  --paper:#1b1418; --paper-ink:#f3ebf0;
+  --ok:#4fd1a1; --ok-soft:rgba(79,209,161,.14); --warn:#f2b350; --warn-soft:rgba(242,179,80,.15); --bad:#ff7a80; --bad-soft:rgba(255,122,128,.14);
+  color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0d0a0c; --ink:#f6eff4; --ink-2:#cdbfc8;
+  --muted:#9a8c95; --accent:#ec4fa4; --accent-ink:#1a0711; --accent-soft:rgba(236,79,164,.16);
+  --blob-1:rgba(185,0,107,.50); --blob-2:rgba(120,20,80,.55); --blob-3:rgba(80,50,150,.40);
+  --glass:rgba(32,22,29,.52); --glass-strong:rgba(38,26,34,.82); --glass-line:rgba(255,255,255,.12); --glass-hi:rgba(255,255,255,.14);
+  --line:rgba(255,255,255,.10); --field:rgba(255,255,255,.06); --shadow:rgba(0,0,0,.55);
+  --paper:#1b1418; --paper-ink:#f3ebf0;
+  --ok:#4fd1a1; --ok-soft:rgba(79,209,161,.14); --warn:#f2b350; --warn-soft:rgba(242,179,80,.15); --bad:#ff7a80; --bad-soft:rgba(255,122,128,.14);
+  color-scheme:dark; }
+
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:600;letter-spacing:-.01em}
+.tab-num{font-variant-numeric:tabular-nums}
+
+/* fondo */
+.blobs{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.blobs i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.9}
+.blobs i:nth-child(1){width:46vmax;height:46vmax;left:-12vmax;top:-14vmax;background:var(--blob-1);animation:drift 26s ease-in-out infinite alternate}
+.blobs i:nth-child(2){width:40vmax;height:40vmax;right:-14vmax;top:18vh;background:var(--blob-2);animation:drift 32s ease-in-out infinite alternate-reverse}
+.blobs i:nth-child(3){width:34vmax;height:34vmax;left:30vw;bottom:-18vmax;background:var(--blob-3);animation:drift 38s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate(6vmax,4vmax) scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.blobs i{animation:none}*{transition:none!important}}
+
+/* cristal */
+.glass{background:var(--glass);-webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);border:1px solid var(--glass-line);box-shadow:inset 0 1px 0 var(--glass-hi),0 18px 44px -20px var(--shadow);border-radius:22px}
+
+.app{position:relative;z-index:1;display:grid;grid-template-columns:250px minmax(0,1fr);gap:18px;min-height:100vh;padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.side{position:sticky;top:calc(16px + env(safe-area-inset-top,0px));align-self:start;height:calc(100vh - 32px);display:flex;flex-direction:column;gap:22px;padding:22px 16px}
+.logo{display:flex;flex-direction:column;align-items:flex-start;gap:0;padding:0 8px;text-decoration:none;color:var(--ink)}
+.logo .mark{font-family:var(--f-display);font-weight:900;font-size:34px;letter-spacing:.02em;line-height:1}
+.logo .mark b{color:var(--accent);font-weight:900}
+.logo .sub{font-weight:300;font-size:22px;letter-spacing:.06em;line-height:1;margin-top:2px;align-self:flex-end;margin-right:2px}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;text-decoration:none;color:var(--ink-2);font-weight:500}
+.nav a:hover{background:var(--accent-soft);color:var(--ink)}
+.nav a[aria-current="page"]{background:var(--glass-strong);color:var(--ink);box-shadow:inset 0 1px 0 var(--glass-hi),0 6px 18px -10px var(--shadow)}
+.nav svg{width:19px;height:19px;flex:none}
+.nav .count{margin-left:auto;background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:600;min-width:22px;height:22px;border-radius:11px;display:grid;place-items:center;padding:0 6px}
+.side-foot{margin-top:auto;font-size:12px;color:var(--muted);padding:0 8px;display:flex;flex-direction:column;gap:6px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px;vertical-align:1px}
+.dot.local{background:var(--warn)}
+
+main{min-width:0;display:flex;flex-direction:column;gap:18px;padding-bottom:40px}
+.top{position:sticky;top:calc(16px + env(safe-area-inset-top,0px));z-index:20;display:flex;align-items:center;gap:12px;padding:12px 14px 12px 22px}
+.top h1{font-size:22px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top .mlogo{display:none}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--glass-strong);padding:9px 16px;border-radius:999px;font-weight:500;cursor:pointer;white-space:nowrap;text-decoration:none;color:var(--ink);box-shadow:inset 0 1px 0 var(--glass-hi)}
+.btn:hover{border-color:var(--accent)}
+.btn:focus-visible,.nav a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.chipbtn:focus-visible,.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn-primary{background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0) 55%),var(--accent);color:var(--accent-ink);border-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 10px 24px -10px var(--accent)}
+.btn-primary:hover{filter:brightness(1.07);border-color:transparent}
+.btn-sm{padding:6px 12px;font-size:13.5px}
+.btn-ghost{background:transparent;box-shadow:none}
+.btn-danger{color:var(--bad)}
+.btn-danger:hover{border-color:var(--bad)}
+.btn svg{width:17px;height:17px}
+.iconbtn{width:40px;height:40px;padding:0;position:relative}
+.iconbtn .badge{position:absolute;top:-4px;right:-4px;background:var(--accent);color:var(--accent-ink);font-size:11px;font-weight:700;min-width:19px;height:19px;border-radius:10px;display:grid;place-items:center;padding:0 5px}
+
+.panel{padding:22px}
+.panel>h2,.sec-h{font-size:17px;display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sec-h .spacer{flex:1}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:500}
+.muted{color:var(--muted)}
+.grid{display:grid;gap:18px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+.kpi{padding:18px 20px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.kpi .v{font-family:var(--f-display);font-weight:900;font-size:40px;line-height:1;letter-spacing:.01em}
+.kpi .v.small{font-size:clamp(19px,5.2vw,28px);overflow-wrap:anywhere}
+.kpi .l{color:var(--ink-2);font-size:14px}
+.kpi.alert .v{color:var(--accent)}
+
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:500;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--ink);white-space:nowrap}
+.chip.acc{background:var(--accent);color:var(--accent-ink)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.line{background:transparent;border:1px solid var(--line);color:var(--ink-2)}
+.chipbtn{cursor:pointer;border:1px solid var(--line);background:var(--glass-strong);padding:6px 14px;border-radius:999px;font-weight:500;font-size:14px}
+.chipbtn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* listas */
+.list{display:flex;flex-direction:column}
+.item{display:flex;gap:14px;align-items:center;padding:12px 4px;border-top:1px solid var(--line);min-width:0}
+.item:first-child{border-top:0}
+.item .grow{flex:1;min-width:0}
+.item .t{font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.item .s{font-size:13.5px;color:var(--muted)}
+.datebox{flex:none;width:58px;text-align:center;border-radius:14px;padding:6px 0;background:var(--glass-strong);border:1px solid var(--line)}
+.datebox .d{font-family:var(--f-display);font-weight:900;font-size:24px;line-height:1}
+.datebox .m{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:600}
+.datebox .y{font-size:10.5px;color:var(--muted)}
+.sev{width:4px;align-self:stretch;border-radius:2px;background:var(--line);flex:none}
+.sev.bad{background:var(--bad)}.sev.warn{background:var(--warn)}.sev.acc{background:var(--accent)}.sev.ok{background:var(--ok)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{padding:18px;display:flex;flex-direction:column;gap:12px;cursor:pointer;text-decoration:none;color:var(--ink);transition:transform .18s ease,box-shadow .18s ease}
+.card:hover{transform:translateY(-2px);box-shadow:inset 0 1px 0 var(--glass-hi),0 24px 50px -22px var(--shadow)}
+.card .names{font-size:18px;font-weight:600;line-height:1.2}
+.card .meta{display:flex;gap:8px;flex-wrap:wrap}
+.card .foot{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);padding-top:10px;font-size:14px}
+.card .foot b{font-size:17px}
+
+/* formularios */
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px 14px}
+.f{display:flex;flex-direction:column;gap:5px;min-width:0}
+.f.wide{grid-column:1/-1}
+.f>span{font-size:12.5px;color:var(--ink-2);font-weight:500}
+input[type=text],input[type=email],input[type=tel],input[type=url],input[type=date],input[type=time],input[type=number],input[type=search],input[type=password],input[type=datetime-local],select,textarea{width:100%;background:var(--field);border:1px solid var(--line);border-radius:12px;padding:9px 12px;min-height:40px;transition:border-color .15s}
+input:hover,select:hover,textarea:hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
+textarea{resize:vertical;min-height:84px;line-height:1.5}
+input[type=number]{font-variant-numeric:tabular-nums}
+.check{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500}
+.switch{appearance:none;width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;cursor:pointer;flex:none;border:1px solid var(--line);transition:background .2s}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .2s}
+.switch:checked{background:var(--accent)}
+.switch:checked::after{transform:translateX(18px)}
+.err{color:var(--bad);font-size:13px}
+
+/* tablas editables */
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:500;text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td input{min-height:36px;padding:6px 10px}
+.rowcard{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) 110px auto;gap:10px;align-items:end;padding:12px;border-radius:16px;background:var(--glass-strong);border:1px solid var(--line)}
+
+/* detalle */
+.hero{padding:24px;display:flex;flex-wrap:wrap;gap:18px 26px;align-items:center}
+.hero .names{font-size:30px;font-weight:600;line-height:1.1}
+.hero .count{font-family:var(--f-display);font-weight:900;font-size:46px;line-height:1;color:var(--accent)}
+.hero .grow{flex:1;min-width:240px;display:flex;flex-direction:column;gap:8px}
+.tabs{display:flex;gap:6px;padding:6px;overflow-x:auto;scrollbar-width:none}
+.tabs button{border:0;background:transparent;padding:9px 16px;border-radius:14px;cursor:pointer;font-weight:500;color:var(--ink-2);white-space:nowrap}
+.tabs button[aria-selected="true"]{background:var(--glass-strong);color:var(--ink);box-shadow:inset 0 1px 0 var(--glass-hi),0 6px 18px -10px var(--shadow)}
+.tabs .n{font-size:12px;background:var(--accent);color:var(--accent-ink);border-radius:9px;padding:1px 7px;margin-left:4px}
+
+.banner{padding:16px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;border-color:color-mix(in srgb,var(--accent) 45%,var(--glass-line))}
+.banner .grow{flex:1;min-width:220px}
+.steps{display:flex;gap:8px;flex-wrap:wrap;font-size:14px}
+.steps span{padding:4px 12px;border-radius:999px;border:1px solid var(--line)}
+.steps span.done{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.steps span.now{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+
+/* documento (presupuesto / contrato) */
+.doc{background:var(--paper);color:var(--paper-ink);border-radius:18px;padding:40px 44px;box-shadow:0 30px 60px -30px var(--shadow);border:1px solid var(--line);max-width:860px;width:100%;margin:0 auto}
+.doc-head{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:flex-start;padding-bottom:20px;border-bottom:2px solid var(--paper-ink);margin-bottom:22px}
+.doc-head .logo{padding:0}
+.doc h2{font-size:24px;margin-bottom:4px}
+.doc h3{font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin:22px 0 8px}
+.doc p{margin:0 0 10px;max-width:72ch}
+.doc .totals{margin-left:auto;width:min(340px,100%);display:grid;grid-template-columns:1fr auto;gap:6px 18px;margin-top:16px;font-variant-numeric:tabular-nums}
+.doc .totals .big{font-size:20px;font-weight:700;border-top:2px solid var(--paper-ink);padding-top:8px}
+.doc .sign{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:50px}
+.doc .sign div{border-top:1px solid var(--paper-ink);padding-top:8px;font-size:13px}
+.doc td,.doc th{border-color:color-mix(in srgb,var(--paper-ink) 14%,transparent)}
+.auto-tag{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-left:6px}
+.contract-text{white-space:pre-wrap;font-size:14.5px;line-height:1.65}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;padding:16px 18px}
+.toolbar .f{min-width:150px}
+
+/* barras */
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar{display:grid;grid-template-columns:minmax(90px,170px) minmax(0,1fr) auto;gap:12px;align-items:center;font-size:14px}
+.bar .lab{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-2)}
+.bar .track{height:14px;border-radius:7px;background:var(--line);overflow:hidden}
+.bar .fill{height:100%;border-radius:0 4px 4px 0;background:var(--accent);min-width:3px}
+.bar .val{font-variant-numeric:tabular-nums;font-weight:600;min-width:2ch;text-align:right}
+.bar:hover .fill{filter:brightness(1.12)}
+.months{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(34px,1fr);gap:6px;align-items:end;height:190px;overflow-x:auto;padding-top:20px}
+.months .col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%;font-size:11.5px;color:var(--muted)}
+.months .colbar{width:70%;max-width:30px;background:var(--accent);border-radius:4px 4px 0 0;position:relative;min-height:2px}
+.months .colbar span{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--ink);font-weight:600}
+.stat-big{font-size:20px;font-weight:600;line-height:1.2;overflow-wrap:anywhere}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));background:rgba(20,5,15,.35);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.modal .box{width:min(820px,100%);max-height:calc(100vh - 40px);overflow:auto;padding:26px;background:var(--glass-strong);display:flex;flex-direction:column;gap:20px}
+.modal .box.small{width:min(440px,100%)}
+.modal h2{font-size:22px}
+.modal fieldset{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
+.modal legend{font-weight:600;font-size:15px;margin-bottom:10px;display:flex;gap:8px;align-items:center}
+.modal legend i{font-style:normal;font-family:var(--f-display);font-weight:900;color:var(--accent)}
+.modal .foot{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;position:sticky;bottom:-26px;padding:14px 0 0;background:linear-gradient(transparent,var(--glass-strong) 30%)}
+
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:80;padding:11px 18px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:500;box-shadow:0 12px 30px -10px var(--shadow);max-width:calc(100vw - 32px)}
+
+.mob{display:none}
+.empty{text-align:center;padding:48px 20px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.empty .big{font-family:var(--f-display);font-weight:900;font-size:56px;color:var(--accent);line-height:1}
+
+
+/* calendario */
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal-head{margin-bottom:6px}
+.cal-head span{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:center}
+.day{min-height:104px;border-radius:14px;background:var(--glass-strong);border:1px solid var(--line);padding:6px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.day.out{opacity:.4;background:transparent}
+.day.today{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.day .dn{font-size:13px;font-weight:600;color:var(--ink-2)}
+.day.today .dn{color:var(--accent)}
+.calchip,.calseg{display:block;font-size:12px;line-height:1.25;padding:4px 7px;border-radius:8px;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.calchip.conf{background:var(--accent);color:var(--accent-ink)}
+.calchip.res{background:var(--warn-soft);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 45%,transparent)}
+.calchip.done{background:var(--line);color:var(--ink-2)}
+.calseg{background:transparent;border:1px dashed var(--line);color:var(--ink-2);font-size:11.5px}
+.calchip:hover,.calseg:hover{filter:brightness(1.08)}
+.lg{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px}
+.lg.conf{background:var(--accent)}.lg.res{background:var(--warn-soft);border:1px solid var(--warn)}.lg.done{background:var(--line)}.lg.seg{border:1px dashed var(--ink-2)}
+.yeargrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.ym{display:flex;justify-content:space-between;align-items:baseline;padding:8px 12px;border-radius:12px;border:1px solid var(--line);text-decoration:none;color:var(--ink-2);text-transform:capitalize;font-size:14px}
+.ym.has{color:var(--ink);background:var(--glass-strong)}
+.ym.has b{color:var(--accent)}
+.ym.cur{border-color:var(--accent)}
+@media (max-width:640px){
+  .cal{gap:3px}
+  .day{min-height:58px;padding:4px 3px;border-radius:10px;gap:3px}
+  .calchip,.calseg{padding:0;height:7px;border-radius:4px}
+  .calchip span,.calseg span{display:none}
+  .calseg{border-style:solid;border-color:var(--ink-2);height:5px}
+  .yeargrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:1100px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr);padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+  .side{display:none}
+  .top{padding:10px 10px 10px 16px}
+  .top .mlogo{display:block;font-family:var(--f-display);font-weight:900;font-size:22px;text-decoration:none;color:var(--ink)}
+  .top .mlogo b{color:var(--accent)}
+  .top h1{font-size:17px}
+  .top .addtop{display:none}
+  .mob{display:flex;position:fixed;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:50;justify-content:space-around;align-items:center;padding:8px 6px}
+  .mob a{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--ink-2);text-decoration:none;padding:4px 4px;border-radius:12px;min-width:0}
+  .mob a[aria-current="page"]{color:var(--accent)}
+  .mob svg{width:22px;height:22px}
+  .mob .add{width:54px;height:54px;border-radius:50%;margin-top:-26px;padding:0}
+  .mob .add svg{width:26px;height:26px}
+  .g2,.g3{grid-template-columns:minmax(0,1fr)}
+  .rowcard{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .doc{padding:26px 20px}
+  .hero .names{font-size:24px}
+}
+@media (max-width:520px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi .v{font-size:32px}.panel{padding:18px}.bar{grid-template-columns:90px minmax(0,1fr) auto}}
+
+
+/* acceso, menú de usuario, equipo y lector de PDF */
+[hidden]{display:none!important}
+#gate{position:relative;z-index:2}
+body.locked .app,body.locked .mob{display:none}
+.gate{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px 16px}
+.gate-box{width:min(420px,100%);padding:30px 28px;display:flex;flex-direction:column;gap:22px;border-radius:28px}
+.gate-box h2{font-size:22px}
+.gate-logo{display:flex;flex-direction:column;align-items:center}
+.gate-logo .mark{font-family:var(--f-display);font-weight:900;font-size:44px;line-height:1}
+.gate-logo .mark b{color:var(--accent)}
+.gate-logo .sub{font-weight:300;font-size:24px;letter-spacing:.06em;line-height:1;margin-top:2px}
+.gate-note{font-size:12.5px;color:var(--muted);text-align:center;margin:0}
+.gate-aviso{margin:0;padding:10px 14px;border-radius:14px;background:var(--warn-soft);color:var(--warn);font-size:14px}
+.userbtn{gap:8px;padding:4px 12px 4px 4px;height:40px}
+.userbtn .un{max-width:150px;overflow:hidden;text-overflow:ellipsis}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:13px;font-weight:700;flex:none;letter-spacing:.02em}
+.umenu{position:absolute;right:10px;top:calc(100% + 8px);width:min(290px,calc(100vw - 32px));padding:10px;border-radius:20px;background:var(--glass-strong);display:flex;flex-direction:column;gap:2px;z-index:30}
+.umenu a,.umenu button{display:block;width:100%;text-align:left;padding:9px 12px;border-radius:12px;border:0;background:transparent;color:var(--ink);text-decoration:none;font:inherit;font-weight:500;cursor:pointer}
+.umenu a:hover,.umenu button:hover{background:var(--accent-soft)}
+.umenu .danger{color:var(--bad)}
+.um-head{display:flex;gap:10px;align-items:center;padding:6px 6px 10px}
+.um-head .t{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.um-head .s{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.um-sep{height:1px;background:var(--line);margin:4px 6px}
+table.perm th:not(:first-child),table.perm td:not(:first-child){text-align:center}
+table.perm th{white-space:normal;min-width:84px;vertical-align:bottom}
+table.perm input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.temp-card{display:grid;gap:10px;padding:14px 16px;border-radius:16px;background:var(--field);border:1px solid var(--line)}
+.temp-card div{display:flex;flex-direction:column;gap:2px}
+.pdfdrop{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:26px 18px;border:2px dashed color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:20px;cursor:pointer;background:var(--field);transition:background .15s}
+.pdfdrop:hover,.pdfdrop.over{background:var(--accent-soft)}
+.pdfdrop .big-ico{font-family:var(--f-display);font-weight:900;font-size:30px;color:var(--accent);line-height:1}
+.pdfstate{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.pdfstate .grow{flex:1;min-width:200px}
+.spin{width:22px;height:22px;border-radius:50%;border:3px solid var(--accent-soft);border-top-color:var(--accent);animation:spin 1s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.momento{padding:12px;border-radius:16px;background:var(--glass-strong);border:1px solid var(--line)}
+.momento .f input{font-weight:600}
+.songs{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.songs .check{align-items:flex-start;font-weight:400}
+.songs input[type=checkbox]{margin-top:3px;width:17px;height:17px;accent-color:var(--accent);flex:none}
+.pet-nota{display:block;font-size:12px;color:var(--muted);padding:2px 10px 0}
+@media (max-width:860px){.userbtn .un{display:none}.userbtn{padding:4px}}
+
+@media print{
+  body *{visibility:hidden}
+  .printable,.printable *{visibility:visible}
+  .printable{position:absolute;left:0;top:0;box-shadow:none;border:0;max-width:none}
+  .blobs{display:none}
+  :root{--paper:#fff;--paper-ink:#000}
+}
+</style>
+
+<div class="blobs" aria-hidden="true"><i></i><i></i><i></i></div>
+<div id="gate"></div>
+
+<div class="app">
+  <aside class="side glass">
+    <a class="logo" href="#panel" aria-label="IZONE events, ir al panel"><span class="mark"><b>I</b>-ZONE</span><span class="sub">events</span></a>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot" id="sidefoot"></div>
+  </aside>
+  <main>
+    <header class="top glass">
+      <a class="mlogo" href="#panel" aria-label="Ir al panel"><b>I</b>-ZONE</a>
+      <h1 id="title">Panel</h1>
+      <a class="btn iconbtn" href="#avisos" id="bell" aria-label="Avisos"></a>
+      <button class="btn btn-primary addtop" id="addtop" data-act="nueva" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Añadir boda</button>
+      <button class="btn userbtn" type="button" data-act="menu" id="userbtn" aria-haspopup="true" aria-expanded="false"></button>
+      <div class="umenu glass" id="umenu" hidden></div>
+    </header>
+    <div id="view" class="stack" style="gap:18px"></div>
+  </main>
+</div>
+<nav class="mob glass" id="mobnav"></nav>
+<div id="modal"></div>
+<div id="toast" class="toast" hidden></div>
+<input type="file" id="importfile" accept="application/json,.json" hidden>
+<input type="file" id="pdffile" accept="application/pdf,.pdf" hidden>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+"use strict";
+/* ============ conexión con Supabase ============ */
+const SUPA_URL = "https://ujqbqiggdcqdsxtqxaox.supabase.co", SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVqcWJxaWdnZGNxZHN4dHF4YW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ5MjE5NDEsImV4cCI6MjExMDQ5Nzk0MX0.31tYnc6srkK1RA6Hmiasx2IDJ3qaqkprCDqZ7lcQbNw";
+const SB_STORAGE_KEY = "izone-crm-auth";
+const sb = SUPA_URL && window.supabase ? window.supabase.createClient(SUPA_URL, SUPA_KEY, { auth: { storageKey: SB_STORAGE_KEY, persistSession: true, autoRefreshToken: true } }) : null;
+/* ============ utilidades ============ */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const eur = n => { n = Math.round((Number(n) || 0) * 100) / 100; const d = Number.isInteger(n) ? 0 : 2; return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", minimumFractionDigits: d, maximumFractionDigits: d }).format(n); };
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const num = v => Number(v) || 0;
+const ymd = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+const hoy = () => ymd(new Date());
+const parse = s => { if (!s) return null; const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+function addMonths(s, n) { const d = parse(s); const day = d.getDate(); const t = new Date(d.getFullYear(), d.getMonth() + n, 1); const last = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate(); t.setDate(Math.min(day, last)); return ymd(t); }
+function addDays(s, n) { const d = parse(s); d.setDate(d.getDate() + n); return ymd(d); }
+const dias = s => Math.round((parse(s) - parse(hoy())) / 86400000);
+const fecha = (s, o = { day: "numeric", month: "short", year: "numeric" }) => s ? parse(s).toLocaleDateString("es-ES", o) : "Sin fecha";
+const fechaLarga = s => s ? parse(s).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "";
+const clone = o => JSON.parse(JSON.stringify(o));
+function getPath(o, p) { return p.split(".").reduce((a, k) => a == null ? a : a[k], o); }
+function setPath(o, p, v) { const ks = p.split("."); let a = o; for (let i = 0; i < ks.length - 1; i++) { if (a[ks[i]] == null) a[ks[i]] = {}; a = a[ks[i]]; } a[ks[ks.length - 1]] = v; }
+const fid = (pre, p) => pre + "-" + p.replace(/[^a-z0-9]/gi, "-");
+function merge(def, obj) {
+  if (Array.isArray(def)) return Array.isArray(obj) ? obj : def;
+  if (def && typeof def === "object") { const out = {}; const o = obj && typeof obj === "object" ? obj : {}; for (const k of new Set([...Object.keys(def), ...Object.keys(o)])) out[k] = k in def ? merge(def[k], o[k]) : o[k]; return out; }
+  return obj === undefined ? def : obj;
+}
+const nombreCorto = b => { const a = (b.novios.n1.nombre || "").trim().split(" ")[0]; const c = (b.novios.n2.nombre || "").trim().split(" ")[0]; return [a, c].filter(Boolean).join(" & ") || "Boda sin nombre"; };
+const nombres = b => [b.novios.n1.nombre, b.novios.n2.nombre].map(s => (s || "").trim()).filter(Boolean).join(" & ") || "Boda sin nombre";
+
+const ICON = {
+  equipo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.5a3.5 3.5 0 010 7M18 14.5a6.5 6.5 0 013.5 5.5"/></svg>',
+  accesos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h5a2 2 0 012 2v14a2 2 0 01-2 2h-5"/><path d="M10 17l5-5-5-5M15 12H3"/></svg>',
+  chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+  panel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>',
+  bodas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="14" r="5"/><circle cx="15" cy="14" r="5"/><path d="M10 4l2 3 2-3"/></svg>',
+  stats: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  ajustes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>',
+  cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15.5" r="1.6" fill="currentColor"/></svg>',
+  bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1112 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 004 0"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  ext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></svg>'
+};
+
+/* ============ datos por defecto ============ */
+const CONTRATO_DEF = `CONTRATO DE PRESTACIÓN DE SERVICIOS PARA BODA
+
+En {{localidad_firma}}, a {{fecha_hoy}}.
+
+REUNIDOS
+
+De una parte, {{empresa}}, con CIF {{cif}} y domicilio en {{empresa_direccion}} (en adelante, «la Empresa»).
+
+De otra parte, {{novio1}}, con DNI {{dni1}}, y {{novio2}}, con DNI {{dni2}}, con domicilio en {{direccion_novios}} y teléfonos {{tel1}} / {{tel2}} (en adelante, «los Clientes»).
+
+Ambas partes se reconocen capacidad legal para contratar y acuerdan las siguientes
+
+CLÁUSULAS
+
+1. OBJETO. La Empresa prestará a los Clientes los servicios del {{pack}} para la celebración de su boda el {{fecha_boda}} en {{lugar}} ({{lugar_direccion}}), en horario de {{hora_inicio}} a {{hora_fin}}, con una previsión de {{invitados}} invitados.
+
+2. SERVICIOS INCLUIDOS.
+{{pack_incluye}}
+Happy moment: {{happy_moment}}.
+Horas extra previstas: {{horas_extra}}.
+
+3. PERSONAL. La Empresa asignará al evento el siguiente equipo. DJ: {{djs}}. Auxiliares: {{auxiliares}}. Por causa justificada, la Empresa podrá sustituir a cualquier miembro del equipo por otro profesional de igual cualificación.
+
+4. MÚSICA. Los Clientes podrán añadir sus canciones a la playlist de la boda ({{playlist}}) hasta 15 días antes del evento.
+
+5. PRECIO Y PAGO. El precio total es de {{total}} (IVA incluido), según el presupuesto {{numero_presupuesto}}. Para reservar la fecha, los Clientes abonan una señal de {{senal}}. El importe pendiente, {{pendiente}}, se abonará como máximo 7 días antes de la boda.
+
+6. CAMBIO DE PACK. Los Clientes podrán cambiar de pack hasta 30 días antes de la boda. El presupuesto y el precio de este contrato se actualizarán con el pack elegido.
+
+7. HORAS EXTRA. Si el evento se alarga, cada hora extra se facturará a {{precio_hora_dj}} por DJ y a {{precio_hora_aux}} por auxiliar.
+
+8. CANCELACIÓN. Si los Clientes cancelan la boda, la señal no será reembolsable. Si la Empresa cancela el servicio, devolverá todas las cantidades recibidas.
+
+9. PROTECCIÓN DE DATOS. Los datos de los Clientes se usarán solo para gestionar este contrato, conforme al Reglamento General de Protección de Datos.
+
+{{clausulas_extra}}
+
+Y en prueba de conformidad, ambas partes firman este contrato por duplicado.`;
+
+const AJUSTES_DEF = {
+  empresa: { nombre: "IZONE EVENTS", cif: "", direccion: "", localidad: "", telefono: "", email: "", web: "" },
+  packs: [
+    { id: "basico", nombre: "Pack Básico", precio: 1200, incluye: "DJ para cóctel y fiesta (5 horas)\nEquipo de sonido profesional\nIluminación ambiental básica" },
+    { id: "plus", nombre: "Pack Plus", precio: 1650, incluye: "Todo el Pack Básico\nMúsica para ceremonia y banquete\nMicrófonos inalámbricos para discursos\nIluminación LED de pista" },
+    { id: "premium", nombre: "Pack Premium", precio: 2200, incluye: "Todo el Pack Plus\nPista de baile iluminada\nMáquina de humo bajo para el primer baile\nAnimación del banquete" },
+    { id: "deluxe", nombre: "Pack Deluxe", precio: 2900, incluye: "Todo el Pack Premium\nCabina DJ de diseño\nPantalla con proyección\nPirotecnia fría para el primer baile" }
+  ],
+  precios: { horaExtraDj: 150, horaExtraAux: 40, happyMoment: 300 },
+  iva: 21, senal: 500, frecuencia: 1, avisoDias: 7,
+  canales: ["Redes sociales", "Wedding planner", "Boca a boca", "Web / Google", "Feria de bodas", "Finca / lugar", "Otro"],
+  contrato: CONTRATO_DEF
+};
+
+let A = clone(AJUSTES_DEF);
+
+function nuevaBoda() {
+  return {
+    id: uid("b"), creado: hoy(), estado: "Reservada", numero: "", ejemplo: false,
+    novios: { n1: { nombre: "", dni: "", tel: "", email: "" }, n2: { nombre: "", dni: "", tel: "", email: "" }, direccion: "" },
+    fecha: "", horaInicio: "", horaFin: "", invitados: "",
+    lugar: { nombre: "", direccion: "", localidad: "", contacto: "" },
+    packId: (A.packs[0] || {}).id || "", packProvisional: true, happyMoment: false,
+    captacion: { canal: "Redes sociales", detalle: "" },
+    djs: [{ id: uid("d"), nombre: "", tel: "", horasExtra: 0 }],
+    auxiliares: [{ id: uid("a"), nombre: "", tel: "", horasExtra: 0 }, { id: uid("a"), nombre: "", tel: "", horasExtra: 0 }],
+    playlist: { url: "", canciones: 0 }, peticiones: [],
+    presupuesto: { estado: "Borrador", aceptado: "", lineas: [], descuento: 0, iva: A.iva, senal: A.senal, pagos: [], notas: "", historial: [], precios: { pack: null, hm: null, hdj: null, haux: null } },
+    contrato: { personalizado: false, texto: "", extra: "", firmado: "" },
+    incidencias: [], seguimiento: { proximo: "", frecuencia: A.frecuencia, historial: [] }, notas: ""
+  };
+}
+const PLANTILLA = () => { const b = nuevaBoda(); b.djs = []; b.auxiliares = []; return b; };
+function normalizar(o, id) {
+  const b = merge(PLANTILLA(), o || {}); b.id = id || b.id;
+  for (const k of ["djs", "auxiliares", "peticiones", "incidencias"]) if (!Array.isArray(b[k])) b[k] = [];
+  for (const k of ["lineas", "pagos", "historial"]) if (!Array.isArray(b.presupuesto[k])) b.presupuesto[k] = [];
+  if (!Array.isArray(b.seguimiento.historial)) b.seguimiento.historial = [];
+  while (b.auxiliares.length < 2) b.auxiliares.push({ id: uid("a"), nombre: "", tel: "", horasExtra: 0 });
+  return b;
+}
+
+/* ============ cálculos ============ */
+const packDe = b => A.packs.find(p => p.id === b.packId) || A.packs[0] || { id: "", nombre: "Sin pack", precio: 0, incluye: "" };
+const packNivel = b => Math.max(0, A.packs.findIndex(p => p.id === b.packId));
+const pv = (v, d) => (v === null || v === undefined || v === "") ? d : num(v);
+function calc(b) {
+  const P = b.presupuesto, pr = P.precios || {}, p = packDe(b), out = [];
+  out.push({ auto: "pack", concepto: p.nombre + (b.packProvisional ? " (provisional)" : ""), cantidad: 1, precio: pv(pr.pack, p.precio), def: p.precio });
+  if (b.happyMoment) out.push({ auto: "hm", concepto: "Happy moment", cantidad: 1, precio: pv(pr.hm, A.precios.happyMoment), def: A.precios.happyMoment });
+  const hDj = b.djs.reduce((s, d) => s + num(d.horasExtra), 0), hAux = b.auxiliares.reduce((s, d) => s + num(d.horasExtra), 0);
+  if (hDj) out.push({ auto: "hdj", concepto: "Horas extra DJ", cantidad: hDj, precio: pv(pr.hdj, A.precios.horaExtraDj), def: A.precios.horaExtraDj });
+  if (hAux) out.push({ auto: "haux", concepto: "Horas extra auxiliares", cantidad: hAux, precio: pv(pr.haux, A.precios.horaExtraAux), def: A.precios.horaExtraAux });
+  const subtotal = out.reduce((s, l) => s + l.cantidad * l.precio, 0) + P.lineas.reduce((s, l) => s + num(l.cantidad) * num(l.precio), 0);
+  const base = Math.max(0, subtotal - num(P.descuento));
+  const iva = base * num(P.iva) / 100, total = base + iva;
+  const pagado = P.pagos.reduce((s, x) => s + num(x.importe), 0);
+  return { auto: out, subtotal, base, iva, total, pagado, pendiente: total - pagado, hDj, hAux };
+}
+const cancion = b => Math.max(num(b.playlist.canciones), b.peticiones.length);
+const activa = b => b.estado !== "Cancelada";
+const pendienteDeBoda = b => activa(b) && b.estado !== "Celebrada" && (!b.fecha || dias(b.fecha) >= 0);
+
+function siguienteSeguimiento(b, desde) {
+  let n = addMonths(desde || hoy(), Math.max(1, num(b.seguimiento.frecuencia) || 1));
+  if (b.fecha && n >= b.fecha) { const antes = addDays(b.fecha, -7); n = antes > hoy() ? antes : ""; }
+  return n;
+}
+
+function avisos() {
+  const out = [], lim = num(A.avisoDias) || 7;
+  for (const b of lista()) {
+    if (!pendienteDeBoda(b)) continue;
+    const s = b.seguimiento.proximo;
+    if (s) { const d = dias(s); if (d <= lim) out.push({ b, k: "seg", sev: d < 0 ? "bad" : d === 0 ? "acc" : "warn", fecha: s, d, t: d < 0 ? `Seguimiento vencido hace ${-d} ${-d === 1 ? "día" : "días"}` : d === 0 ? "Seguimiento para hoy" : `Seguimiento en ${d} ${d === 1 ? "día" : "días"}` }); }
+    if (b.fecha) {
+      const d = dias(b.fecha), c = calc(b);
+      if (d >= 0 && d <= 30) out.push({ b, k: "boda", sev: "acc", fecha: b.fecha, d, t: d === 0 ? "La boda es hoy" : `La boda es en ${d} ${d === 1 ? "día" : "días"}` });
+      if (b.packProvisional && d >= 0 && d <= 90) out.push({ b, k: "pack", sev: "warn", fecha: b.fecha, d, t: "Pack todavía provisional" });
+      if (d >= 0 && d <= 14 && c.pendiente > 0.5 && puede("economico")) out.push({ b, k: "pago", sev: "warn", fecha: b.fecha, d, t: `Quedan ${eur(c.pendiente)} por cobrar` });
+    }
+    const inc = b.incidencias.filter(i => i.estado !== "Resuelta").length;
+    if (inc) out.push({ b, k: "inc", sev: "bad", fecha: b.fecha, d: 999, t: `${inc} ${inc === 1 ? "incidencia abierta" : "incidencias abiertas"}` });
+  }
+  const ord = { bad: 0, acc: 1, warn: 2 };
+  return out.sort((x, y) => (ord[x.sev] - ord[y.sev]) || (x.d - y.d));
+}
+
+/* ============ almacenamiento ============ */
+const LS_KEY = "izone-crm-v1";
+const store = { mode: "cargando", db: null, main: {}, eco: {}, canal: null, bodas: {}, dirty: new Set(), timers: {}, ver: {}, chains: {}, error: "", downloads: null };
+const lista = () => Object.values(store.bodas).sort((a, b) => (a.fecha || "9999").localeCompare(b.fecha || "9999"));
+
+function lsRead() { try { return JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch { return null; } }
+function lsWrite() { try { localStorage.setItem(LS_KEY, JSON.stringify({ bodas: store.bodas, ajustes: A })); } catch { toast("No se pudo guardar en este navegador"); } }
+
+function programar(path, getData) {
+  store.dirty.add(path); store.ver[path] = (store.ver[path] || 0) + 1; const v = store.ver[path];
+  clearTimeout(store.timers[path]);
+  store.timers[path] = setTimeout(() => escribir(path, getData, v), 600);
+}
+function escribir(path, getData, v) {
+  delete store.timers[path];
+  const data = clone(getData());
+  store.chains[path] = (store.chains[path] || Promise.resolve()).then(async () => {
+    const t = new Date().toISOString();
+    if (path === "ajustes/general") { const { error } = await sb.from("ajustes").upsert({ id: "general", data, actualizado: t }); if (error) throw error; return; }
+    const id = path.slice(6), { main, eco } = separar(data);
+    const r1 = await sb.from("bodas").upsert({ id, data: main, actualizado: t }); if (r1.error) throw r1.error;
+    store.main[id] = main;
+    if (puede("economico")) { const r2 = await sb.from("bodas_economico").upsert({ boda_id: id, data: eco, actualizado: t }); if (r2.error) throw r2.error; store.eco[id] = eco; }
+  }).then(() => { if (store.ver[path] === v && !store.timers[path]) store.dirty.delete(path); })
+    .catch(e => toast("No se pudo guardar: " + errTxt(e)));
+}
+function separar(b) { const c = clone(b); const eco = { presupuesto: c.presupuesto, contrato: c.contrato }; delete c.presupuesto; delete c.contrato; return { main: c, eco }; }
+function componer(id) { const m = store.main[id]; return m ? normalizar(Object.assign(clone(m), clone(store.eco[id] || {})), id) : null; }
+function guardarBoda(b) { store.bodas[b.id] = b; const id = b.id; programar("bodas/" + id, () => store.bodas[id]); }
+function guardarAjustes() { programar("ajustes/general", () => A); }
+async function borrarBoda(id) {
+  const path = "bodas/" + id; clearTimeout(store.timers[path]); delete store.timers[path]; store.dirty.delete(path);
+  delete store.bodas[id]; delete store.main[id]; delete store.eco[id];
+  const { error } = await sb.from("bodas").delete().eq("id", id);
+  if (error) toast("No se pudo borrar: " + errTxt(error));
+}
+
+async function iniciar() {
+  store.mode = "db"; render();
+  if (!sb) { sec.error = "No se pudo cargar la conexión con el servidor. Revisa la conexión a internet y recarga."; sec.listo = true; render(); return; }
+  sb.auth.onAuthStateChange(ev => { if (ev === "SIGNED_OUT" && sec.yo) cerrarSesion("La sesión caducó"); });
+  await iniciarSeguridad();
+}
+async function cargarDatos() {
+  store.cargado = false;
+  const [b, e, a] = await Promise.all([
+    sb.from("bodas").select("id,data"),
+    puede("economico") ? sb.from("bodas_economico").select("boda_id,data") : Promise.resolve({ data: [] }),
+    sb.from("ajustes").select("data").eq("id", "general").maybeSingle()]);
+  if (b.error) throw b.error;
+  store.main = {}; store.eco = {};
+  for (const r of b.data) store.main[r.id] = r.data;
+  for (const r of (e.data || [])) store.eco[r.boda_id] = r.data;
+  A = a.data && a.data.data ? merge(clone(AJUSTES_DEF), a.data.data) : clone(AJUSTES_DEF);
+  store.bodas = {}; for (const id in store.main) store.bodas[id] = componer(id);
+  store.cargado = true; store.error = "";
+  escucharCambios();
+}
+let recargaSegT = null;
+function escucharCambios() {
+  if (store.canal) sb.removeChannel(store.canal);
+  const seg = () => { clearTimeout(recargaSegT); recargaSegT = setTimeout(() => { if (sec.yo) cargarSeguridad().then(render).catch(() => { }); }, 400); };
+  store.canal = sb.channel("crm-izone")
+    .on("postgres_changes", { event: "*", schema: "public", table: "bodas" }, p => cambio("main", p))
+    .on("postgres_changes", { event: "*", schema: "public", table: "bodas_economico" }, p => cambio("eco", p))
+    .on("postgres_changes", { event: "*", schema: "public", table: "ajustes" }, p => { if (!store.dirty.has("ajustes/general") && p.new && p.new.data) { A = merge(clone(AJUSTES_DEF), p.new.data); render(); } })
+    .on("postgres_changes", { event: "*", schema: "public", table: "perfiles" }, seg)
+    .on("postgres_changes", { event: "*", schema: "public", table: "roles" }, seg)
+    .subscribe();
+}
+function cambio(tipo, p) {
+  const k = tipo === "main" ? "id" : "boda_id", id = (p.new && p.new[k]) || (p.old && p.old[k]);
+  if (!id) return;
+  if (p.eventType === "DELETE") { if (tipo === "main") { delete store.main[id]; delete store.eco[id]; delete store.bodas[id]; } else delete store.eco[id]; }
+  else (tipo === "main" ? store.main : store.eco)[id] = p.new.data;
+  if (store.dirty.has("bodas/" + id)) return;
+  if (store.main[id]) store.bodas[id] = componer(id);
+  render();
+}
+
+/* ============ usuarios, roles y accesos (Supabase) ============ */
+/* Las contraseñas, el horario de las contraseñas temporales y los permisos los comprueba el servidor de Supabase
+   (Auth + seguridad por filas). El navegador solo decide qué pantallas enseñar. */
+const MAX_ADMINS = 3;
+const SECCIONES = [["panel", "Panel y avisos"], ["bodas", "Bodas"], ["calendario", "Calendario"], ["estadisticas", "Estadísticas"], ["economico", "Presupuestos, pagos y contratos"], ["ajustes", "Ajustes"]];
+const SES_KEY = "izone-acceso";
+const INACTIVIDAD_MIN = 30;
+const sec = { listo: false, hayUsuarios: true, yo: null, perfiles: {}, roles: {}, accesos: {}, usuarios: {}, temporales: {}, accesoId: null, offset: 0, fallos: 0, bloqueo: 0, error: "", aviso: "", actividad: Date.now(), latido: 0, comprobando: false };
+const ahora = () => new Date(Date.now() + sec.offset);
+const ahoraISO = () => ahora().toISOString();
+const fh = iso => iso ? new Date(iso).toLocaleString("es-ES", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
+const secListo = () => sec.listo;
+const iniciales = n => (n || "?").trim().split(/\s+/).slice(0, 2).map(s => s[0] || "").join("").toUpperCase() || "?";
+function generarClave() {
+  const abc = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789", r = crypto.getRandomValues(new Uint8Array(10));
+  return [...r].map(n => abc[n % abc.length]).join("").replace(/(.{5})/, "$1-");
+}
+function errTxt(e) { const m = (e && (e.message || e.error_description || e.error)) || "error"; return /JWT|jwt/.test(m) ? "La sesión ha caducado, vuelve a entrar" : m; }
+
+/* --- carga de perfiles, roles e historial --- */
+function mapearPerfiles() {
+  sec.usuarios = {}; sec.temporales = {};
+  for (const p of Object.values(sec.perfiles)) {
+    if (p.temporal) sec.temporales[p.id] = { nombre: p.nombre, email: p.email, rol: p.rol, desde: p.valido_desde, hasta: p.valido_hasta, revocado: p.revocado, creadoPor: p.creado_por || "" };
+    else sec.usuarios[p.id] = { nombre: p.nombre, email: p.email, rol: p.rol, activo: p.activo, creadoPor: p.creado_por || "" };
+  }
+}
+async function cargarSeguridad() {
+  const [r, p] = await Promise.all([sb.from("roles").select("*").order("orden"), sb.from("perfiles").select("*")]);
+  if (r.error) throw r.error; if (p.error) throw p.error;
+  sec.roles = {}; for (const x of r.data) if (x.id !== "admin") sec.roles[x.id] = { nombre: x.nombre, secciones: x.secciones || [] };
+  sec.perfiles = {}; for (const x of p.data) sec.perfiles[x.id] = x;
+  mapearPerfiles();
+  if (esAdmin()) await cargarAccesos();
+}
+async function cargarAccesos() {
+  const { data, error } = await sb.from("accesos").select("*").order("entrada", { ascending: false }).limit(400);
+  if (error) return;
+  sec.accesos = {}; for (const a of data) sec.accesos[a.id] = { tipo: a.tipo, ref: a.user_id, nombre: a.nombre, email: a.email, rol: a.rol, rolNombre: a.rol_nombre, entrada: a.entrada, salida: a.salida, ultimo: a.ultimo, motivo: a.motivo, dispositivo: a.dispositivo };
+}
+
+/* --- quién está dentro y qué puede ver --- */
+function perfil() {
+  const y = sec.yo; if (!y) return null;
+  return { id: y.id, tipo: y.temporal ? "temporal" : "usuario", nombre: y.nombre, email: y.email, rol: y.rol, activo: y.activo, hasta: y.valido_hasta, desde: y.valido_desde, revocado: y.revocado };
+}
+const esAdmin = () => { const p = perfil(); return !!p && p.tipo === "usuario" && p.rol === "admin"; };
+const rolNombre = r => r === "admin" ? "Administrador" : (sec.roles[r] || {}).nombre || "Sin rol";
+const numAdmins = () => Object.values(sec.usuarios).filter(u => u.rol === "admin" && u.activo !== false).length;
+function puede(s) {
+  const p = perfil(); if (!p) return false;
+  if (p.tipo === "usuario" && p.rol === "admin") return true;
+  if (s === "equipo" || s === "accesos") return false;
+  return ((sec.roles[p.rol] || {}).secciones || []).includes(s);
+}
+const RUTAS = ["panel", "bodas", "calendario", "estadisticas", "ajustes", "equipo", "accesos"];
+const permisoDeRuta = r => ({ avisos: "panel", boda: "bodas" }[r] || r);
+const primeraRuta = () => RUTAS.find(puede) || null;
+function estadoTemporal(t) {
+  if (t.revocado) return "Revocada";
+  const now = ahora().getTime();
+  if (now < new Date(t.desde).getTime()) return "Programada";
+  if (now >= new Date(t.hasta).getTime()) return "Caducada";
+  return "Activa";
+}
+function dispositivo() {
+  const u = navigator.userAgent;
+  const nav = /Edg\//.test(u) ? "Edge" : /OPR\//.test(u) ? "Opera" : /Chrome\//.test(u) ? "Chrome" : /Firefox\//.test(u) ? "Firefox" : /Safari\//.test(u) ? "Safari" : "Navegador";
+  const so = /iPhone|iPad/.test(u) ? "iPhone/iPad" : /Android/.test(u) ? "Android" : /Windows/.test(u) ? "Windows" : /Mac OS X/.test(u) ? "Mac" : /Linux/.test(u) ? "Linux" : "";
+  return so ? `${nav} en ${so}` : nav;
+}
+
+/* --- arranque: ¿hay sesión guardada? --- */
+async function iniciarSeguridad() {
+  try {
+    const { data: hay, error } = await sb.rpc("hay_usuarios");
+    if (error) throw error;
+    sec.hayUsuarios = !!hay;
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      let prev = null; try { prev = sessionStorage.getItem(SES_KEY); } catch { }
+      await tomarSesion(prev, prev ? "" : "Sesión recordada en este dispositivo");
+    }
+  } catch (e) { sec.error = "No se pudo conectar con el servidor del CRM (" + errTxt(e) + "). Revisa la conexión y recarga."; }
+  sec.listo = true; render();
+}
+/* Comprueba con el servidor si la sesión vale y, si vale, la registra y carga los datos */
+async function tomarSesion(accesoPrevio, motivoEntrada) {
+  const { data: est, error } = await sb.rpc("mi_estado");
+  if (error) throw error;
+  sec.offset = new Date(est.ahora).getTime() - Date.now();
+  if (!est.ok) { const p = est.perfil; if (p) sb.rpc("registrar_fallo", { email: p.email, motivo: est.motivo, dispositivo: dispositivo() }); await sb.auth.signOut(); return est.motivo; }
+  sec.yo = est.perfil; sec.actividad = Date.now(); sec.latido = Date.now();
+  if (accesoPrevio) { sec.accesoId = accesoPrevio; sb.rpc("registrar_latido", { acceso: accesoPrevio }).then(() => { }); }
+  else {
+    const { data: id, error: e2 } = await sb.rpc("registrar_entrada", { dispositivo: dispositivo(), motivo: motivoEntrada || "" });
+    if (e2) throw e2;
+    sec.accesoId = id; try { sessionStorage.setItem(SES_KEY, id); } catch { }
+  }
+  await cargarSeguridad();
+  await cargarDatos();
+  return "";
+}
+
+/* --- entrar y salir --- */
+async function entrar(email, clave) {
+  email = (email || "").trim().toLowerCase();
+  if (Date.now() < sec.bloqueo) return `Demasiados intentos. Espera ${Math.ceil((sec.bloqueo - Date.now()) / 1000)} segundos.`;
+  if (!email || !clave) return "Escribe tu correo y tu contraseña.";
+  const { error } = await sb.auth.signInWithPassword({ email, password: clave });
+  if (error) {
+    sec.fallos++; if (sec.fallos >= 5) { sec.fallos = 0; sec.bloqueo = Date.now() + 60000; }
+    sb.rpc("registrar_fallo", { email, motivo: /invalid/i.test(error.message) ? "Correo o contraseña incorrectos" : error.message, dispositivo: dispositivo() }).then(() => { });
+    return /invalid/i.test(error.message) ? "El correo o la contraseña no son correctos." : "No se pudo entrar: " + error.message;
+  }
+  try { const m = await tomarSesion(null, ""); if (m) return m + "."; }
+  catch (e) { await sb.auth.signOut(); return "No se pudo entrar: " + errTxt(e); }
+  sec.fallos = 0; sec.aviso = ""; ui.modal = null; ui.menu = false;
+  if (!puede(permisoDeRuta(ui.ruta))) ir(primeraRuta() || "panel"); else render();
+  return "";
+}
+async function cerrarSesion(motivo) {
+  if (!sec.yo) return;
+  const acc = sec.accesoId;
+  sec.yo = null; sec.accesoId = null; ui.modal = null; ui.menu = false; ui.pdf = null;
+  store.bodas = {}; store.main = {}; store.eco = {}; store.cargado = false; sec.perfiles = {}; sec.accesos = {}; mapearPerfiles();
+  try { sessionStorage.removeItem(SES_KEY); } catch { }
+  sec.aviso = motivo === "Cerró sesión" ? "" : "Se cerró la sesión: " + motivo.charAt(0).toLowerCase() + motivo.slice(1) + ".";
+  render();
+  try { if (acc) await sb.rpc("registrar_salida", { acceso: acc, motivo }); } catch { }
+  if (store.canal) { sb.removeChannel(store.canal); store.canal = null; }
+  await sb.auth.signOut();
+}
+async function vigilar() {
+  if (!sec.yo || sec.comprobando) return;
+  if (Date.now() - sec.actividad > INACTIVIDAD_MIN * 60000) return cerrarSesion(`Desconexión por inactividad (${INACTIVIDAD_MIN} min)`);
+  sec.comprobando = true;
+  try {
+    const { data: est, error } = await sb.rpc("mi_estado");
+    if (!error && est) {
+      sec.offset = new Date(est.ahora).getTime() - Date.now();
+      if (!est.ok) { sec.comprobando = false; return cerrarSesion(est.motivo || "Acceso no válido"); }
+      const cambioRol = sec.yo.rol !== est.perfil.rol; sec.yo = est.perfil; if (cambioRol) { await cargarSeguridad(); await cargarDatos(); }
+    }
+    if (Date.now() - sec.latido > 60000 && sec.accesoId) { sec.latido = Date.now(); await sb.rpc("registrar_latido", { acceso: sec.accesoId }); }
+    if (esAdmin() && (ui.ruta === "accesos" || ui.ruta === "equipo")) { await cargarAccesos(); render(); }
+  } catch { }
+  sec.comprobando = false;
+}
+setInterval(vigilar, 30000);
+for (const ev of ["pointerdown", "keydown", "wheel", "touchstart"]) document.addEventListener(ev, () => { sec.actividad = Date.now(); }, { passive: true, capture: true });
+window.addEventListener("pagehide", () => {
+  if (!sec.yo || !sec.accesoId) return;
+  try {
+    const tok = (JSON.parse(localStorage.getItem(SB_STORAGE_KEY) || "null") || {}).access_token;
+    if (tok) fetch(SUPA_URL + "/rest/v1/rpc/registrar_salida", { method: "POST", keepalive: true, headers: { apikey: SUPA_KEY, Authorization: "Bearer " + tok, "Content-Type": "application/json" }, body: JSON.stringify({ acceso: sec.accesoId, motivo: "Cerró la pestaña o el navegador" }) });
+  } catch { }
+});
+async function funcionAdmin(body) {
+  const { data, error } = await sb.functions.invoke("admin-usuarios", { body });
+  if (error) { let m = error.message; try { const j = await error.context.json(); m = j.error || m; } catch { } throw new Error(m); }
+  if (data && data.error) throw new Error(data.error);
+  return data;
+}
+
+/* --- pantalla de entrada --- */
+function vistaGate() {
+  const marca = `<div class="gate-logo"><span class="mark"><b>I</b>-ZONE</span><span class="sub">events</span></div>`;
+  const caja = inner => `<div class="gate"><div class="gate-box glass">${marca}${inner}</div><p class="gate-note">CRM interno de IZONE EVENTS. Cada entrada y salida queda registrada.</p></div>`;
+  if (!SUPA_URL) return caja(`<p class="err">Falta configurar la conexión con Supabase.</p>`);
+  if (sec.error) return caja(`<p class="err" role="alert">${esc(sec.error)}</p><button class="btn" type="button" onclick="location.reload()">Recargar</button>`);
+  if (!secListo() || ui.gateBusy === "cargando") return caja(`<p class="muted" style="text-align:center">Cargando…</p>`);
+  const pw = (n, l, ac) => `<label class="f"><span>${l}</span><input type="password" name="${n}" id="g-${n}" data-keep="1" autocomplete="${ac}" required></label>`;
+  if (!sec.hayUsuarios) return caja(`<form id="form-setup" class="stack" novalidate>
+      <div><h2>Crea el primer administrador</h2><p class="muted" style="margin:6px 0 0;font-size:14px">Todavía no hay usuarios. Esta cuenta podrá crear al resto del equipo, dar permisos y ver el historial de accesos. Podrá haber hasta ${MAX_ADMINS} administradores.</p></div>
+      <label class="f"><span>Nombre</span><input type="text" name="nombre" id="g-nombre" data-keep="1" autocomplete="name" required></label>
+      <label class="f"><span>Correo</span><input type="email" name="email" id="g-email" data-keep="1" autocomplete="username" required></label>
+      ${pw("clave", "Contraseña (mínimo 8 caracteres)", "new-password")}${pw("clave2", "Repite la contraseña", "new-password")}
+      ${ui.gateErr ? `<p class="err" role="alert">${esc(ui.gateErr)}</p>` : ""}
+      <button class="btn btn-primary" type="submit" ${ui.gateBusy ? "disabled" : ""}>${ui.gateBusy ? "Creando…" : "Crear y entrar"}</button></form>`);
+  return caja(`<form id="form-login" class="stack" novalidate>
+      <div><h2>Entrar</h2><p class="muted" style="margin:6px 0 0;font-size:14px">Usa el correo y la contraseña que te dio un administrador. Si tienes una contraseña temporal, entra igual: solo funciona dentro de su horario.</p></div>
+      ${sec.aviso ? `<p class="gate-aviso">${esc(sec.aviso)}</p>` : ""}
+      <label class="f"><span>Correo</span><input type="email" name="email" id="g-email" data-keep="1" autocomplete="username" required></label>
+      ${pw("clave", "Contraseña", "current-password")}
+      ${ui.gateErr ? `<p class="err" role="alert">${esc(ui.gateErr)}</p>` : ""}
+      <button class="btn btn-primary" type="submit" ${ui.gateBusy ? "disabled" : ""}>${ui.gateBusy ? "Comprobando…" : "Entrar"}</button></form>`);
+}
+
+/* --- menú del usuario --- */
+function vistaMenu() {
+  const p = perfil(); if (!p) return "";
+  const nombresRuta = { panel: "Panel", bodas: "Bodas", calendario: "Calendario", estadisticas: "Estadísticas", ajustes: "Ajustes", equipo: "Equipo y permisos", accesos: "Historial de accesos" };
+  const t = p.tipo === "temporal" ? `<span class="chip warn">Temporal hasta ${esc(new Date(p.hasta).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }))}</span>` : "";
+  return `<div class="um-head"><span class="avatar">${esc(iniciales(p.nombre))}</span><div style="min-width:0"><div class="t">${esc(p.nombre)}</div><div class="s">${esc(p.email)}</div></div></div>
+    <div class="row" style="gap:6px;padding:0 6px 8px"><span class="chip ${p.rol === "admin" ? "acc" : ""}">${esc(rolNombre(p.rol))}</span>${t}</div>
+    <div class="um-sep"></div>${RUTAS.filter(puede).map(r => `<a href="#${r}">${esc(nombresRuta[r])}</a>`).join("")}
+    ${puede("bodas") ? `<button type="button" data-act="nueva">Añadir boda</button>` : ""}
+    <div class="um-sep"></div>${p.tipo === "usuario" ? `<button type="button" data-act="mi-clave">Cambiar mi contraseña</button>` : ""}
+    <button type="button" data-act="salir" class="danger">Cerrar sesión</button>`;
+}
+/* --- Equipo y permisos (solo administradores) --- */
+function estadoTempChip(t) { const e = estadoTemporal(t); return `<span class="chip ${{ Activa: "ok", Programada: "warn", Caducada: "line", Revocada: "bad" }[e]}">${e}</span>`; }
+function vistaEquipo() {
+  const me = perfil(), U = Object.entries(sec.usuarios).sort((a, b) => (a[1].nombre || "").localeCompare(b[1].nombre || ""));
+  const T = Object.entries(sec.temporales).sort((a, b) => (b[1].desde || "").localeCompare(a[1].desde || ""));
+  const roles = Object.entries(sec.roles), nA = numAdmins();
+  const optRol = (sel, conAdmin, adminOff) => (conAdmin ? `<option value="admin" ${sel === "admin" ? "selected" : ""} ${adminOff && sel !== "admin" ? "disabled" : ""}>Administrador${adminOff && sel !== "admin" ? " (máx. " + MAX_ADMINS + ")" : ""}</option>` : "") + roles.map(([k, r]) => `<option value="${esc(k)}" ${sel === k ? "selected" : ""}>${esc(r.nombre)}</option>`).join("");
+  const usos = k => Object.values(sec.usuarios).filter(u => u.rol === k).length + Object.values(sec.temporales).filter(t => t.rol === k && estadoTemporal(t) !== "Caducada" && !t.revocado).length;
+  return `
+  <section class="banner glass"><div class="grow"><strong>Administradores: ${nA} de ${MAX_ADMINS}.</strong> <span class="muted">Solo ellos ven todas las secciones, crean empleados, cambian permisos, configuran contraseñas temporales y consultan el historial de accesos.</span></div></section>
+  <section class="panel glass"><h2 class="sec-h">Empleados<span class="chip line">${U.length}</span><span class="spacer"></span><button class="btn btn-sm btn-primary" type="button" data-act="u-nuevo">${ICON.plus}Añadir empleado</button></h2>
+    <div class="tbl-wrap"><table><thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Activo</th><th>Último acceso</th><th></th></tr></thead><tbody>
+    ${U.map(([id, u]) => { const yo = me && me.id === id; const ult = Object.values(sec.accesos).filter(a => a.ref === id && a.tipo === "usuario").sort((a, b) => (b.entrada || "").localeCompare(a.entrada || ""))[0];
+      return `<tr><td><b>${esc(u.nombre)}</b>${yo ? ` <span class="chip line">tú</span>` : ""}</td><td>${esc(u.email)}</td>
+      <td><select id="urol-${id}" data-urol="${id}" aria-label="Rol de ${esc(u.nombre)}" ${yo ? "disabled title=\"No puedes cambiar tu propio rol\"" : ""}>${optRol(u.rol, true, nA >= MAX_ADMINS)}</select></td>
+      <td><input type="checkbox" class="switch" id="uact-${id}" data-uact="${id}" ${u.activo !== false ? "checked" : ""} ${yo ? "disabled" : ""} aria-label="Cuenta activa"></td>
+      <td class="muted" style="white-space:nowrap;font-size:13.5px">${ult ? esc(fh(ult.entrada)) : "Nunca"}</td>
+      <td style="white-space:nowrap"><button class="btn btn-sm btn-ghost" type="button" data-act="u-clave" data-id="${id}">Contraseña</button>${yo ? "" : `<button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="u-del" data-id="${id}" aria-label="Borrar">${ICON.x}</button>`}</td></tr>`; }).join("")}
+    </tbody></table></div></section>
+
+  <section class="panel glass"><h2 class="sec-h">Qué ve cada rol<span class="spacer"></span><button class="btn btn-sm" type="button" data-act="rol-nuevo">${ICON.plus}Añadir rol</button></h2>
+    <p class="muted" style="font-size:13.5px;margin:-6px 0 12px">Cada empleado solo ve en su menú las secciones marcadas para su rol. «Equipo» e «Historial de accesos» son siempre solo de administradores.</p>
+    <div class="tbl-wrap"><table class="perm"><thead><tr><th>Rol</th>${SECCIONES.map(([, l]) => `<th>${esc(l)}</th>`).join("")}<th>Personas</th><th></th></tr></thead><tbody>
+    <tr><td><b>Administrador</b></td>${SECCIONES.map(() => `<td><input type="checkbox" checked disabled aria-label="Siempre"></td>`).join("")}<td class="tab-num">${nA}</td><td></td></tr>
+    ${roles.map(([k, r]) => `<tr><td><input type="text" id="rn-${k}" data-rolnom="${esc(k)}" value="${esc(r.nombre)}" aria-label="Nombre del rol" style="min-width:130px"></td>
+      ${SECCIONES.map(([s, l]) => `<td><input type="checkbox" id="perm-${k}-${s}" data-perm="${esc(k)}|${s}" ${(r.secciones || []).includes(s) ? "checked" : ""} aria-label="${esc(r.nombre)}: ${esc(l)}"></td>`).join("")}
+      <td class="tab-num">${usos(k)}</td><td><button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="rol-del" data-id="${esc(k)}" ${usos(k) ? "disabled title=\"Hay personas con este rol\"" : ""} aria-label="Borrar rol">${ICON.x}</button></td></tr>`).join("")}
+    </tbody></table></div></section>
+
+  <section class="panel glass"><h2 class="sec-h">Contraseñas temporales<span class="spacer"></span><button class="btn btn-sm btn-primary" type="button" data-act="t-nuevo">${ICON.plus}Nueva contraseña temporal</button></h2>
+    <p class="muted" style="font-size:13.5px;margin:-6px 0 12px">Para dar acceso por un tiempo (un DJ de refuerzo, una wedding planner…). Solo deja entrar entre la hora de inicio y la de fin. Al llegar la hora de fin, se cierra la sesión de quien esté dentro y se bloquea la entrada.</p>
+    ${T.length ? `<div class="tbl-wrap"><table><thead><tr><th>Persona</th><th>Rol</th><th>Desde</th><th>Hasta</th><th>Estado</th><th>Creada por</th><th></th></tr></thead><tbody>
+    ${T.map(([id, t]) => { const e = estadoTemporal(t); return `<tr><td><b>${esc(t.nombre)}</b><div class="muted" style="font-size:13px">${esc(t.email)}</div></td><td>${esc(rolNombre(t.rol))}</td><td class="tab-num" style="white-space:nowrap">${esc(fh(t.desde))}</td><td class="tab-num" style="white-space:nowrap">${esc(fh(t.hasta))}</td><td>${estadoTempChip(t)}</td><td class="muted">${esc(t.creadoPor || "")}</td>
+      <td style="white-space:nowrap">${e === "Activa" || e === "Programada" ? `<button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="t-revocar" data-id="${id}">Revocar</button>` : `<button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="t-del" data-id="${id}" aria-label="Borrar">${ICON.x}</button>`}</td></tr>`; }).join("")}
+    </tbody></table></div>` : `<p class="muted">No hay contraseñas temporales.</p>`}</section>
+
+  <section class="panel glass"><h2 class="sec-h">Cómo se protege</h2>
+    <div class="stack" style="font-size:14px;gap:8px;max-width:80ch">
+    <p style="margin:0">Las contraseñas, el horario de las contraseñas temporales y los permisos de cada rol los comprueba el servidor (Supabase) con su propio reloj. Aunque alguien cambie la hora de su ordenador o manipule la página, el servidor no le entrega datos que su rol no puede ver, como presupuestos y contratos.</p>
+    <p style="margin:0">Al desactivar una cuenta o revocar una contraseña temporal, esa persona pierde el acceso a los datos en el momento y su sesión se cierra en menos de un minuto.</p></div></section>`;
+}
+
+/* --- Historial de accesos (solo administradores) --- */
+function filaAcceso(a) {
+  const conectado = !a.salida && a.ultimo && Date.now() - new Date(a.ultimo).getTime() < 3 * 60000;
+  const dur = a.salida && a.tipo !== "fallido" ? Math.max(0, Math.round((new Date(a.salida) - new Date(a.entrada)) / 60000)) : null;
+  const durTxt = dur == null ? "" : dur < 60 ? `${dur} min` : `${Math.floor(dur / 60)} h ${dur % 60} min`;
+  const tipo = { usuario: `<span class="chip">Empleado</span>`, temporal: `<span class="chip warn">Temporal</span>`, fallido: `<span class="chip bad">Intento fallido</span>` }[a.tipo] || "";
+  const salida = a.tipo === "fallido" ? `<span class="muted">—</span>` : a.salida ? esc(fh(a.salida)) : conectado ? `<span class="chip ok"><span class="dot"></span>Conectado ahora</span>` : `<span class="muted">Sin registrar · última actividad ${esc(fh(a.ultimo))}</span>`;
+  return `<tr><td><b>${esc(a.nombre || "Desconocido")}</b><div class="muted" style="font-size:13px">${esc(a.email || "")}</div></td><td>${esc(a.rolNombre || rolNombre(a.rol) || "")}</td><td>${tipo}</td>
+    <td class="tab-num" style="white-space:nowrap">${esc(fh(a.entrada))}</td><td class="tab-num" style="white-space:nowrap">${salida}</td><td class="tab-num" style="white-space:nowrap">${durTxt}</td>
+    <td class="muted" style="font-size:13px">${esc(a.motivo || "")}${a.dispositivo ? `<div>${esc(a.dispositivo)}</div>` : ""}</td></tr>`;
+}
+function accesosFiltrados() {
+  const q = (ui.accQ || "").trim().toLowerCase(), f = ui.accF || "todos";
+  return Object.values(sec.accesos).filter(a => {
+    if (f === "conectados" && !(!a.salida && a.tipo !== "fallido" && a.ultimo && Date.now() - new Date(a.ultimo).getTime() < 3 * 60000)) return false;
+    if (["usuario", "temporal", "fallido"].includes(f) && a.tipo !== f) return false;
+    return !q || `${a.nombre} ${a.email} ${a.rolNombre}`.toLowerCase().includes(q);
+  }).sort((a, b) => (b.entrada || "").localeCompare(a.entrada || ""));
+}
+function vistaAccesos() {
+  const L = accesosFiltrados(), f = ui.accF || "todos";
+  const fil = [["todos", "Todo"], ["conectados", "Conectados ahora"], ["usuario", "Empleados"], ["temporal", "Temporales"], ["fallido", "Intentos fallidos"]];
+  return `<section class="panel glass" style="padding:14px 16px"><div class="row">${fil.map(([k, l]) => `<button class="chipbtn" type="button" data-act="acc-f" data-v="${k}" aria-pressed="${f === k}">${l}</button>`).join("")}
+    <span style="flex:1"></span><input type="search" id="acc-buscar" placeholder="Buscar persona…" value="${esc(ui.accQ || "")}" style="max-width:220px" aria-label="Buscar en el historial"><button class="btn btn-sm" type="button" data-act="acc-csv">Descargar (.csv)</button></div></section>
+  <section class="panel glass"><h2 class="sec-h">Historial de accesos<span class="chip line">${L.length}</span></h2>
+    <p class="muted" style="font-size:13.5px;margin:-6px 0 12px">Cada vez que alguien entra se guarda quién es, su rol, el momento de entrada y el de salida. Si alguien cierra la pestaña sin salir, se apunta igualmente; si el navegador no llega a avisar, verás su última actividad. Se muestran los 400 registros más recientes.</p>
+    ${L.length ? `<div class="tbl-wrap"><table><thead><tr><th>Persona</th><th>Rol</th><th>Tipo</th><th>Entrada</th><th>Salida</th><th>Duración</th><th>Detalle</th></tr></thead><tbody>${L.map(filaAcceso).join("")}</tbody></table></div>` : `<p class="muted">No hay registros con este filtro.</p>`}</section>`;
+}
+function accesosCsv() {
+  const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const rows = [["Nombre", "Correo", "Rol", "Tipo", "Entrada", "Salida", "Detalle", "Dispositivo"]].concat(accesosFiltrados().map(a => [a.nombre, a.email, a.rolNombre, a.tipo, a.entrada ? fh(a.entrada) : "", a.salida ? fh(a.salida) : "", a.motivo, a.dispositivo]));
+  return "﻿" + rows.map(r => r.map(q).join(";")).join("\r\n");
+}
+
+/* --- ventanas de usuarios y contraseñas --- */
+const dtLocal = d => { const z = new Date(d.getTime() - d.getTimezoneOffset() * 60000); return z.toISOString().slice(0, 16); };
+function vistaModalSeg() {
+  const err = ui.formErr ? `<p class="err" role="alert">${esc(ui.formErr)}</p>` : "";
+  const cab = t => `<div class="row" style="justify-content:space-between"><h2 id="mt">${t}</h2><button class="btn iconbtn btn-ghost" type="button" data-act="cerrar-modal" aria-label="Cerrar">${ICON.x}</button></div>`;
+  const pw = (n, l, ac = "new-password") => `<label class="f"><span>${l}</span><input type="password" name="${n}" id="m-${n}" data-keep="1" autocomplete="${ac}" required></label>`;
+  const txt = (n, l, t = "text", v = "") => `<label class="f"><span>${l}</span><input type="${t}" name="${n}" id="m-${n}" data-keep="1" value="${esc(v)}" required></label>`;
+  const roles = Object.entries(sec.roles), nA = numAdmins();
+  if (ui.modal === "usuario") return `<div class="modal" data-act="modal-bg"><form class="box glass small" id="form-usuario" role="dialog" aria-modal="true" aria-labelledby="mt" novalidate>${cab("Añadir empleado")}
+    <div class="stack">${txt("nombre", "Nombre (como aparecerá en el CRM)")}${txt("email", "Correo", "email")}
+    <label class="f"><span>Rol</span><select name="rol" id="m-rol" data-keep="1">${roles.map(([k, r]) => `<option value="${esc(k)}">${esc(r.nombre)}</option>`).join("")}<option value="admin" ${nA >= MAX_ADMINS ? "disabled" : ""}>Administrador${nA >= MAX_ADMINS ? " (ya hay " + MAX_ADMINS + ")" : ""}</option></select></label>
+    ${pw("clave", "Contraseña inicial (mínimo 8 caracteres)")}${pw("clave2", "Repite la contraseña")}</div>${err}
+    <div class="foot"><button class="btn" type="button" data-act="cerrar-modal">Cancelar</button><button class="btn btn-primary" type="submit">Crear empleado</button></div></form></div>`;
+  if (ui.modal === "clave") { const u = sec.usuarios[ui.claveDe] || {}; const mia = perfil() && perfil().id === ui.claveDe;
+    return `<div class="modal" data-act="modal-bg"><form class="box glass small" id="form-clave" role="dialog" aria-modal="true" aria-labelledby="mt" novalidate>${cab(mia ? "Cambiar mi contraseña" : "Nueva contraseña para " + esc(u.nombre))}
+    <div class="stack">${mia ? pw("actual", "Contraseña actual", "current-password") : ""}${pw("clave", "Nueva contraseña (mínimo 8 caracteres)")}${pw("clave2", "Repite la contraseña")}</div>${err}
+    <div class="foot"><button class="btn" type="button" data-act="cerrar-modal">Cancelar</button><button class="btn btn-primary" type="submit">Guardar contraseña</button></div></form></div>`; }
+  if (ui.modal === "temporal") { const d0 = new Date(); d0.setSeconds(0, 0); const d1 = new Date(d0.getTime() + 4 * 3600000);
+    return `<div class="modal" data-act="modal-bg"><form class="box glass" style="width:min(560px,100%)" id="form-temporal" role="dialog" aria-modal="true" aria-labelledby="mt" novalidate>${cab("Nueva contraseña temporal")}
+    <div class="fields">${txt("nombre", "Para quién")}${txt("email", "Correo con el que entrará", "email")}
+    <label class="f"><span>Qué podrá ver (rol)</span><select name="rol" id="m-rol" data-keep="1">${roles.map(([k, r]) => `<option value="${esc(k)}">${esc(r.nombre)}</option>`).join("")}</select></label>
+    <label class="f"><span>Contraseña temporal</span><span class="row" style="gap:6px;flex-wrap:nowrap"><input type="text" name="clave" id="m-tclave" data-keep="1" value="${esc(generarClave())}" autocomplete="off" required style="font-family:ui-monospace,monospace"><button class="btn btn-sm" type="button" data-act="gen-clave">Otra</button></span></label>
+    <label class="f"><span>Se habilita</span><input type="datetime-local" name="desde" id="m-desde" data-keep="1" value="${dtLocal(d0)}" required></label>
+    <label class="f"><span>Se deshabilita</span><input type="datetime-local" name="hasta" id="m-hasta" data-keep="1" value="${dtLocal(d1)}" required></label></div>
+    <p class="muted" style="margin:0;font-size:13.5px">Fuera de ese horario no podrá entrar, y si está dentro cuando llegue la hora de fin, se le cerrará la sesión. Los roles con acceso temporal nunca pueden ser de administrador.</p>${err}
+    <div class="foot"><button class="btn" type="button" data-act="cerrar-modal">Cancelar</button><button class="btn btn-primary" type="submit">Crear contraseña temporal</button></div></form></div>`; }
+  if (ui.modal === "temporal-ok") { const t = ui.tempOk || {};
+    return `<div class="modal" data-act="modal-bg"><div class="box glass small" role="dialog" aria-modal="true" aria-labelledby="mt">${cab("Contraseña temporal creada")}
+    <p style="margin:0">Pásale estos datos a <b>${esc(t.nombre)}</b>. Por seguridad la contraseña no se vuelve a mostrar.</p>
+    <div class="temp-card"><div><span class="eyebrow">Correo</span><b>${esc(t.email)}</b></div><div><span class="eyebrow">Contraseña</span><b style="font-family:ui-monospace,monospace">${esc(t.clave)}</b></div><div><span class="eyebrow">Válida</span><b>${esc(fh(t.desde))} → ${esc(fh(t.hasta))}</b></div></div>
+    <div class="foot"><button class="btn" type="button" data-act="copiar" data-txt="${esc(`Acceso al CRM de IZONE EVENTS\nCorreo: ${t.email}\nContraseña: ${t.clave}\nVálida desde ${fh(t.desde)} hasta ${fh(t.hasta)}`)}">Copiar datos</button><button class="btn btn-primary" type="button" data-act="cerrar-modal">Hecho</button></div></div></div>`; }
+  return "";
+}
+
+async function enviarFormSeg(id, f) {
+  const g = k => (f.get(k) || "").toString().trim(), clave = (f.get("clave") || "").toString();
+  const fail = m => { if (id === "form-setup" || id === "form-login") { ui.gateErr = m; ui.gateBusy = false; } else { ui.formErr = m; ui.formBusy = false; } render(); };
+  const emailOk = e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  const emailUsado = e => Object.values(sec.perfiles).some(p => (p.email || "").toLowerCase() === e);
+  if (id === "form-login") {
+    ui.gateBusy = true; ui.gateErr = ""; render();
+    const m = await entrar(g("email"), clave); ui.gateBusy = false; ui.gateErr = m; render();
+    if (m) { const c = document.getElementById("g-clave"); if (c) { c.value = ""; c.focus(); } }
+    return;
+  }
+  if (id === "form-setup") {
+    const email = g("email").toLowerCase();
+    if (!g("nombre")) return fail("Escribe tu nombre.");
+    if (!emailOk(email)) return fail("Escribe un correo válido.");
+    if (clave.length < 8) return fail("La contraseña debe tener al menos 8 caracteres.");
+    if (clave !== f.get("clave2")) return fail("Las contraseñas no coinciden.");
+    ui.gateBusy = true; ui.gateErr = ""; render();
+    try { await funcionAdmin({ accion: "bootstrap", email, password: clave, nombre: g("nombre") }); } catch (e) { return fail("No se pudo crear: " + e.message); }
+    sec.hayUsuarios = true;
+    const m = await entrar(email, clave); ui.gateBusy = false; ui.gateErr = m; render();
+    if (!m) toast("Cuenta de administrador creada");
+    return;
+  }
+  if (ui.formBusy) return;
+  if (id === "form-clave") {
+    const target = ui.claveDe, mia = sec.yo && sec.yo.id === target;
+    if (clave.length < 8) return fail("La contraseña debe tener al menos 8 caracteres.");
+    if (clave !== f.get("clave2")) return fail("Las contraseñas no coinciden.");
+    ui.formBusy = true; ui.formErr = ""; render();
+    try {
+      if (mia) {
+        const { error: e1 } = await sb.auth.signInWithPassword({ email: sec.yo.email, password: (f.get("actual") || "").toString() });
+        if (e1) return fail("La contraseña actual no es correcta.");
+        const { error } = await sb.auth.updateUser({ password: clave }); if (error) throw error;
+      } else await funcionAdmin({ accion: "clave", id: target, password: clave });
+    } catch (e) { return fail("No se pudo guardar: " + errTxt(e)); }
+    ui.formBusy = false; ui.modal = null; ui.formErr = ""; render(); toast("Contraseña cambiada"); return;
+  }
+  if (!esAdmin()) return fail("Solo un administrador puede hacer esto.");
+  if (id === "form-usuario") {
+    const email = g("email").toLowerCase(), rol = g("rol");
+    if (!g("nombre")) return fail("Escribe el nombre.");
+    if (!emailOk(email)) return fail("Escribe un correo válido.");
+    if (emailUsado(email)) return fail("Ya hay alguien con ese correo.");
+    if (rol === "admin" && numAdmins() >= MAX_ADMINS) return fail(`Ya hay ${MAX_ADMINS} administradores, que es el máximo.`);
+    if (clave.length < 8) return fail("La contraseña debe tener al menos 8 caracteres.");
+    if (clave !== f.get("clave2")) return fail("Las contraseñas no coinciden.");
+    ui.formBusy = true; ui.formErr = ""; render();
+    try { await funcionAdmin({ accion: "crear", email, password: clave, nombre: g("nombre"), rol }); await cargarSeguridad(); }
+    catch (e) { return fail("No se pudo crear: " + e.message); }
+    ui.formBusy = false; ui.modal = null; render(); toast(`${g("nombre")} ya puede entrar al CRM`); return;
+  }
+  if (id === "form-temporal") {
+    const email = g("email").toLowerCase(), desde = new Date(g("desde")), hasta = new Date(g("hasta"));
+    if (!g("nombre")) return fail("Escribe para quién es.");
+    if (!emailOk(email)) return fail("Escribe un correo válido.");
+    if (emailUsado(email)) return fail("Ese correo ya tiene una cuenta. Usa otro correo o borra antes el acceso temporal caducado.");
+    if (clave.trim().length < 8) return fail("La contraseña temporal debe tener al menos 8 caracteres.");
+    if (isNaN(desde) || isNaN(hasta)) return fail("Pon la fecha y hora de inicio y de fin.");
+    if (hasta <= desde) return fail("La hora de fin tiene que ser posterior a la de inicio.");
+    if (hasta <= ahora()) return fail("La hora de fin ya ha pasado.");
+    ui.formBusy = true; ui.formErr = ""; render();
+    try { await funcionAdmin({ accion: "crear", email, password: clave.trim(), nombre: g("nombre"), rol: g("rol"), temporal: true, desde: desde.toISOString(), hasta: hasta.toISOString() }); await cargarSeguridad(); }
+    catch (e) { return fail("No se pudo crear: " + e.message); }
+    ui.formBusy = false; ui.tempOk = { nombre: g("nombre"), email, clave: clave.trim(), desde: desde.toISOString(), hasta: hasta.toISOString() }; ui.modal = "temporal-ok"; render(); return;
+  }
+}
+async function actualizarPerfil(id, patch, okMsg) {
+  const { error } = await sb.from("perfiles").update(patch).eq("id", id);
+  if (error) toast(/administrador/.test(error.message) ? error.message : "No se pudo guardar: " + errTxt(error)); else if (okMsg) toast(okMsg);
+  await cargarSeguridad(); render();
+}
+let rolesT = null;
+function guardarRoles(k) {
+  clearTimeout(rolesT);
+  rolesT = setTimeout(async () => {
+    const filas = Object.entries(sec.roles).filter(([id]) => !k || id === k).map(([id, r], i) => ({ id, nombre: r.nombre || "Rol", secciones: r.secciones || [], orden: Object.keys(sec.roles).indexOf(id) + 1 }));
+    const { error } = await sb.from("roles").upsert(filas);
+    if (error) toast("No se pudieron guardar los permisos: " + errTxt(error));
+  }, 500);
+}
+async function accionSeg(act, el) {
+  const id = el.dataset.id;
+  switch (act) {
+    case "salir": cerrarSesion("Cerró sesión"); return true;
+    case "menu": ui.menu = !ui.menu; render(); return true;
+    case "mi-clave": ui.menu = false; ui.claveDe = sec.yo.id; ui.formErr = ""; ui.formBusy = false; ui.modal = "clave"; render(); setTimeout(() => { const n = $("#m-actual"); n && n.focus(); }, 30); return true;
+    case "acc-f": ui.accF = el.dataset.v; render(); return true;
+    case "acc-csv": descargar(`izone-accesos-${hoy()}.csv`, "text/csv", accesosCsv()); return true;
+  }
+  if (!["u-nuevo", "u-clave", "u-del", "rol-nuevo", "rol-del", "t-nuevo", "t-revocar", "t-del", "gen-clave"].includes(act)) return false;
+  if (!esAdmin()) { toast("Solo los administradores pueden hacer esto"); return true; }
+  switch (act) {
+    case "u-nuevo": ui.formErr = ""; ui.formBusy = false; ui.modal = "usuario"; render(); setTimeout(() => { const n = $("#m-nombre"); n && n.focus(); }, 30); break;
+    case "u-clave": ui.claveDe = id; ui.formErr = ""; ui.formBusy = false; ui.modal = "clave"; render(); break;
+    case "u-del": { const u = sec.usuarios[id]; if (!u) break; confirmar(`¿Borrar a ${u.nombre}?`, "No podrá volver a entrar. Su historial de accesos se conserva. Si solo quieres bloquearle un tiempo, desactiva su cuenta.", "Borrar empleado", async () => { try { await funcionAdmin({ accion: "borrar", id }); await cargarSeguridad(); toast("Empleado borrado"); } catch (e) { toast("No se pudo borrar: " + e.message); } }); break; }
+    case "rol-nuevo": { const k = "r" + Date.now().toString(36); sec.roles[k] = { nombre: "Nuevo rol", secciones: ["bodas", "calendario"] }; guardarRoles(k); render(); setTimeout(() => { const n = document.getElementById("rn-" + k); n && (n.focus(), n.select()); }, 30); break; }
+    case "rol-del": { const r = sec.roles[id]; if (!r) break; confirmar(`¿Borrar el rol ${r.nombre}?`, "Nadie lo usa ahora mismo.", "Borrar rol", async () => { const { error } = await sb.from("roles").delete().eq("id", id); if (error) toast("No se pudo borrar: " + errTxt(error)); else delete sec.roles[id]; }); break; }
+    case "t-nuevo": if (!Object.keys(sec.roles).length) { toast("Crea antes un rol que no sea de administrador"); break; } ui.formErr = ""; ui.formBusy = false; ui.tempClave = generarClave(); ui.tempD0 = ahora(); ui.tempD0.setSeconds(0, 0); ui.tempD1 = new Date(ui.tempD0.getTime() + 4 * 3600000); ui.modal = "temporal"; render(); setTimeout(() => { const n = $("#m-nombre"); n && n.focus(); }, 30); break;
+    case "gen-clave": { ui.tempClave = generarClave(); const n = $("#m-tclave"); if (n) n.value = ui.tempClave; break; }
+    case "t-revocar": { const t = sec.temporales[id]; if (!t) break; confirmar(`¿Revocar el acceso de ${t.nombre}?`, "Dejará de funcionar ya mismo y, si está dentro, se le cerrará la sesión.", "Revocar", () => actualizarPerfil(id, { revocado: true, revocado_por: sec.yo.nombre, revocado_el: new Date().toISOString() }, "Acceso revocado")); break; }
+    case "t-del": funcionAdmin({ accion: "borrar", id }).then(cargarSeguridad).then(render).catch(e => toast("No se pudo borrar: " + e.message)); break;
+  }
+  return true;
+}
+function inputSeg(el) {
+  const D = el.dataset;
+  if (D.urol) {
+    if (!esAdmin()) return true;
+    if (el.value === "admin" && numAdmins() >= MAX_ADMINS) { toast(`Ya hay ${MAX_ADMINS} administradores`); render(); return true; }
+    actualizarPerfil(D.urol, { rol: el.value }); return true;
+  }
+  if (D.uact) { if (!esAdmin()) return true; actualizarPerfil(D.uact, { activo: el.checked }, el.checked ? "Cuenta activada" : "Cuenta desactivada"); return true; }
+  if (D.perm) {
+    if (!esAdmin()) return true;
+    const [k, s] = D.perm.split("|"), r = sec.roles[k]; if (!r) return true;
+    r.secciones = (r.secciones || []).filter(x => x !== s); if (el.checked) r.secciones.push(s);
+    guardarRoles(k); render(); return true;
+  }
+  if (D.rolnom) { if (!esAdmin()) return true; const r = sec.roles[D.rolnom]; if (r) { r.nombre = el.value; guardarRoles(D.rolnom); } return true; }
+  if (el.id === "acc-buscar") { ui.accQ = el.value; render(); return true; }
+  return false;
+}
+
+/* ============ lector inteligente de PDF para la playlist ============ */
+const PDFJS = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+const MOMENTOS_COMUNES = ["Entrada del novio", "Entrada de la novia", "Ceremonia", "Firma", "Salida de los novios", "Cóctel", "Entrada al banquete", "Banquete", "Tarta", "Discursos", "Ramo", "Primer baile", "Apertura de la fiesta", "Fiesta", "Recena", "Última canción"];
+let pdfjsP = null;
+function cargarScript(src) { return new Promise((ok, ko) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => ko(new Error("No se pudo cargar el lector de PDF. Comprueba la conexión.")); document.head.appendChild(s); }); }
+function cargarPdfjs() {
+  if (!pdfjsP) pdfjsP = (async () => {
+    await cargarScript(PDFJS + "pdf.min.js");
+    await cargarScript(PDFJS + "pdf.worker.min.js"); /* el lector trabaja en la propia página: más compatible dentro del visor */
+    const lib = window.pdfjsLib; if (!lib) throw new Error("No se pudo iniciar el lector de PDF.");
+    lib.GlobalWorkerOptions.workerSrc = PDFJS + "pdf.worker.min.js";
+    return lib;
+  })().catch(e => { pdfjsP = null; throw e; });
+  return pdfjsP;
+}
+async function leerPdf(file) {
+  const lib = await cargarPdfjs();
+  const doc = await lib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  const lineas = [];
+  for (let p = 1; p <= doc.numPages; p++) {
+    const tc = await (await doc.getPage(p)).getTextContent(), filas = [];
+    for (const it of tc.items) {
+      if (!it.str || !it.str.trim()) continue;
+      const y = it.transform[5], h = Math.abs(it.transform[3]) || 10;
+      let f = filas.find(r => Math.abs(r.y - y) <= Math.max(2, h * 0.4));
+      if (!f) { f = { y, items: [] }; filas.push(f); }
+      f.items.push({ x: it.transform[4], w: it.width || 0, s: it.str });
+    }
+    filas.sort((a, b) => b.y - a.y);
+    for (const f of filas) {
+      f.items.sort((a, b) => a.x - b.x);
+      let t = "", fin = null;
+      for (const i of f.items) { if (fin != null && i.x - fin > 1.5 && !/\s$/.test(t) && !/^\s/.test(i.s)) t += " "; t += i.s; fin = i.x + i.w; }
+      lineas.push(t.replace(/\s+/g, " ").trim());
+    }
+    lineas.push("");
+  }
+  return { doc, texto: lineas.join("\n").replace(/\n{3,}/g, "\n\n").trim() };
+}
+async function paginasComoImagen(doc, max = 6) {
+  const out = [];
+  for (let p = 1; p <= Math.min(doc.numPages, max); p++) {
+    const page = await doc.getPage(p), vp = page.getViewport({ scale: 2 });
+    const c = document.createElement("canvas"); c.width = vp.width; c.height = vp.height;
+    await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+    out.push(await new Promise(r => c.toBlob(r, "image/jpeg", 0.85)));
+  }
+  return out.filter(Boolean);
+}
+
+/* Lectura por reglas (sin Claude): encabezados = momentos, líneas debajo = canciones */
+const RX_MOMENTO = /\b(ceremonia|entrada|salida|c[oó]ctel|aperitivo|banquete|comida|cena|primer baile|baile|vals|tarta|ramo|liga|discurso|brindis|fiesta|barra libre|recena|happy moment|firma|anillos|lecturas?|procesi[oó]n|recesi[oó]n|momento|cierre|[uú]ltima canci[oó]n|despedida|photocall|v[ií]deo|sorpresa|regalos?|apertura|postre|ofrenda|arras)\b/i;
+function partirCancion(s) {
+  s = s.replace(/^[\s•●▪◦·\-–—*>✓✔☐□]+/, "").replace(/^\d{1,3}\s*[.)\-–]\s*/, "").replace(/^["“«']|["”»']$/g, "").trim();
+  const m = s.match(/^(.+?)\s+[-–—·|]\s+(.+)$/) || s.match(/^(.+?)\s*[,(]\s*(?:de\s+)?([^,()]+)\)?$/);
+  if (m) return { titulo: m[1].replace(/["“”«»]/g, "").trim(), artista: m[2].replace(/["“”«»]/g, "").trim() };
+  return { titulo: s.replace(/["“”«»]/g, "").trim(), artista: "" };
+}
+function esEncabezado(l) {
+  if (/:\s*$/.test(l) && l.length < 70) return true;
+  if (/\s[-–—·|]\s/.test(l) || l.length > 60 || /^\d/.test(l)) return false;
+  const letras = l.replace(/[^a-záéíóúñü]/gi, "");
+  if (letras.length >= 3 && letras === letras.toUpperCase() && l.length <= 45) return true;
+  return RX_MOMENTO.test(l) && l.split(/\s+/).length <= 6;
+}
+function leerPorReglas(texto) {
+  const grupos = [], porNombre = {};
+  const grupo = n => { const k = n.toLowerCase(); if (!porNombre[k]) { porNombre[k] = { momento: n, canciones: [] }; grupos.push(porNombre[k]); } return porNombre[k]; };
+  let actual = null;
+  for (const raw of texto.split("\n")) {
+    const l = raw.trim(); if (!l || l.length < 2) continue;
+    const enLinea = l.match(/^([^:]{3,40}):\s*(.+)$/);
+    if (enLinea && RX_MOMENTO.test(enLinea[1]) && !/^https?$/i.test(enLinea[1])) { const c = partirCancion(enLinea[2]); if (c.titulo) grupo(limpiarMomento(enLinea[1])).canciones.push(c); continue; }
+    if (esEncabezado(l)) { actual = grupo(limpiarMomento(l)); continue; }
+    if (!actual && !/\s[-–—·]\s/.test(l)) continue; /* título del documento, saludos… */
+    const c = partirCancion(l); if (!c.titulo || c.titulo.length > 90) continue;
+    (actual || grupo("Sin momento")).canciones.push(c);
+  }
+  return grupos.filter(g => g.canciones.length);
+}
+function limpiarMomento(s) { s = s.replace(/[:.\-–—]+\s*$/, "").replace(/^[\s•\-–—*\d.)]+/, "").trim(); s = s.toLowerCase(); return s.charAt(0).toUpperCase() + s.slice(1); }
+
+let tessP = null;
+function cargarTesseract() { if (!tessP) tessP = cargarScript("https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js").then(() => { if (!window.Tesseract) throw new Error("No se pudo iniciar el OCR."); return window.Tesseract; }).catch(e => { tessP = null; throw e; }); return tessP; }
+async function ocrPaginas(doc, P) {
+  const T = await cargarTesseract(), imgs = await paginasComoImagen(doc, 8);
+  const w = await T.createWorker("spa"); let txt = "";
+  try { for (let i = 0; i < imgs.length; i++) { if (ui.pdf !== P) break; P.msg = `Reconociendo el texto de la página ${i + 1} de ${imgs.length}… (puede tardar unos segundos)`; render(); const r = await w.recognize(imgs[i]); txt += r.data.text + "\n\n"; } }
+  finally { await w.terminate(); }
+  return txt;
+}
+async function procesarPdf(file, bodaId) {
+  if (!file) return;
+  if (!/pdf$/i.test(file.type) && !/\.pdf$/i.test(file.name)) { toast("Elige un archivo PDF"); return; }
+  if (ui.pdf && ui.pdf.ctl) ui.pdf.ctl.abort();
+  const P = ui.pdf = { bodaId, nombre: file.name, estado: "leyendo", msg: "Leyendo el PDF…", grupos: [], metodo: "", ctl: new AbortController() };
+  render();
+  try {
+    const { doc, texto } = await leerPdf(file);
+    if (ui.pdf !== P) return;
+    const escaneado = texto.replace(/\s/g, "").length < 30;
+    let fuente = texto;
+    if (escaneado) {
+      P.estado = "pensando"; P.msg = "El PDF es una imagen escaneada. Preparando el reconocimiento de texto…"; render();
+      try { fuente = await ocrPaginas(doc, P); } catch (e) { if (ui.pdf !== P) return; P.estado = "error"; P.msg = "No se pudo leer el PDF escaneado (" + (e && e.message || "error") + "). Pide a los novios el PDF exportado desde Word o Google Docs."; render(); return; }
+      if (ui.pdf !== P) return;
+    }
+    const grupos = leerPorReglas(fuente);
+    P.metodo = escaneado ? "ocr" : "reglas";
+    P.nota = escaneado ? "El texto se ha reconocido de una imagen escaneada: revisa los títulos antes de añadirlos." : "Revisa la clasificación antes de añadirla; puedes cambiar el nombre de cada momento y desmarcar canciones.";
+    if (!grupos.length) { P.estado = "error"; P.msg = "No he encontrado canciones en este PDF."; render(); return; }
+    const b = store.bodas[bodaId], ya = new Set((b ? b.peticiones : []).map(p => (p.titulo || "").toLowerCase().replace(/\s+/g, " ").trim()));
+    for (const g of grupos) for (const c of g.canciones) { c.sel = true; c.dup = ya.has(textoCancion(c).toLowerCase()); if (c.dup) c.sel = false; }
+    P.grupos = grupos; P.estado = "listo"; P.msg = ""; render();
+  } catch (e) {
+    if (ui.pdf !== P) return;
+    P.estado = "error"; P.msg = (e && e.name === "PasswordException") ? "El PDF está protegido con contraseña. Pide a los novios una versión sin contraseña." : (e && e.message && /cargar|iniciar/.test(e.message) ? e.message : "No se pudo leer este PDF. ¿Está dañado?"); render();
+  }
+}
+const textoCancion = c => c.artista ? `${c.titulo} · ${c.artista}` : c.titulo;
+function vistaPdf(b) {
+  const P = ui.pdf && ui.pdf.bodaId === b.id ? ui.pdf : null;
+  const nSel = P ? P.grupos.reduce((s, g) => s + g.canciones.filter(c => c.sel).length, 0) : 0;
+  const nTot = P ? P.grupos.reduce((s, g) => s + g.canciones.length, 0) : 0;
+  let cuerpo = "";
+  if (!P) cuerpo = `<div class="pdfdrop" data-act="pdf-elegir" role="button" tabindex="0" id="pdfdrop"><div class="big-ico">PDF</div><b>Suelta aquí el PDF de los novios o pulsa para elegirlo</b><span class="muted" style="font-size:13.5px">El CRM lo lee, detecta los momentos que indica el documento (ceremonia, cóctel, primer baile…) y coloca cada canción en el suyo.</span></div>`;
+  else if (P.estado === "leyendo" || P.estado === "pensando") cuerpo = `<div class="pdfstate"><span class="spin" aria-hidden="true"></span><div class="grow"><b>${esc(P.nombre)}</b><div class="muted" style="font-size:13.5px">${esc(P.msg)}</div></div><button class="btn btn-sm" type="button" data-act="pdf-cerrar">Cancelar</button></div>`;
+  else if (P.estado === "error") cuerpo = `<div class="pdfstate"><div class="grow"><b>${esc(P.nombre)}</b><p class="err" style="margin:4px 0 0">${esc(P.msg)}</p></div><button class="btn btn-sm" type="button" data-act="pdf-elegir">Probar con otro</button><button class="btn btn-sm btn-ghost" type="button" data-act="pdf-cerrar">Cerrar</button></div>`;
+  else cuerpo = `<div class="row" style="justify-content:space-between;margin-bottom:10px"><div><b>${esc(P.nombre)}</b><div class="muted" style="font-size:13.5px">${nTot} canciones en ${P.grupos.length} momentos · ${P.metodo === "ocr" ? "leído con OCR y clasificado automáticamente" : "clasificado automáticamente"}</div></div><button class="btn btn-sm btn-ghost" type="button" data-act="pdf-elegir">Otro PDF</button></div>
+    ${P.nota ? `<p class="muted" style="font-size:13px;margin:0 0 10px">${esc(P.nota)}</p>` : ""}
+    <div class="stack" style="gap:14px">${P.grupos.map((g, gi) => `<div class="momento"><label class="f"><span>Momento</span><input type="text" id="pm-${gi}" data-pm="${gi}" value="${esc(g.momento)}" list="momentos-dl"></label>
+      <ul class="songs">${g.canciones.map((c, ci) => `<li><label class="check"><input type="checkbox" id="ps-${gi}-${ci}" data-ps="${gi}.${ci}" ${c.sel ? "checked" : ""}><span><b>${esc(c.titulo)}</b>${c.artista ? ` <span class="muted">· ${esc(c.artista)}</span>` : ""}${c.nota ? `<span class="muted" style="display:block;font-size:12.5px">${esc(c.nota)}</span>` : ""}${c.dup ? ` <span class="chip line">ya estaba</span>` : ""}</span></label></li>`).join("")}</ul></div>`).join("")}</div>
+    <div class="row" style="margin-top:14px"><button class="btn btn-primary" type="button" data-act="pdf-anadir" ${nSel ? "" : "disabled"}>Añadir ${nSel} ${nSel === 1 ? "canción" : "canciones"} a la boda</button><button class="btn btn-ghost" type="button" data-act="pdf-cerrar">Descartar</button></div>`;
+  return `<div class="panel glass"><h2 class="sec-h">Lector inteligente de PDF<span class="chip acc">Nuevo</span></h2>${cuerpo}</div>`;
+}
+function accionPdf(act, el, b) {
+  switch (act) {
+    case "pdf-elegir": { const f = $("#pdffile"); f.dataset.boda = b.id; f.click(); return true; }
+    case "pdf-cerrar": if (ui.pdf && ui.pdf.ctl) ui.pdf.ctl.abort(); ui.pdf = null; render(); return true;
+    case "pdf-anadir": {
+      const P = ui.pdf; if (!P || !b) return true; let n = 0;
+      for (const g of P.grupos) for (const c of g.canciones) if (c.sel) { b.peticiones.push({ titulo: textoCancion(c), por: "PDF: " + P.nombre, ok: false, momento: g.momento, nota: c.nota || "" }); n++; }
+      guardarBoda(b); ui.pdf = null; ui.momF = "todos"; render(); toast(`${n} canciones añadidas por momentos`); return true;
+    }
+    case "mom-f": ui.momF = el.dataset.v; render(); return true;
+  }
+  return false;
+}
+function inputPdf(el) {
+  const D = el.dataset, P = ui.pdf;
+  if (D.pm != null && P) { P.grupos[+D.pm].momento = el.value; return true; }
+  if (D.ps != null && P) { const [gi, ci] = D.ps.split(".").map(Number); P.grupos[gi].canciones[ci].sel = el.checked; render(); return true; }
+  return false;
+}
+function engancharPdf() {
+  $("#pdffile").addEventListener("change", e => { const f = e.target.files[0], id = e.target.dataset.boda || (bodaActual() || {}).id; e.target.value = ""; if (f) procesarPdf(f, id); });
+  document.addEventListener("dragover", e => { const z = e.target.closest && e.target.closest("#pdfdrop"); if (z) { e.preventDefault(); z.classList.add("over"); } });
+  document.addEventListener("dragleave", e => { const z = e.target.closest && e.target.closest("#pdfdrop"); if (z) z.classList.remove("over"); });
+  document.addEventListener("drop", e => { const z = e.target.closest && e.target.closest("#pdfdrop"); if (!z) return; e.preventDefault(); z.classList.remove("over"); const f = e.dataTransfer.files[0], b = bodaActual(); if (f && b) procesarPdf(f, b.id); });
+}
+
+/* ============ estado de interfaz ============ */
+const ui = { ruta: "panel", bodaId: null, tab: "resumen", filtro: "proximas", q: "", anio: "todos", draft: null, draftErr: "", modal: null, asistente: null, incNueva: { tipo: "Mensaje de familiar", autor: "", texto: "" }, segNota: "", cal: hoy().slice(0, 7), calSeg: true };
+const bodaActual = () => store.bodas[ui.bodaId];
+
+function leerRuta(h) {
+  if (h == null) { try { h = (location.hash || "#panel").slice(1); } catch { h = "panel"; } }
+  if (h.startsWith("cal-")) { ui.cal = h.slice(4); h = "calendario"; }
+  if (h.startsWith("boda-")) { const id = h.slice(5); if (ui.bodaId !== id) ui.tab = ui.asistente === id ? "presupuesto" : "resumen"; ui.ruta = "boda"; ui.bodaId = id; }
+  else if (["panel", "bodas", "calendario", "estadisticas", "ajustes", "avisos", "equipo", "accesos"].includes(h)) { ui.ruta = h; }
+  else ui.ruta = "panel";
+}
+let rutaActual = "";
+/* Navega dentro del CRM sin depender de que el visor siga los enlaces con # */
+function ir(h) {
+  rutaActual = h; leerRuta(h); render(); window.scrollTo({ top: 0 });
+  try { if (location.hash.slice(1) !== h) history.replaceState(null, "", "#" + h); } catch { }
+}
+window.addEventListener("hashchange", () => { let h = "panel"; try { h = location.hash.slice(1) || "panel"; } catch { } if (h === rutaActual) return; rutaActual = h; leerRuta(h); render(); window.scrollTo({ top: 0 }); });
+
+/* ============ render ============ */
+/* Actualiza el DOM sin sustituir los nodos que no cambian: así no se pierde el foco ni lo que se está escribiendo. */
+function morphChildren(a, b) {
+  const an = [...a.childNodes], bn = [...b.childNodes];
+  for (let i = 0; i < bn.length; i++) {
+    const x = an[i], y = bn[i];
+    if (!x) { a.appendChild(y); continue; }
+    if (x.nodeType !== y.nodeType || x.nodeName !== y.nodeName || (x.nodeType === 1 && x.id !== y.id)) { a.replaceChild(y, x); continue; }
+    if (x.nodeType !== 1) { if (x.nodeValue !== y.nodeValue) x.nodeValue = y.nodeValue; continue; }
+    morphEl(x, y);
+  }
+  for (let i = an.length - 1; i >= bn.length; i--) a.removeChild(an[i]);
+}
+function morphEl(x, y) {
+  const focused = x === document.activeElement;
+  for (const at of [...x.attributes]) if (!y.hasAttribute(at.name)) x.removeAttribute(at.name);
+  for (const at of [...y.attributes]) if (x.getAttribute(at.name) !== at.value) x.setAttribute(at.name, at.value);
+  const tag = x.nodeName;
+  if (tag === "INPUT") { if (x.dataset.keep) return; if (x.type === "checkbox") x.checked = y.hasAttribute("checked"); else if (!focused) { const v = y.getAttribute("value") ?? ""; if (x.value !== v) x.value = v; } return; }
+  if (tag === "TEXTAREA") { if (!focused && x.value !== y.value) x.value = y.value; return; }
+  if (tag === "SELECT") { morphChildren(x, y); const k = [...y.options].findIndex(o => o.hasAttribute("selected")); x.selectedIndex = k >= 0 ? k : 0; return; }
+  morphChildren(x, y);
+}
+function morph(el, html) { const t = document.createElement("template"); t.innerHTML = html; morphChildren(el, t.content); }
+function render() {
+  const ae = document.activeElement, id = ae && ae.id; let s1 = null, s2 = null;
+  try { s1 = ae.selectionStart; s2 = ae.selectionEnd; } catch { }
+  if (!(secListo() && perfil())) {
+    document.body.classList.add("locked"); morph($("#gate"), vistaGate()); morph($("#modal"), "");
+    document.title = "CRM Bodas IZONE";
+    if (id) { const n = document.getElementById(id); if (n && n !== document.activeElement) n.focus({ preventScroll: true }); }
+    else { const n = $("#gate input"); if (n) n.focus({ preventScroll: true }); }
+    return;
+  }
+  if (document.body.classList.contains("locked")) { document.body.classList.remove("locked"); $("#gate").innerHTML = ""; }
+  if (!puede(permisoDeRuta(ui.ruta))) { const r = primeraRuta(); if (r) { ui.ruta = r; rutaActual = r; try { history.replaceState(null, "", "#" + r); } catch { } } }
+  renderNav();
+  morph($("#view"), vista());
+  morph($("#modal"), ui.modal ? vistaModal() : "");
+  if (id) { const n = document.getElementById(id); if (n && n !== document.activeElement) { n.focus({ preventScroll: true }); try { if (s1 != null) n.setSelectionRange(s1, s2); } catch { } } }
+}
+function renderNav() {
+  const av = store.cargado ? avisos() : [];
+  const urg = av.filter(a => a.k === "seg").length;
+  const items = [["panel", "Panel", ICON.panel], ["bodas", "Bodas", ICON.bodas], ["calendario", "Calendario", ICON.cal], ["estadisticas", "Estadísticas", ICON.stats], ["ajustes", "Ajustes", ICON.ajustes], ["equipo", "Equipo", ICON.equipo], ["accesos", "Accesos", ICON.accesos]].filter(([h]) => puede(h));
+  rutaActual = rutaActual || (ui.ruta === "boda" ? "boda-" + ui.bodaId : ui.ruta);
+  const cur = ui.ruta === "boda" ? "bodas" : ui.ruta === "avisos" ? "panel" : ui.ruta;
+  $("#nav").innerHTML = items.map(([h, l, i]) => `<a href="#${h}" ${cur === h ? 'aria-current="page"' : ""}>${i}<span>${l}</span>${h === "panel" && urg ? `<span class="count">${urg}</span>` : ""}</a>`).join("");
+  const m = items.slice(0, 4).map(([h, l, i]) => `<a href="#${h}" ${cur === h ? 'aria-current="page"' : ""}>${i}<span>${{ "Estadísticas": "Datos", "Calendario": "Agenda" }[l] || l}</span></a>`);
+  if (puede("bodas")) m.splice(Math.min(2, m.length), 0, `<button class="btn btn-primary add" data-act="nueva" type="button" aria-label="Añadir boda">${ICON.plus}</button>`);
+  $("#mobnav").innerHTML = m.join("");
+  $("#bell").innerHTML = ICON.bell + (av.length ? `<span class="badge">${av.length}</span>` : "");
+  $("#bell").setAttribute("aria-label", `Avisos (${av.length})`);
+  $("#bell").hidden = !puede("panel"); $("#addtop").hidden = !puede("bodas");
+  const yo = perfil();
+  $("#userbtn").innerHTML = `<span class="avatar">${esc(iniciales(yo.nombre))}</span><span class="un">${esc(yo.nombre)}</span>${ICON.chev}`;
+  $("#userbtn").setAttribute("aria-expanded", String(!!ui.menu)); $("#userbtn").setAttribute("aria-label", `${yo.nombre}, ${rolNombre(yo.rol)}: abrir menú`);
+  $("#umenu").hidden = !ui.menu; $("#umenu").innerHTML = ui.menu ? vistaMenu() : "";
+  const titles = { calendario: "Calendario", panel: "Panel", bodas: "Bodas", estadisticas: "Estadísticas", ajustes: "Ajustes", avisos: "Avisos", equipo: "Equipo y permisos", accesos: "Historial de accesos" };
+  const b = bodaActual();
+  $("#title").textContent = ui.ruta === "boda" ? (b ? nombres(b) : "Boda") : titles[ui.ruta];
+  document.title = "CRM Bodas IZONE";
+  $("#sidefoot").innerHTML = store.mode === "db" ? `<span><span class="dot"></span>Guardado en el servidor del CRM</span>` : store.mode === "local" ? `<span><span class="dot local"></span>Guardado solo en este navegador</span><span>Exporta una copia desde Ajustes.</span>` : `<span>Cargando…</span>`;
+}
+
+function vista() {
+  if (!store.cargado) return `<section class="panel glass empty"><div class="big">···</div><p class="muted">${esc(store.error || "Cargando las bodas…")}</p></section>`;
+  const err = store.error ? `<section class="banner glass"><div class="grow">${esc(store.error)}</div></section>` : "";
+  if (!puede(permisoDeRuta(ui.ruta))) return `<section class="panel glass empty"><h2>Sin acceso</h2><p class="muted" style="max-width:46ch">Tu rol no tiene permiso para ver ninguna sección${primeraRuta() ? " de este tipo" : ""}. Pide a un administrador que te dé acceso.</p></section>`;
+  switch (ui.ruta) {
+    case "equipo": return err + vistaEquipo();
+    case "accesos": return err + vistaAccesos();
+    case "bodas": return err + vistaBodas();
+    case "boda": return err + vistaBoda();
+    case "estadisticas": return err + vistaStats();
+    case "calendario": return err + vistaCalendario();
+    case "ajustes": return err + vistaAjustes();
+    case "avisos": return err + vistaAvisos(true);
+    default: return err + vistaPanel();
+  }
+}
+
+/* ---------- Panel ---------- */
+function vistaPanel() {
+  const L = lista();
+  if (!L.length) return `<section class="panel glass empty"><div class="big">0</div><h2>Todavía no hay bodas</h2><p class="muted" style="max-width:46ch">Pulsa «Añadir boda» para registrar la primera. Al guardarla se preparan el presupuesto y el contrato con los datos de los novios.</p><div class="row" style="justify-content:center"><button class="btn btn-primary" data-act="nueva" type="button">${ICON.plus}Añadir boda</button><button class="btn" data-act="ejemplos" type="button">Cargar bodas de ejemplo</button></div></section>`;
+  const prox = L.filter(pendienteDeBoda);
+  const prox90 = prox.filter(b => b.fecha && dias(b.fecha) <= 90).length;
+  const av = avisos(); const segs = av.filter(a => a.k === "seg" && a.d <= 0).length;
+  const inc = L.reduce((s, b) => s + b.incidencias.filter(i => i.estado !== "Resuelta").length, 0);
+  const anio = String(new Date().getFullYear() + (new Date().getMonth() >= 9 ? 1 : 0));
+  const fact = L.filter(b => activa(b) && (b.fecha || "").startsWith(anio)).reduce((s, b) => s + calc(b).total, 0);
+  const ej = L.filter(b => b.ejemplo).length;
+  return `
+  ${ej ? `<section class="banner glass"><span class="chip warn">Ejemplo</span><div class="grow">Hay ${ej} bodas de ejemplo para que veas cómo funciona el CRM. Bórralas cuando empieces con las tuyas.</div><button class="btn btn-sm" data-act="borrar-ejemplos" type="button">Borrar ejemplos</button></section>` : ""}
+  <section class="grid g4">
+    <div class="kpi glass"><span class="v tab-num">${prox90}</span><span class="l">Bodas en los próximos 90 días</span></div>
+    <div class="kpi glass ${segs ? "alert" : ""}"><span class="v tab-num">${segs}</span><span class="l">Seguimientos para hoy o atrasados</span></div>
+    <div class="kpi glass ${inc ? "alert" : ""}"><span class="v tab-num">${inc}</span><span class="l">Incidencias abiertas</span></div>
+    ${puede("economico") ? `<div class="kpi glass"><span class="v small tab-num">${eur(fact)}</span><span class="l">Presupuestado para ${anio}</span></div>` : ""}
+  </section>
+  <section class="grid g2" style="align-items:start">
+    ${vistaAvisos(false)}
+    <div class="panel glass"><h2 class="sec-h">Próximas bodas<span class="spacer"></span><a class="btn btn-sm btn-ghost" href="#bodas">Ver todas</a></h2>
+      <div class="list">${prox.slice(0, 7).map(filaBoda).join("") || `<p class="muted">No hay bodas próximas.</p>`}</div>
+    </div>
+  </section>`;
+}
+function datebox(s) { if (!s) return `<div class="datebox"><div class="d">?</div><div class="m">fecha</div></div>`; const d = parse(s); return `<div class="datebox"><div class="d">${d.getDate()}</div><div class="m">${d.toLocaleDateString("es-ES", { month: "short" }).replace(".", "")}</div><div class="y">${d.getFullYear()}</div></div>`; }
+function filaBoda(b) {
+  const d = b.fecha ? dias(b.fecha) : null;
+  return `<a class="item" href="#boda-${b.id}" style="text-decoration:none;color:inherit">${datebox(b.fecha)}<div class="grow"><div class="t">${esc(nombres(b))}</div><div class="s">${esc(b.lugar.nombre || "Lugar sin definir")} · ${esc(packDe(b).nombre)}${b.packProvisional ? " (provisional)" : ""}</div></div>${d != null && d >= 0 ? `<span class="chip line tab-num">${d === 0 ? "hoy" : d + " d"}</span>` : ""}</a>`;
+}
+function vistaAvisos(full) {
+  const av = avisos();
+  const items = av.map(a => `<div class="item"><span class="sev ${a.sev}"></span><div class="grow"><div class="t">${esc(nombres(a.b))}</div><div class="s">${esc(a.t)}${a.k === "seg" ? " · " + fecha(a.fecha) : a.b.fecha ? " · boda el " + fecha(a.b.fecha) : ""}</div></div>
+    ${a.k === "seg" ? `<button class="btn btn-sm" data-act="seg-hecho" data-id="${a.b.id}" type="button">Hecho</button>` : ""}
+    <a class="btn btn-sm btn-ghost" href="#boda-${a.b.id}" data-tab="${{ seg: "seguimiento", inc: "incidencias", pago: "presupuesto", pack: "presupuesto", boda: "resumen" }[a.k]}">Abrir</a></div>`);
+  const shown = full ? items : items.slice(0, 8);
+  return `<div class="panel glass"><h2 class="sec-h">Avisos y seguimientos<span class="spacer"></span>${!full && items.length > 8 ? `<a class="btn btn-sm btn-ghost" href="#avisos">Ver los ${items.length}</a>` : ""}</h2>
+    <p class="muted" style="margin:-6px 0 10px;font-size:13.5px">Cada boda tiene un seguimiento cada ${A.frecuencia == 1 ? "mes" : A.frecuencia + " meses"}. Al marcarlo como hecho se programa el siguiente.${store.mode === "local" && "Notification" in window && window.top === window ? " Puedes activar avisos del navegador en Ajustes." : ""}</p>
+    <div class="list">${shown.join("") || `<p class="muted">Todo al día. No hay seguimientos pendientes esta semana.</p>`}</div></div>`;
+}
+
+/* ---------- Lista de bodas ---------- */
+function vistaBodas() {
+  const filtros = [["proximas", "Próximas"], ["todas", "Todas"], ["provisional", "Pack provisional"], ["celebradas", "Celebradas"], ["canceladas", "Canceladas"]];
+  const q = ui.q.trim().toLowerCase();
+  let L = lista().filter(b => ({ proximas: pendienteDeBoda(b), todas: true, provisional: b.packProvisional && activa(b), celebradas: b.estado === "Celebrada" || (activa(b) && b.fecha && dias(b.fecha) < 0), canceladas: b.estado === "Cancelada" }[ui.filtro]));
+  if (q) L = L.filter(b => [nombres(b), b.lugar.nombre, b.lugar.localidad, b.captacion.detalle, packDe(b).nombre, ...b.djs.map(d => d.nombre)].join(" ").toLowerCase().includes(q));
+  if (ui.filtro === "celebradas") L.reverse();
+  return `<section class="panel glass" style="padding:14px 16px"><div class="row">
+      ${filtros.map(([k, l]) => `<button class="chipbtn" type="button" data-act="filtro" data-v="${k}" aria-pressed="${ui.filtro === k}">${l}</button>`).join("")}
+      <span style="flex:1"></span><input type="search" id="buscar" placeholder="Buscar novios, lugar, DJ, planner…" value="${esc(ui.q)}" style="max-width:300px" aria-label="Buscar bodas">
+    </div></section>
+    ${L.length ? `<section class="cards">${L.map(tarjeta).join("")}</section>` : `<section class="panel glass empty"><p class="muted">No hay bodas en esta vista.</p><button class="btn btn-primary" data-act="nueva" type="button">${ICON.plus}Añadir boda</button></section>`}`;
+}
+function tarjeta(b) {
+  const c = calc(b), d = b.fecha ? dias(b.fecha) : null, inc = b.incidencias.filter(i => i.estado !== "Resuelta").length;
+  const seg = b.seguimiento.proximo && pendienteDeBoda(b) ? dias(b.seguimiento.proximo) : null;
+  return `<a class="card glass" href="#boda-${b.id}">
+    <div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap">${datebox(b.fecha)}<div class="stack" style="gap:4px;align-items:flex-end">${estadoChip(b)}${d != null && d >= 0 && activa(b) ? `<span class="muted tab-num" style="font-size:13px">faltan ${d} días</span>` : ""}</div></div>
+    <div><div class="names">${esc(nombres(b))}</div><div class="muted">${esc(b.lugar.nombre || "Lugar sin definir")}${b.lugar.localidad ? " · " + esc(b.lugar.localidad) : ""}</div></div>
+    <div class="meta"><span class="chip ${b.packProvisional ? "warn" : ""}">${esc(packDe(b).nombre)}${b.packProvisional ? " · provisional" : ""}</span>${b.happyMoment ? `<span class="chip">Happy moment</span>` : ""}${inc ? `<span class="chip bad">${inc} incidencia${inc > 1 ? "s" : ""}</span>` : ""}${seg != null && seg <= 0 ? `<span class="chip bad">Seguimiento pendiente</span>` : ""}${b.ejemplo ? `<span class="chip line">Ejemplo</span>` : ""}</div>
+    <div class="foot"><span class="muted">${esc(b.captacion.canal)}${b.captacion.detalle ? " · " + esc(b.captacion.detalle) : ""}</span>${puede("economico") ? `<b class="tab-num">${eur(c.total)}</b>` : ""}</div></a>`;
+}
+function estadoChip(b) { const m = { Reservada: "warn", Confirmada: "ok", Celebrada: "line", Cancelada: "bad" }; return `<span class="chip ${m[b.estado] || ""}">${esc(b.estado)}</span>`; }
+
+/* ---------- Detalle de boda ---------- */
+const inp = (path, label, type = "text", extra = "") => `<label class="f ${extra.includes("wide") ? "wide" : ""}"><span>${label}</span><input type="${type}" id="${fid("b", path)}" data-b="${path}" value="${esc(getPath(bodaActual(), path) ?? "")}" ${type === "number" ? 'min="0" step="any" inputmode="decimal"' : ""} ${extra.replace("wide", "")}></label>`;
+const area = (path, label, rows = 3, ph = "") => `<label class="f wide"><span>${label}</span><textarea id="${fid("b", path)}" data-b="${path}" rows="${rows}" placeholder="${esc(ph)}">${esc(getPath(bodaActual(), path) ?? "")}</textarea></label>`;
+const sel = (path, label, opts, attr = "data-b") => { const v = getPath(bodaActual(), path); return `<label class="f"><span>${label}</span><select id="${fid("b", path)}" ${attr}="${path}">${opts.map(o => { const [val, l] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(val)}" ${String(v) === String(val) ? "selected" : ""}>${esc(l)}</option>`; }).join("")}</select></label>`; };
+const sw = (path, label) => `<label class="check"><input type="checkbox" class="switch" id="${fid("b", path)}" data-b="${path}" ${getPath(bodaActual(), path) ? "checked" : ""}>${label}</label>`;
+
+function vistaBoda() {
+  const b = bodaActual();
+  if (!b) return `<section class="panel glass empty"><h2>No encuentro esta boda</h2><p class="muted">Puede que se haya borrado.</p><a class="btn" href="#bodas">Volver a bodas</a></section>`;
+  const d = b.fecha ? dias(b.fecha) : null, c = calc(b);
+  const tabs = [["resumen", "Datos de la boda"], ["equipo", "DJs, música y auxiliares"], ["presupuesto", "Presupuesto"], ["contrato", "Contrato"], ["incidencias", "Incidencias"], ["seguimiento", "Seguimiento"]].filter(([k]) => puede("economico") || !["presupuesto", "contrato"].includes(k));
+  if (!tabs.some(([k]) => k === ui.tab)) ui.tab = "resumen";
+  const nInc = b.incidencias.filter(i => i.estado !== "Resuelta").length;
+  const asist = ui.asistente === b.id ? `<section class="banner glass"><div class="grow stack" style="gap:8px"><strong>Boda guardada. Ahora revisa el presupuesto y completa el contrato.</strong>
+      <div class="steps"><span class="done">1 · Datos de la boda</span><span class="${ui.tab === "presupuesto" ? "now" : ui.tab === "contrato" ? "done" : ""}">2 · Presupuesto</span><span class="${ui.tab === "contrato" ? "now" : ""}">3 · Contrato</span></div></div>
+      ${ui.tab === "presupuesto" ? `<button class="btn btn-primary btn-sm" data-act="tab" data-v="contrato" type="button">Siguiente: contrato</button>` : ""}<button class="btn btn-sm btn-ghost" data-act="cerrar-asistente" type="button">Terminar</button></section>` : "";
+  return `
+  <div class="row"><a class="btn btn-sm btn-ghost" href="#bodas">${ICON.back}Bodas</a></div>
+  <section class="hero glass">
+    <div class="grow"><div class="row" style="gap:8px">${estadoChip(b)}<span class="chip ${b.packProvisional ? "warn" : "acc"}">${esc(packDe(b).nombre)}${b.packProvisional ? " · provisional" : ""}</span>${b.happyMoment ? `<span class="chip">Happy moment</span>` : ""}${b.ejemplo ? `<span class="chip line">Ejemplo</span>` : ""}</div>
+      <div class="names">${esc(nombres(b))}</div>
+      <div class="muted">${b.fecha ? esc(fechaLarga(b.fecha)) : "Sin fecha"} · ${esc(b.lugar.nombre || "Lugar sin definir")} · ${puede("economico") ? `Presupuesto ${esc(b.numero || "")} <b class="tab-num" style="color:var(--ink)">${eur(c.total)}</b>` : esc(b.numero || "")}</div></div>
+    ${d != null && activa(b) && b.estado !== "Celebrada" ? `<div style="text-align:right"><div class="count tab-num">${d >= 0 ? d : "—"}</div><div class="eyebrow">${d >= 0 ? (d === 1 ? "día para la boda" : "días para la boda") : "ya celebrada"}</div></div>` : ""}
+  </section>
+  ${asist}
+  <nav class="tabs glass" role="tablist">${tabs.map(([k, l]) => `<button type="button" role="tab" data-act="tab" data-v="${k}" aria-selected="${ui.tab === k}">${l}${k === "incidencias" && nInc ? `<span class="n">${nInc}</span>` : ""}</button>`).join("")}</nav>
+  ${{ resumen: tabResumen, equipo: tabEquipo, presupuesto: tabPresupuesto, contrato: tabContrato, incidencias: tabIncidencias, seguimiento: tabSeguimiento }[ui.tab](b)}`;
+}
+
+function tabResumen(b) {
+  const canal = b.captacion.canal;
+  const detLabel = { "Redes sociales": "¿Qué red? (Instagram, TikTok…)", "Wedding planner": "¿Qué wedding planner?", "Boca a boca": "¿Quién los recomendó?", "Finca / lugar": "¿Qué finca o lugar?", "Feria de bodas": "¿Qué feria?" }[canal] || "Detalle";
+  return `
+  <section class="grid g2" style="align-items:start">
+    <div class="panel glass"><h2 class="sec-h">Novios</h2>
+      <div class="fields">${inp("novios.n1.nombre", "Nombre y apellidos (1)")}${inp("novios.n1.dni", "DNI (1)")}${inp("novios.n1.tel", "Teléfono (1)", "tel")}${inp("novios.n1.email", "Email (1)", "email")}</div>
+      <div class="fields" style="margin-top:14px">${inp("novios.n2.nombre", "Nombre y apellidos (2)")}${inp("novios.n2.dni", "DNI (2)")}${inp("novios.n2.tel", "Teléfono (2)", "tel")}${inp("novios.n2.email", "Email (2)", "email")}</div>
+      <div class="fields" style="margin-top:14px">${inp("novios.direccion", "Dirección de los novios", "text", "wide")}</div>
+    </div>
+    <div class="stack" style="gap:18px">
+      <div class="panel glass"><h2 class="sec-h">La boda</h2>
+        <div class="fields">${inp("fecha", "Fecha", "date")}${inp("horaInicio", "Hora de inicio", "time")}${inp("horaFin", "Hora de fin", "time")}${inp("invitados", "Invitados", "number")}${sel("estado", "Estado", ["Reservada", "Confirmada", "Celebrada", "Cancelada"])}</div></div>
+      <div class="panel glass"><h2 class="sec-h">Lugar</h2>
+        <div class="fields">${inp("lugar.nombre", "Nombre del lugar")}${inp("lugar.localidad", "Localidad")}${inp("lugar.direccion", "Dirección", "text", "wide")}${inp("lugar.contacto", "Contacto del lugar", "text", "wide")}</div></div>
+    </div>
+  </section>
+  <section class="grid g2" style="align-items:start">
+    <div class="panel glass"><h2 class="sec-h">Pack contratado</h2>
+      <div class="fields">${sel("packId", "Pack", A.packs.map(p => [p.id, `${p.nombre} · ${eur(p.precio)}`]), "data-pack")}</div>
+      <div class="stack" style="margin-top:14px">${sw("packProvisional", "Pack provisional (pendiente de que los novios decidan)")}${sw("happyMoment", `Happy moment contratado <span class="muted">(${eur(pv(b.presupuesto.precios.hm, A.precios.happyMoment))})</span>`)}</div>
+      <p class="muted" style="font-size:13.5px;margin:12px 0 0">Al cambiar el pack se actualizan el presupuesto y el contrato, y el cambio queda anotado en el historial del presupuesto.</p>
+    </div>
+    <div class="panel glass"><h2 class="sec-h">Captación del cliente</h2>
+      <div class="fields">${sel("captacion.canal", "¿Cómo nos conocieron?", A.canales)}${inp("captacion.detalle", detLabel)}</div>
+      <div class="fields" style="margin-top:14px">${area("notas", "Notas generales", 3, "Gustos, peticiones especiales, horarios de la finca…")}</div>
+    </div>
+  </section>
+  <section class="panel glass row" style="justify-content:space-between"><span class="muted">Creada el ${fecha(b.creado)}. Todo se guarda solo mientras escribes.</span><button class="btn btn-sm btn-danger" data-act="borrar-boda" type="button">Borrar boda</button></section>`;
+}
+
+function personas(b, key, titulo, min) {
+  const arr = b[key];
+  return `<div class="panel glass"><h2 class="sec-h">${titulo}<span class="chip line">${arr.length}</span><span class="spacer"></span><button class="btn btn-sm" type="button" data-act="add-persona" data-k="${key}">${ICON.plus}Añadir</button></h2>
+    <div class="stack">${arr.map((p, i) => `<div class="rowcard">
+      ${inp(`${key}.${i}.nombre`, "Nombre")}${inp(`${key}.${i}.tel`, "Teléfono", "tel")}${inp(`${key}.${i}.horasExtra`, "Horas extra", "number")}
+      <button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="del-persona" data-k="${key}" data-i="${i}" ${arr.length <= min ? "disabled title=\"Mínimo " + min + "\"" : ""} aria-label="Quitar">${ICON.x}</button></div>`).join("") || `<p class="muted">Sin asignar.</p>`}</div>
+    ${min ? `<p class="muted" style="font-size:13px;margin:10px 0 0">Mínimo ${min} por boda.</p>` : ""}</div>`;
+}
+function tabEquipo(b) {
+  const url = (b.playlist.url || "").trim(); const okUrl = /^https?:\/\//i.test(url);
+  return `<section class="grid g2" style="align-items:start">
+    <div class="stack" style="gap:18px">${personas(b, "djs", "DJs", 1)}${personas(b, "auxiliares", "Auxiliares", 2)}
+      <p class="muted" style="font-size:13.5px;margin:0 6px">Las horas extra se suman al presupuesto: ${eur(A.precios.horaExtraDj)} por hora de DJ y ${eur(A.precios.horaExtraAux)} por hora de auxiliar (cámbialo en Ajustes).</p></div>
+    <div class="stack" style="gap:18px">
+      <div class="panel glass"><h2 class="sec-h">Playlist de la boda</h2>
+        <div class="fields">${inp("playlist.url", "Enlace a la playlist (Spotify, Apple Music…)", "url", "wide placeholder=\"https://open.spotify.com/playlist/…\"")}${inp("playlist.canciones", "Canciones en la playlist", "number")}</div>
+        <div class="row" style="margin-top:12px">${okUrl ? `<a class="btn btn-sm" href="${esc(url)}" target="_blank" rel="noopener">${ICON.ext}Abrir playlist</a><button class="btn btn-sm btn-ghost" type="button" data-act="copiar" data-txt="${esc(url)}">Copiar enlace</button>` : `<span class="muted" style="font-size:13.5px">Pega el enlace para abrirlo desde aquí.</span>`}</div></div>
+      ${vistaPdf(b)}
+      ${tablaPeticiones(b)}
+      </div></div></section>`;
+}
+
+function tabPresupuesto(b) {
+  const P = b.presupuesto, c = calc(b), E = A.empresa;
+  const enIframe = window.top !== window;
+  const autoRow = l => `<tr><td>${esc(l.concepto)}<span class="auto-tag">automático</span></td><td class="num">${l.cantidad}</td>
+      <td class="num"><input type="number" min="0" step="any" style="width:110px;text-align:right" id="${fid("b", "presupuesto.precios." + l.auto)}" data-b="presupuesto.precios.${l.auto}" data-null="1" value="${P.precios[l.auto] == null ? "" : esc(P.precios[l.auto])}" placeholder="${l.def}" aria-label="Precio de ${esc(l.concepto)}"></td><td class="num">${eur(l.cantidad * l.precio)}</td><td></td></tr>`;
+  const manRow = (l, i) => `<tr><td><input type="text" id="${fid("b", "presupuesto.lineas." + i + ".concepto")}" data-b="presupuesto.lineas.${i}.concepto" value="${esc(l.concepto)}" placeholder="Concepto" aria-label="Concepto"></td>
+      <td class="num"><input type="number" min="0" step="any" style="width:70px;text-align:right" id="${fid("b", "presupuesto.lineas." + i + ".cantidad")}" data-b="presupuesto.lineas.${i}.cantidad" value="${esc(l.cantidad)}" aria-label="Cantidad"></td>
+      <td class="num"><input type="number" min="0" step="any" style="width:110px;text-align:right" id="${fid("b", "presupuesto.lineas." + i + ".precio")}" data-b="presupuesto.lineas.${i}.precio" value="${esc(l.precio)}" aria-label="Precio"></td>
+      <td class="num">${eur(num(l.cantidad) * num(l.precio))}</td><td><button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="del-linea" data-i="${i}" aria-label="Quitar línea">${ICON.x}</button></td></tr>`;
+  return `
+  <section class="toolbar glass">
+    ${sel("packId", "Convertir a otro pack", A.packs.map(p => [p.id, `${p.nombre} · ${eur(p.precio)}`]), "data-pack")}
+    <label class="check" style="min-height:40px"><input type="checkbox" class="switch" id="${fid("b", "packProvisional")}" data-b="packProvisional" ${b.packProvisional ? "checked" : ""}>Provisional</label>
+    <label class="check" style="min-height:40px"><input type="checkbox" class="switch" id="${fid("b", "happyMoment")}" data-b="happyMoment" ${b.happyMoment ? "checked" : ""}>Happy moment</label>
+    ${sel("presupuesto.estado", "Estado", ["Borrador", "Enviado", "Aceptado", "Rechazado"])}
+    <span style="flex:1"></span>
+    <button class="btn btn-sm" type="button" data-act="copiar-doc" data-doc="presupuesto">Copiar texto</button>
+    ${enIframe ? "" : `<button class="btn btn-sm" type="button" data-act="imprimir">Imprimir / PDF</button>`}
+  </section>
+  <article class="doc printable" id="doc-presupuesto">
+    <div class="doc-head"><div><div class="logo"><span class="mark" style="font-size:30px"><b>I</b>-ZONE</span><span class="sub" style="font-size:19px">events</span></div>
+      <div style="font-size:13px;margin-top:10px;color:inherit;opacity:.8">${[E.nombre, E.cif && "CIF " + E.cif, E.direccion, E.telefono, E.email].filter(Boolean).map(esc).join("<br>")}</div></div>
+      <div style="text-align:right"><h2>Presupuesto</h2><div class="tab-num">${esc(b.numero)}</div><div style="font-size:13px;opacity:.8">Fecha: ${fecha(hoy())}</div><div style="margin-top:6px">${P.estado === "Aceptado" ? `<span class="chip ok">Aceptado${P.aceptado ? " el " + fecha(P.aceptado) : ""}</span>` : `<span class="chip line">${esc(P.estado)}</span>`}</div></div></div>
+    <div class="fields" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:18px;font-size:14px">
+      <div><div class="eyebrow">Clientes</div>${esc(nombres(b))}</div>
+      <div><div class="eyebrow">Boda</div>${b.fecha ? esc(fecha(b.fecha, { day: "numeric", month: "long", year: "numeric" })) : "Sin fecha"}${b.horaInicio ? ", " + esc(b.horaInicio) + (b.horaFin ? "–" + esc(b.horaFin) : "") : ""}</div>
+      <div><div class="eyebrow">Lugar</div>${esc(b.lugar.nombre || "Por definir")}${b.lugar.localidad ? ", " + esc(b.lugar.localidad) : ""}</div>
+    </div>
+    <div class="tbl-wrap"><table><thead><tr><th>Concepto</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Importe</th><th></th></tr></thead>
+      <tbody>${c.auto.map(autoRow).join("")}${P.lineas.map(manRow).join("")}</tbody></table></div>
+    <div class="row" style="margin-top:10px"><button class="btn btn-sm" type="button" data-act="add-linea">${ICON.plus}Añadir concepto</button></div>
+    ${packDe(b).incluye ? `<h3>Incluye el ${esc(packDe(b).nombre)}</h3><p style="white-space:pre-line;font-size:14px">${esc(packDe(b).incluye)}</p>` : ""}
+    <div class="totals">
+      <span>Subtotal</span><span class="num">${eur(c.subtotal)}</span>
+      <span>Descuento</span><span><input type="number" min="0" step="any" style="width:110px;text-align:right" id="${fid("b", "presupuesto.descuento")}" data-b="presupuesto.descuento" value="${esc(P.descuento)}" aria-label="Descuento en euros"></span>
+      <span>Base imponible</span><span>${eur(c.base)}</span>
+      <span>IVA <input type="number" min="0" step="any" style="width:64px;text-align:right;min-height:30px;padding:3px 6px" id="${fid("b", "presupuesto.iva")}" data-b="presupuesto.iva" value="${esc(P.iva)}" aria-label="Porcentaje de IVA"> %</span><span>${eur(c.iva)}</span>
+      <span class="big">Total</span><span class="big">${eur(c.total)}</span>
+      <span>Señal de reserva</span><span><input type="number" min="0" step="any" style="width:110px;text-align:right" id="${fid("b", "presupuesto.senal")}" data-b="presupuesto.senal" value="${esc(P.senal)}" aria-label="Señal"></span>
+      <span>Cobrado</span><span>${eur(c.pagado)}</span>
+      <span><b>Pendiente</b></span><span><b>${eur(c.pendiente)}</b></span>
+    </div>
+    <p style="font-size:12.5px;opacity:.75;margin-top:22px">Presupuesto sujeto a cambios. Si la reserva se hace con el pack básico, los novios pueden cambiar de pack hasta 30 días antes de la boda y este presupuesto se actualizará.</p>
+  </article>
+  <section class="grid g2" style="align-items:start">
+    <div class="panel glass"><h2 class="sec-h">Pagos recibidos<span class="spacer"></span><button class="btn btn-sm" type="button" data-act="add-pago">${ICON.plus}Añadir pago</button></h2>
+      ${P.pagos.length ? `<div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th class="num">Importe</th><th></th></tr></thead><tbody>${P.pagos.map((p, i) => `<tr><td><input type="date" id="${fid("b", "presupuesto.pagos." + i + ".fecha")}" data-b="presupuesto.pagos.${i}.fecha" value="${esc(p.fecha)}" aria-label="Fecha"></td><td><input type="text" id="${fid("b", "presupuesto.pagos." + i + ".nota")}" data-b="presupuesto.pagos.${i}.nota" value="${esc(p.nota)}" aria-label="Concepto del pago"></td><td class="num"><input type="number" min="0" step="any" style="width:100px;text-align:right" id="${fid("b", "presupuesto.pagos." + i + ".importe")}" data-b="presupuesto.pagos.${i}.importe" value="${esc(p.importe)}" aria-label="Importe"></td><td><button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="del-pago" data-i="${i}" aria-label="Quitar pago">${ICON.x}</button></td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">Sin pagos registrados.</p>`}
+      <div class="fields" style="margin-top:14px">${area("presupuesto.notas", "Notas internas del presupuesto", 2)}</div></div>
+    <div class="panel glass"><h2 class="sec-h">Historial de cambios de pack</h2>
+      ${P.historial.length ? `<div class="list">${P.historial.slice().reverse().map(h => `<div class="item"><div class="grow"><div class="t">${esc(h.de)} → ${esc(h.a)}</div><div class="s">${fecha(h.fecha)} · total ${eur(h.totalAntes)} → ${eur(h.totalDespues)}</div></div></div>`).join("")}</div>` : `<p class="muted">Sin cambios de pack todavía.</p>`}</div>
+  </section>`;
+}
+
+function vars(b) {
+  const c = calc(b), p = packDe(b), E = A.empresa, B = "__________", v = x => (x == null || String(x).trim() === "") ? B : String(x).trim();
+  const horas = [c.hDj ? `${c.hDj} h de DJ` : "", c.hAux ? `${c.hAux} h de auxiliares` : ""].filter(Boolean).join(" y ") || "ninguna";
+  return {
+    empresa: v(E.nombre), cif: v(E.cif), empresa_direccion: v(E.direccion), localidad_firma: v(E.localidad), fecha_hoy: fecha(hoy(), { day: "numeric", month: "long", year: "numeric" }),
+    novio1: v(b.novios.n1.nombre), dni1: v(b.novios.n1.dni), tel1: v(b.novios.n1.tel), email1: v(b.novios.n1.email),
+    novio2: v(b.novios.n2.nombre), dni2: v(b.novios.n2.dni), tel2: v(b.novios.n2.tel), email2: v(b.novios.n2.email),
+    direccion_novios: v(b.novios.direccion), fecha_boda: b.fecha ? fechaLarga(b.fecha) : B, hora_inicio: v(b.horaInicio), hora_fin: v(b.horaFin), invitados: v(b.invitados),
+    lugar: v(b.lugar.nombre), lugar_direccion: v([b.lugar.direccion, b.lugar.localidad].filter(Boolean).join(", ")),
+    pack: p.nombre, pack_incluye: (p.incluye || "").split("\n").filter(Boolean).map(s => "· " + s).join("\n"),
+    happy_moment: b.happyMoment ? "incluido" : "no contratado", horas_extra: horas,
+    djs: v(b.djs.map(d => d.nombre).filter(Boolean).join(", ")), auxiliares: v(b.auxiliares.map(d => d.nombre).filter(Boolean).join(", ")),
+    playlist: v(b.playlist.url), total: eur(c.total), senal: eur(b.presupuesto.senal), pendiente: eur(Math.max(0, c.total - num(b.presupuesto.senal))),
+    numero_presupuesto: v(b.numero), precio_hora_dj: eur(pv(b.presupuesto.precios.hdj, A.precios.horaExtraDj)), precio_hora_aux: eur(pv(b.presupuesto.precios.haux, A.precios.horaExtraAux)),
+    clausulas_extra: (b.contrato.extra || "").trim()
+  };
+}
+const textoContrato = b => b.contrato.personalizado ? b.contrato.texto : (A.contrato || "").replace(/\{\{(\w+)\}\}/g, (m, k) => { const V = vars(b); return k in V ? V[k] : m; }).replace(/\n{3,}/g, "\n\n");
+function contratoHTML(t) {
+  return t.split(/\n\s*\n/).map(par => { const s = par.trim(); if (!s) return ""; if (s === s.toUpperCase() && s.length < 90 && /[A-ZÁÉÍÓÚÑ]/.test(s)) return `<h3>${esc(s)}</h3>`; return `<p style="white-space:pre-line">${esc(s)}</p>`; }).join("");
+}
+function tabContrato(b) {
+  const falta = [["novios.n1.nombre", "Nombre (1)"], ["novios.n1.dni", "DNI (1)"], ["novios.n2.nombre", "Nombre (2)"], ["novios.n2.dni", "DNI (2)"], ["novios.direccion", "Dirección de los novios"], ["fecha", "Fecha de la boda"], ["horaInicio", "Hora de inicio"], ["horaFin", "Hora de fin"], ["lugar.nombre", "Lugar"], ["lugar.direccion", "Dirección del lugar"]].filter(([p]) => !String(getPath(b, p) || "").trim());
+  const faltaEmp = !A.empresa.cif || !A.empresa.direccion;
+  return `
+  ${!b.contrato.personalizado && falta.length ? `<section class="panel glass"><h2 class="sec-h">Faltan datos para el contrato<span class="chip warn">${falta.length}</span></h2>
+    <div class="fields">${falta.map(([p, l]) => inp(p, l, p === "fecha" ? "date" : p.startsWith("hora") ? "time" : "text")).join("")}</div></section>` : ""}
+  ${faltaEmp ? `<section class="banner glass"><div class="grow">Añade el CIF y la dirección de IZONE EVENTS en Ajustes para que aparezcan en todos los contratos.</div><a class="btn btn-sm" href="#ajustes">Ir a Ajustes</a></section>` : ""}
+  <section class="toolbar glass">
+    ${b.contrato.personalizado ? `<span class="chip warn">Texto editado a mano</span><span class="muted" style="font-size:13.5px">No se actualiza solo con los cambios del presupuesto.</span>` : `<span class="chip ok">Sincronizado</span><span class="muted" style="font-size:13.5px">Se rellena con los datos y el presupuesto de la boda.</span>`}
+    <span style="flex:1"></span>
+    ${b.contrato.personalizado ? `<button class="btn btn-sm" type="button" data-act="contrato-plantilla">Volver a la plantilla</button>` : `<button class="btn btn-sm" type="button" data-act="contrato-editar">Editar el texto de este contrato</button>`}
+    <button class="btn btn-sm" type="button" data-act="copiar-doc" data-doc="contrato">Copiar texto</button>
+    ${window.top !== window ? "" : `<button class="btn btn-sm" type="button" data-act="imprimir">Imprimir / PDF</button>`}
+  </section>
+  ${b.contrato.personalizado ? `<section class="panel glass"><div class="fields">${area("contrato.texto", "Texto del contrato", 28)}</div></section>` : `<section class="panel glass"><div class="fields">${area("contrato.extra", "Cláusulas adicionales para esta boda (opcional)", 3, "Por ejemplo: la finca exige terminar la música a las 3:00.")}</div></section>`}
+  <article class="doc printable" id="doc-contrato">
+    <div class="doc-head"><div class="logo"><span class="mark" style="font-size:30px"><b>I</b>-ZONE</span><span class="sub" style="font-size:19px">events</span></div><div style="text-align:right;font-size:13px;opacity:.8">Ref. ${esc(b.numero)}<br>${b.fecha ? esc(fecha(b.fecha)) : ""}</div></div>
+    <div class="contract-text">${contratoHTML(textoContrato(b))}</div>
+    <div class="sign"><div>Por ${esc(A.empresa.nombre || "la Empresa")}</div><div>Los Clientes<br>${esc(nombres(b))}</div></div>
+  </article>
+  <section class="panel glass row"><label class="f" style="max-width:220px"><span>Fecha de firma</span><input type="date" id="${fid("b", "contrato.firmado")}" data-b="contrato.firmado" value="${esc(b.contrato.firmado)}"></label><span class="muted" style="font-size:13.5px">${b.contrato.firmado ? "Contrato firmado el " + fecha(b.contrato.firmado) + "." : "Apunta la fecha cuando esté firmado."}</span></section>`;
+}
+
+function tabIncidencias(b) {
+  const tipos = ["Mensaje de familiar", "Logística", "Proveedor", "Lugar / finca", "Pago", "Música", "Otro"];
+  const n = ui.incNueva;
+  return `<section class="panel glass"><h2 class="sec-h">Nueva incidencia</h2>
+    <div class="fields"><label class="f"><span>Tipo</span><select id="inc-tipo" data-inc="tipo">${tipos.map(t => `<option ${n.tipo === t ? "selected" : ""}>${t}</option>`).join("")}</select></label>
+      <label class="f"><span>¿Quién la comunica?</span><input type="text" id="inc-autor" data-inc="autor" value="${esc(n.autor)}" placeholder="Madre de la novia, finca, DJ…"></label>
+      <label class="f wide"><span>Descripción</span><textarea id="inc-texto" data-inc="texto" rows="3" placeholder="Qué ha pasado o qué piden">${esc(n.texto)}</textarea></label></div>
+    <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn btn-primary btn-sm" type="button" data-act="add-inc" ${n.texto.trim() ? "" : "disabled"}>Guardar incidencia</button></div></section>
+  <section class="panel glass"><h2 class="sec-h">Incidencias de esta boda<span class="chip line">${b.incidencias.length}</span></h2>
+    ${b.incidencias.length ? `<div class="stack">${b.incidencias.map((x, i) => ({ x, i })).reverse().map(({ x, i }) => `<div class="rowcard" style="grid-template-columns:minmax(0,1fr);gap:10px">
+      <div class="row"><span class="sev ${x.estado === "Resuelta" ? "ok" : "bad"}" style="height:22px"></span><span class="chip ${x.estado === "Resuelta" ? "ok" : "bad"}">${esc(x.estado)}</span><span class="chip line">${esc(x.tipo)}</span><span class="muted" style="font-size:13.5px">${fecha(x.fecha)}${x.autor ? " · " + esc(x.autor) : ""}</span><span style="flex:1"></span>
+        <button class="btn btn-sm" type="button" data-act="inc-estado" data-i="${i}">${x.estado === "Resuelta" ? "Reabrir" : "Marcar resuelta"}</button><button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="del-inc" data-i="${i}" aria-label="Borrar incidencia">${ICON.x}</button></div>
+      <div class="fields">${sel(`incidencias.${i}.tipo`, "Tipo", tipos)}${inp(`incidencias.${i}.autor`, "Comunicada por")}${area(`incidencias.${i}.texto`, "Descripción", 2)}${area(`incidencias.${i}.solucion`, "Cómo se resolvió / qué hacer", 2)}</div></div>`).join("")}</div>` : `<p class="muted">No hay incidencias. Aquí puedes apuntar mensajes de familiares, problemas de logística o cualquier imprevisto.</p>`}</section>`;
+}
+
+function tabSeguimiento(b) {
+  const s = b.seguimiento, d = s.proximo ? dias(s.proximo) : null;
+  return `<section class="grid g2" style="align-items:start">
+    <div class="panel glass"><h2 class="sec-h">Próximo seguimiento</h2>
+      <div class="row" style="gap:18px;margin-bottom:14px">${datebox(s.proximo)}<div>${s.proximo ? `<div class="stat-big">${esc(fechaLarga(s.proximo))}</div><div class="${d < 0 ? "err" : "muted"}">${d < 0 ? `Atrasado ${-d} días` : d === 0 ? "Hoy" : `Dentro de ${d} días`}</div>` : `<div class="muted">Sin seguimiento programado.</div>`}</div></div>
+      <div class="fields">${inp("seguimiento.proximo", "Cambiar fecha", "date")}${sel("seguimiento.frecuencia", "Frecuencia", [[1, "Cada mes"], [2, "Cada 2 meses"], [3, "Cada 3 meses"]])}
+        <label class="f wide"><span>Nota de este seguimiento</span><textarea id="seg-nota" data-seg="1" rows="3" placeholder="Qué se habló: cambios de pack, canciones, horarios…">${esc(ui.segNota)}</textarea></label></div>
+      <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn btn-primary btn-sm" type="button" data-act="seg-hecho" data-id="${b.id}">Seguimiento hecho, programar el siguiente</button></div></div>
+    <div class="panel glass"><h2 class="sec-h">Historial<span class="chip line">${s.historial.length}</span></h2>
+      ${s.historial.length ? `<div class="stack">${s.historial.map((h, i) => ({ h, i })).reverse().map(({ h, i }) => `<div class="rowcard" style="grid-template-columns:150px minmax(0,1fr) auto;align-items:start">${inp(`seguimiento.historial.${i}.fecha`, "Fecha", "date")}<label class="f"><span>Nota</span><textarea rows="2" id="${fid("b", "seguimiento.historial." + i + ".nota")}" data-b="seguimiento.historial.${i}.nota" style="min-height:40px">${esc(h.nota)}</textarea></label><button class="btn btn-sm btn-ghost btn-danger" style="margin-top:22px" type="button" data-act="del-seg" data-i="${i}" aria-label="Borrar">${ICON.x}</button></div>`).join("")}</div>` : `<p class="muted">Aún no hay seguimientos registrados.</p>`}</div></section>`;
+}
+
+
+/* ---------- Calendario ---------- */
+const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+function vistaCalendario() {
+  const [y, m] = ui.cal.split("-").map(Number);
+  const first = new Date(y, m - 1, 1), offset = (first.getDay() + 6) % 7, nDias = new Date(y, m, 0).getDate();
+  const semanas = Math.ceil((offset + nDias) / 7), H = hoy();
+  const contratadas = lista().filter(b => activa(b) && b.fecha);
+  const porDia = {}; for (const b of contratadas) (porDia[b.fecha] = porDia[b.fecha] || []).push(b);
+  const segDia = {}; if (ui.calSeg) for (const b of lista().filter(pendienteDeBoda)) if (b.seguimiento.proximo) (segDia[b.seguimiento.proximo] = segDia[b.seguimiento.proximo] || []).push(b);
+  const delMes = contratadas.filter(b => b.fecha.startsWith(ui.cal));
+  const prev = addMonths(ui.cal + "-01", -1).slice(0, 7), next = addMonths(ui.cal + "-01", 1).slice(0, 7);
+  const cls = b => b.estado === "Confirmada" ? "conf" : b.estado === "Celebrada" ? "done" : "res";
+  let celdas = "";
+  for (let i = 0; i < semanas * 7; i++) {
+    const d = new Date(y, m - 1, 1 - offset + i), k = ymd(d), fuera = d.getMonth() !== m - 1;
+    const bs = porDia[k] || [], ss = segDia[k] || [];
+    celdas += `<div class="day ${fuera ? "out" : ""} ${k === H ? "today" : ""} ${bs.length ? "has" : ""}"><span class="dn tab-num">${d.getDate()}</span>
+      ${bs.map(b => `<a class="calchip ${cls(b)}" href="#boda-${b.id}" title="${esc(nombres(b))} · ${esc(b.estado)} · ${esc(b.lugar.nombre || "")}"><span>${esc(nombreCorto(b))}</span></a>`).join("")}
+      ${ss.map(b => `<a class="calseg" href="#boda-${b.id}" data-tab="seguimiento" title="Seguimiento de ${esc(nombres(b))}"><span>Seguimiento ${esc(nombreCorto(b))}</span></a>`).join("")}</div>`;
+  }
+  const anioCount = MESES.map((mm, i) => { const k = `${y}-${String(i + 1).padStart(2, "0")}`; return [k, mm, contratadas.filter(b => b.fecha.startsWith(k)).length]; });
+  return `<section class="panel glass" style="padding:14px 16px"><div class="row">
+      <a class="btn btn-sm iconbtn" href="#cal-${prev}" aria-label="Mes anterior" style="width:36px;height:36px">${ICON.back}</a>
+      <h2 style="font-size:20px;min-width:180px;text-align:center;text-transform:capitalize">${MESES[m - 1]} ${y}</h2>
+      <a class="btn btn-sm iconbtn" href="#cal-${next}" aria-label="Mes siguiente" style="width:36px;height:36px;transform:scaleX(-1)">${ICON.back}</a>
+      <a class="btn btn-sm" href="#cal-${H.slice(0, 7)}">Hoy</a>
+      <span style="flex:1"></span>
+      <label class="check" style="font-size:14px"><input type="checkbox" class="switch" id="cal-seg" data-calseg="1" ${ui.calSeg ? "checked" : ""}>Ver seguimientos</label>
+    </div>
+    <div class="row cal-legend" style="margin-top:10px;gap:14px;font-size:13px"><span><i class="lg conf"></i>Confirmada</span><span><i class="lg res"></i>Reservada</span><span><i class="lg done"></i>Celebrada</span>${ui.calSeg ? `<span><i class="lg seg"></i>Seguimiento</span>` : ""}</div></section>
+  <section class="panel glass" style="padding:14px">
+    <div class="cal cal-head">${["lun", "mar", "mié", "jue", "vie", "sáb", "dom"].map(d => `<span>${d}</span>`).join("")}</div>
+    <div class="cal">${celdas}</div></section>
+  <section class="grid g2" style="align-items:start">
+    <div class="panel glass"><h2 class="sec-h">Bodas de ${MESES[m - 1]}<span class="chip line">${delMes.length}</span></h2>
+      <div class="list">${delMes.map(filaBoda).join("") || `<p class="muted">No hay bodas contratadas este mes.</p>`}</div></div>
+    <div class="panel glass"><h2 class="sec-h">Año ${y}<span class="chip line">${anioCount.reduce((s, x) => s + x[2], 0)} bodas</span></h2>
+      <div class="yeargrid">${anioCount.map(([k, mm, n]) => `<a class="ym ${k === ui.cal ? "cur" : ""} ${n ? "has" : ""}" href="#cal-${k}"><span>${mm.slice(0, 3)}</span><b class="tab-num">${n}</b></a>`).join("")}</div>
+      <div class="row" style="margin-top:12px;justify-content:space-between"><a class="btn btn-sm btn-ghost" href="#cal-${y - 1}-${String(m).padStart(2, "0")}">${y - 1}</a><a class="btn btn-sm btn-ghost" href="#cal-${y + 1}-${String(m).padStart(2, "0")}">${y + 1}</a></div></div>
+  </section>`;
+}
+/* ---------- Estadísticas ---------- */
+function contar(arr, key) { const m = new Map(); for (const x of arr) { const k = key(x); if (!k) continue; const kk = k.trim(); if (!kk) continue; const id = kk.toLowerCase(); const e = m.get(id) || { l: kk, n: 0 }; e.n++; m.set(id, e); } return [...m.values()].sort((a, b) => b.n - a.n); }
+function barras(rows, fmt = v => v) { const max = Math.max(1, ...rows.map(r => r.n)); return rows.length ? `<div class="bars">${rows.map(r => `<div class="bar" title="${esc(r.l)}: ${esc(fmt(r.n))}"><span class="lab">${esc(r.l)}</span><span class="track"><span class="fill" style="display:block;width:${(r.n / max * 100).toFixed(1)}%"></span></span><span class="val">${esc(fmt(r.n))}</span></div>`).join("")}</div>` : `<p class="muted">Sin datos todavía.</p>`; }
+function vistaStats() {
+  const todas = lista().filter(activa);
+  const anios = [...new Set(todas.map(b => (b.fecha || "").slice(0, 4)).filter(Boolean))].sort();
+  const L = ui.anio === "todos" ? todas : todas.filter(b => (b.fecha || "").startsWith(ui.anio));
+  if (!todas.length) return `<section class="panel glass empty"><h2>Sin datos todavía</h2><p class="muted">Las estadísticas aparecen al añadir bodas.</p></section>`;
+  const lugares = contar(L, b => b.lugar.nombre);
+  const mayorPack = L.slice().sort((a, b) => packNivel(b) - packNivel(a) || calc(b).total - calc(a).total)[0];
+  const mayorTotal = L.slice().sort((a, b) => calc(b).total - calc(a).total)[0];
+  const playlist = L.slice().sort((a, b) => cancion(b) - cancion(a))[0];
+  const canales = contar(L, b => b.captacion.canal);
+  const wps = contar(L.filter(b => b.captacion.canal === "Wedding planner"), b => b.captacion.detalle);
+  const djs = contar(L.flatMap(b => b.djs), d => d.nombre);
+  const packs = A.packs.map(p => ({ l: p.nombre, n: L.filter(b => b.packId === p.id).length }));
+  const hm = L.filter(b => b.happyMoment).length;
+  const total = L.reduce((s, b) => s + calc(b).total, 0), cobrado = L.reduce((s, b) => s + calc(b).pagado, 0);
+  const horas = L.reduce((s, b) => { const c = calc(b); return s + c.hDj + c.hAux; }, 0);
+  const meses = new Map(); for (const b of L) if (b.fecha) { const k = b.fecha.slice(0, 7); meses.set(k, (meses.get(k) || 0) + 1); }
+  const mk = [...meses.keys()].sort(); let cols = [];
+  if (mk.length) { let k = mk[0]; const fin = mk[mk.length - 1]; let guard = 0; while (k <= fin && guard++ < 60) { cols.push([k, meses.get(k) || 0]); k = addMonths(k + "-01", 1).slice(0, 7); } }
+  const maxM = Math.max(1, ...cols.map(c => c[1]));
+  const tile = (eb, big, sub) => `<div class="kpi glass"><span class="eyebrow">${eb}</span><span class="stat-big">${big}</span><span class="muted" style="font-size:13.5px">${sub}</span></div>`;
+  return `<section class="panel glass" style="padding:14px 16px"><div class="row"><span class="eyebrow">Periodo</span>${["todos", ...anios].map(a => `<button class="chipbtn" type="button" data-act="anio" data-v="${a}" aria-pressed="${ui.anio === a}">${a === "todos" ? "Todas las bodas" : a}</button>`).join("")}<span style="flex:1"></span><span class="muted" style="font-size:13.5px">${L.length} bodas (sin contar canceladas)</span></div></section>
+  <section class="grid g4">
+    <div class="kpi glass"><span class="v tab-num">${L.length}</span><span class="l">Bodas</span></div>
+    <div class="kpi glass"><span class="v small tab-num">${eur(total)}</span><span class="l">Facturación presupuestada · cobrado ${eur(cobrado)}</span></div>
+    <div class="kpi glass"><span class="v small tab-num">${eur(L.length ? total / L.length : 0)}</span><span class="l">Presupuesto medio por boda</span></div>
+    <div class="kpi glass"><span class="v tab-num">${L.length ? Math.round(hm / L.length * 100) : 0}%</span><span class="l">Con happy moment (${hm})</span></div>
+  </section>
+  <section class="grid g3">
+    ${tile("Lugar con más bodas", esc(lugares[0] ? lugares[0].l : "—"), lugares[0] ? `${lugares[0].n} ${lugares[0].n === 1 ? "boda" : "bodas"}` : "")}
+    ${tile("Boda con mayor pack", mayorPack ? `<a href="#boda-${mayorPack.id}" style="color:inherit">${esc(nombres(mayorPack))}</a>` : "—", mayorPack ? `${esc(packDe(mayorPack).nombre)} · ${eur(calc(mayorPack).total)}` : "")}
+    ${tile("Playlist con más canciones", playlist && cancion(playlist) ? `<a href="#boda-${playlist.id}" style="color:inherit">${esc(nombres(playlist))}</a>` : "—", playlist && cancion(playlist) ? `${cancion(playlist)} canciones` : "")}
+    ${tile("Presupuesto más alto", mayorTotal ? `<a href="#boda-${mayorTotal.id}" style="color:inherit">${esc(nombres(mayorTotal))}</a>` : "—", mayorTotal ? eur(calc(mayorTotal).total) : "")}
+    ${tile("Canal que más clientes trae", esc(canales[0] ? canales[0].l : "—"), canales[0] ? `${canales[0].n} de ${L.length} bodas` : "")}
+    ${tile("Wedding planner con más bodas", esc(wps[0] ? wps[0].l : "—"), wps[0] ? `${wps[0].n} ${wps[0].n === 1 ? "boda" : "bodas"}` : "Ninguna boda por planner")}
+    ${tile("DJ con más bodas", esc(djs[0] ? djs[0].l : "—"), djs[0] ? `${djs[0].n} ${djs[0].n === 1 ? "boda" : "bodas"}` : "")}
+    ${tile("Horas extra contratadas", `<span class="tab-num">${horas} h</span>`, "DJs y auxiliares")}
+    ${tile("Packs provisionales", `<span class="tab-num">${L.filter(b => b.packProvisional).length}</span>`, "pendientes de decidir")}
+  </section>
+  <section class="panel glass"><h2 class="sec-h">Bodas por mes</h2>
+    ${cols.length ? `<div class="months">${cols.map(([k, n]) => `<div class="col" title="${esc(parse(k + "-01").toLocaleDateString("es-ES", { month: "long", year: "numeric" }))}: ${n} ${n === 1 ? "boda" : "bodas"}"><div class="colbar" style="height:${(n / maxM * 130).toFixed(0)}px">${n ? `<span>${n}</span>` : ""}</div><span>${parse(k + "-01").toLocaleDateString("es-ES", { month: "short" }).replace(".", "")}<br>${k.slice(2, 4)}</span></div>`).join("")}</div>` : `<p class="muted">Sin fechas.</p>`}</section>
+  <section class="grid g2" style="align-items:start">
+    <div class="panel glass"><h2 class="sec-h">Lugares</h2>${barras(lugares.slice(0, 8))}</div>
+    <div class="panel glass"><h2 class="sec-h">Packs contratados</h2>${barras(packs)}</div>
+    <div class="panel glass"><h2 class="sec-h">Captación de clientes</h2>${barras(canales)}</div>
+    <div class="panel glass"><h2 class="sec-h">Playlists con más canciones</h2>${barras(L.filter(b => cancion(b)).sort((a, b) => cancion(b) - cancion(a)).slice(0, 8).map(b => ({ l: nombreCorto(b), n: cancion(b) })))}</div>
+  </section>`;
+}
+
+/* ---------- Ajustes ---------- */
+const sinp = (path, label, type = "text", wide = false) => `<label class="f ${wide ? "wide" : ""}"><span>${label}</span><input type="${type}" id="${fid("s", path)}" data-s="${path}" value="${esc(getPath(A, path) ?? "")}" ${type === "number" ? 'min="0" step="any"' : ""}></label>`;
+function tablaPeticiones(b) {
+  const moms = [...new Set(b.peticiones.map(p => (p.momento || "").trim()).filter(Boolean))];
+  const sinM = b.peticiones.filter(p => !(p.momento || "").trim()).length;
+  const mf = ui.momF === "__sin" || moms.includes(ui.momF) ? ui.momF : "todos";
+  const vis = b.peticiones.map((p, i) => [p, i]).filter(([p]) => mf === "todos" || (mf === "__sin" ? !(p.momento || "").trim() : (p.momento || "").trim() === mf));
+  const dl = [...new Set([...moms, ...MOMENTOS_COMUNES])];
+  return `<div class="panel glass"><h2 class="sec-h">Canciones por momento<span class="chip line">${b.peticiones.length}</span><span class="spacer"></span><button class="btn btn-sm" type="button" data-act="add-peticion">${ICON.plus}Añadir</button></h2>
+    <p class="muted" style="font-size:13.5px;margin:-6px 0 10px">Apunta lo que piden los novios o sus invitados, en qué momento debe sonar, y márcalo cuando esté en la playlist.</p>
+    <datalist id="momentos-dl">${dl.map(m => `<option value="${esc(m)}"></option>`).join("")}</datalist>
+    ${moms.length ? `<div class="row" style="gap:6px;margin-bottom:12px"><button class="chipbtn" type="button" data-act="mom-f" data-v="todos" aria-pressed="${mf === "todos"}">Todas · ${b.peticiones.length}</button>${moms.map(m => `<button class="chipbtn" type="button" data-act="mom-f" data-v="${esc(m)}" aria-pressed="${mf === m}">${esc(m)} · ${b.peticiones.filter(p => (p.momento || "").trim() === m).length}</button>`).join("")}${sinM ? `<button class="chipbtn" type="button" data-act="mom-f" data-v="__sin" aria-pressed="${mf === "__sin"}">Sin momento · ${sinM}</button>` : ""}</div>` : ""}
+    ${b.peticiones.length ? `<div class="tbl-wrap"><table><thead><tr><th>Momento</th><th>Canción y artista</th><th>Pedida por</th><th>En playlist</th><th></th></tr></thead><tbody>
+    ${vis.map(([p, i]) => `<tr><td style="min-width:140px"><input type="text" list="momentos-dl" id="${fid("b", "peticiones." + i + ".momento")}" data-b="peticiones.${i}.momento" value="${esc(p.momento || "")}" aria-label="Momento" placeholder="Momento"></td><td style="min-width:200px"><input type="text" id="${fid("b", "peticiones." + i + ".titulo")}" data-b="peticiones.${i}.titulo" value="${esc(p.titulo)}" aria-label="Canción">${p.nota ? `<span class="pet-nota">${esc(p.nota)}</span>` : ""}</td><td style="min-width:120px"><input type="text" id="${fid("b", "peticiones." + i + ".por")}" data-b="peticiones.${i}.por" value="${esc(p.por)}" aria-label="Pedida por"></td><td style="text-align:center"><input type="checkbox" class="switch" id="${fid("b", "peticiones." + i + ".ok")}" data-b="peticiones.${i}.ok" ${p.ok ? "checked" : ""} aria-label="Añadida a la playlist"></td><td><button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="del-peticion" data-i="${i}" aria-label="Quitar">${ICON.x}</button></td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">Aún no hay canciones. Añádelas a mano o sube el PDF de los novios.</p>`}
+  </div>`;
+}
+
+function vistaAjustes() {
+  const vars0 = Object.keys(vars(nuevaBoda()));
+  const notif = store.mode === "local" && "Notification" in window && window.top === window;
+  return `<section class="grid g2" style="align-items:start">
+    <div class="panel glass"><h2 class="sec-h">Datos de la empresa</h2><p class="muted" style="font-size:13.5px;margin:-6px 0 12px">Aparecen en todos los presupuestos y contratos.</p>
+      <div class="fields">${sinp("empresa.nombre", "Nombre")}${sinp("empresa.cif", "CIF")}${sinp("empresa.direccion", "Dirección", "text", true)}${sinp("empresa.localidad", "Localidad (lugar de firma)")}${sinp("empresa.telefono", "Teléfono", "tel")}${sinp("empresa.email", "Email", "email")}</div></div>
+    <div class="panel glass"><h2 class="sec-h">Precios y seguimiento</h2>
+      <div class="fields">${sinp("precios.horaExtraDj", "Hora extra DJ (€)", "number")}${sinp("precios.horaExtraAux", "Hora extra auxiliar (€)", "number")}${sinp("precios.happyMoment", "Happy moment (€)", "number")}${sinp("iva", "IVA por defecto (%)", "number")}${sinp("senal", "Señal por defecto (€)", "number")}
+      <label class="f"><span>Seguimiento de cada boda</span><select id="s-frecuencia" data-s="frecuencia">${[[1, "Cada mes"], [2, "Cada 2 meses"], [3, "Cada 3 meses"]].map(([v, l]) => `<option value="${v}" ${A.frecuencia == v ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+      ${sinp("avisoDias", "Avisar con días de antelación", "number")}</div>
+      ${notif ? `<div class="row" style="margin-top:14px"><button class="btn btn-sm" type="button" data-act="notif">Activar avisos del navegador</button><span class="muted" style="font-size:13px">${Notification.permission === "granted" ? "Activados." : ""}</span></div>` : ""}</div>
+  </section>
+  <section class="panel glass"><h2 class="sec-h">Packs<span class="spacer"></span><button class="btn btn-sm" type="button" data-act="add-pack">${ICON.plus}Añadir pack</button></h2>
+    <p class="muted" style="font-size:13.5px;margin:-6px 0 12px">El primero es el pack básico que se pone por defecto al reservar. El orden marca cuál es «mayor» en las estadísticas. Los precios que ves son de ejemplo: pon los vuestros.</p>
+    <div class="stack">${A.packs.map((p, i) => `<div class="rowcard" style="grid-template-columns:minmax(0,1.2fr) 130px minmax(0,2fr) auto;align-items:start">
+      ${sinp(`packs.${i}.nombre`, i === 0 ? "Nombre (pack básico)" : "Nombre")}${sinp(`packs.${i}.precio`, "Precio (€)", "number")}
+      <label class="f"><span>Qué incluye (una línea por servicio)</span><textarea rows="3" id="${fid("s", "packs." + i + ".incluye")}" data-s="packs.${i}.incluye">${esc(p.incluye)}</textarea></label>
+      <div class="stack" style="gap:4px;margin-top:20px"><button class="btn btn-sm btn-ghost" type="button" data-act="pack-up" data-i="${i}" ${i === 0 ? "disabled" : ""} aria-label="Subir">↑</button><button class="btn btn-sm btn-ghost" type="button" data-act="pack-down" data-i="${i}" ${i === A.packs.length - 1 ? "disabled" : ""} aria-label="Bajar">↓</button><button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="del-pack" data-i="${i}" ${A.packs.length <= 1 ? "disabled" : ""} aria-label="Borrar pack">${ICON.x}</button></div></div>`).join("")}</div></section>
+  <section class="panel glass"><h2 class="sec-h">Plantilla del contrato<span class="spacer"></span><button class="btn btn-sm" type="button" data-act="reset-contrato">Restaurar plantilla original</button></h2>
+    <p class="muted" style="font-size:13.5px;margin:-6px 0 12px">Las palabras entre llaves se sustituyen por los datos de cada boda. Revisad el texto con vuestro asesor antes de usarlo.</p>
+    <div class="row" style="gap:6px;margin-bottom:12px">${vars0.map(v => `<span class="chip line" style="font-family:ui-monospace,monospace;font-size:12px">{{${v}}}</span>`).join("")}</div>
+    <textarea id="s-contrato" data-s="contrato" rows="26" style="font-size:14px">${esc(A.contrato)}</textarea></section>
+  <section class="grid g2" style="align-items:start">
+    <div class="panel glass"><h2 class="sec-h">Copias y calendario</h2>
+      <p class="muted" style="font-size:13.5px;margin:-6px 0 12px">${store.mode === "db" ? "Las bodas se guardan en el servidor del CRM. Puedes descargar una copia cuando quieras." : "Las bodas se guardan solo en este navegador. Descarga una copia de vez en cuando."}</p>
+      <div class="row"><button class="btn btn-sm" type="button" data-act="exportar">Descargar copia (.json)</button><button class="btn btn-sm" type="button" data-act="importar">Importar copia</button><button class="btn btn-sm" type="button" data-act="ics">Bodas y seguimientos al calendario (.ics)</button></div></div>
+    <div class="panel glass"><h2 class="sec-h">Canales de captación</h2>
+      <div class="fields"><label class="f wide"><span>Uno por línea</span><textarea id="s-canales" data-canales="1" rows="6">${esc(A.canales.join("\n"))}</textarea></label></div></div>
+  </section>`;
+}
+
+/* ---------- Modal: añadir boda ---------- */
+function vistaModal() {
+  if (["usuario", "clave", "temporal", "temporal-ok"].includes(ui.modal)) return vistaModalSeg();
+  if (ui.modal === "confirm") { const m = ui.confirm; return `<div class="modal" data-act="modal-bg"><div class="box glass small" role="dialog" aria-modal="true" aria-labelledby="mt"><h2 id="mt">${esc(m.titulo)}</h2><p class="muted" style="margin:0">${esc(m.texto)}</p><div class="foot"><button class="btn" type="button" data-act="cerrar-modal">Cancelar</button><button class="btn btn-primary" type="button" data-act="confirmar" id="btn-confirmar">${esc(m.boton)}</button></div></div></div>`; }
+  const d = ui.draft;
+  const g = p => esc(getPath(d, p) ?? "");
+  const di = (p, l, t = "text", w = false) => `<label class="f ${w ? "wide" : ""}"><span>${l}</span><input type="${t}" id="${fid("d", p)}" data-d="${p}" value="${g(p)}" ${t === "number" ? 'min="0" step="any"' : ""}></label>`;
+  const canal = d.captacion.canal;
+  const detLabel = { "Redes sociales": "¿Qué red?", "Wedding planner": "¿Qué wedding planner?", "Boca a boca": "¿Quién los recomendó?", "Finca / lugar": "¿Qué finca?", "Feria de bodas": "¿Qué feria?" }[canal] || "Detalle";
+  return `<div class="modal" data-act="modal-bg"><form class="box glass" id="form-boda" role="dialog" aria-modal="true" aria-labelledby="mt" novalidate>
+    <div class="row" style="justify-content:space-between"><h2 id="mt">Añadir boda</h2><button class="btn iconbtn btn-ghost" type="button" data-act="cerrar-modal" aria-label="Cerrar">${ICON.x}</button></div>
+    <fieldset><legend><i>1</i> Novios</legend><div class="fields">${di("novios.n1.nombre", "Nombre y apellidos (1) *")}${di("novios.n1.tel", "Teléfono (1)", "tel")}${di("novios.n1.email", "Email (1)", "email")}${di("novios.n2.nombre", "Nombre y apellidos (2)")}${di("novios.n2.tel", "Teléfono (2)", "tel")}${di("novios.n2.email", "Email (2)", "email")}</div></fieldset>
+    <fieldset><legend><i>2</i> La boda</legend><div class="fields">${di("fecha", "Fecha *", "date")}${di("lugar.nombre", "Lugar")}${di("lugar.localidad", "Localidad")}${di("invitados", "Invitados", "number")}</div></fieldset>
+    <fieldset><legend><i>3</i> Pack y extras</legend><div class="fields"><label class="f"><span>Pack</span><select id="d-pack" data-d="packId">${A.packs.map(p => `<option value="${esc(p.id)}" ${d.packId === p.id ? "selected" : ""}>${esc(p.nombre)} · ${eur(p.precio)}</option>`).join("")}</select></label></div>
+      <label class="check"><input type="checkbox" class="switch" id="d-prov" data-d="packProvisional" ${d.packProvisional ? "checked" : ""}>Pack provisional (aún no han decidido)</label>
+      <label class="check"><input type="checkbox" class="switch" id="d-hm" data-d="happyMoment" ${d.happyMoment ? "checked" : ""}>Happy moment contratado</label></fieldset>
+    <fieldset><legend><i>4</i> Captación</legend><div class="fields"><label class="f"><span>¿Cómo nos conocieron?</span><select id="d-canal" data-d="captacion.canal">${A.canales.map(c => `<option ${canal === c ? "selected" : ""}>${esc(c)}</option>`).join("")}</select></label>${di("captacion.detalle", detLabel)}</div></fieldset>
+    <fieldset><legend><i>5</i> Equipo y música</legend><div class="fields">${di("djs.0.nombre", "DJ")}${di("auxiliares.0.nombre", "Auxiliar 1")}${di("auxiliares.1.nombre", "Auxiliar 2")}${di("playlist.url", "Enlace a la playlist", "url", true)}</div>
+      <p class="muted" style="margin:0;font-size:13.5px">Puedes añadir más DJs, auxiliares y horas extra después, dentro de la boda.</p></fieldset>
+    ${ui.draftErr ? `<p class="err" role="alert">${esc(ui.draftErr)}</p>` : ""}
+    <div class="foot"><button class="btn" type="button" data-act="cerrar-modal">Cancelar</button><button class="btn btn-primary" type="submit">Guardar y preparar presupuesto</button></div>
+  </form></div>`;
+}
+
+/* ============ acciones ============ */
+function val(el) {
+  if (el.type === "checkbox") return el.checked;
+  if (el.type === "number") { if (el.value === "") return el.dataset.null ? null : 0; return Number(el.value); }
+  return el.value;
+}
+let toastT;
+function toast(t) { const n = $("#toast"); n.textContent = t; n.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => n.hidden = true, 2600); }
+function confirmar(titulo, texto, boton, fn) { ui.confirm = { titulo, texto, boton, fn }; ui.modal = "confirm"; render(); setTimeout(() => { const b = $("#btn-confirmar"); b && b.focus(); }, 0); }
+function cambiarPack(b, nuevo) {
+  if (b.packId === nuevo) return;
+  const antes = calc(b).total, de = packDe(b).nombre;
+  b.packId = nuevo; b.presupuesto.precios.pack = null;
+  b.presupuesto.historial.push({ fecha: hoy(), de, a: packDe(b).nombre, totalAntes: antes, totalDespues: calc(b).total });
+  guardarBoda(b); toast(`Presupuesto convertido a ${packDe(b).nombre}`);
+}
+function segHecho(b, nota) {
+  b.seguimiento.historial.push({ fecha: hoy(), nota: nota || "" });
+  b.seguimiento.proximo = siguienteSeguimiento(b, hoy());
+  guardarBoda(b);
+  toast(b.seguimiento.proximo ? `Siguiente seguimiento: ${fecha(b.seguimiento.proximo)}` : "Seguimiento anotado");
+}
+async function descargar(nombre, tipo, texto) {
+  if (store.downloads) { try { await store.downloads.save({ filename: nombre, data: new Blob([texto], { type: tipo }) }); return; } catch (e) { if (!(e && /cancel|declin|dismiss|denied/i.test(String(e.code || "")))) toast("No se pudo descargar" + (e && e.message ? ": " + e.message : "")); return; } }
+  if (window.top !== window) { toast("Este visor no permite descargas. Abre el CRM en el navegador para descargar."); return; }
+  try { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([texto], { type: tipo })); a.download = nombre; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); } catch { toast("Este navegador no permite descargar"); }
+}
+function ics() {
+  const st = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z"; const f = s => s.replace(/-/g, "");
+  const e = (id, s, t, desc) => ["BEGIN:VEVENT", "UID:" + id + "@izone-crm", "DTSTAMP:" + st, "DTSTART;VALUE=DATE:" + f(s), "DTEND;VALUE=DATE:" + f(addDays(s, 1)), "SUMMARY:" + t.replace(/[,;]/g, " "), "DESCRIPTION:" + (desc || "").replace(/[,;\n]/g, " "), "END:VEVENT"].join("\r\n");
+  const ev = [];
+  for (const b of lista().filter(activa)) {
+    if (b.fecha) ev.push(e("boda-" + b.id, b.fecha, "Boda " + nombres(b), (b.lugar.nombre || "") + " · " + packDe(b).nombre));
+    if (b.seguimiento.proximo && pendienteDeBoda(b)) ev.push(e("seg-" + b.id + "-" + b.seguimiento.proximo, b.seguimiento.proximo, "Seguimiento " + nombreCorto(b), "Seguimiento mensual IZONE"));
+  }
+  return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//IZONE EVENTS//CRM Bodas//ES", ...ev, "END:VCALENDAR"].join("\r\n");
+}
+function revisarNotificaciones() {
+  try {
+    if (store.mode !== "local" || !("Notification" in window) || Notification.permission !== "granted") return;
+    const k = "izone-notif-" + hoy(); if (localStorage.getItem(k)) return;
+    const n = avisos().filter(a => a.k === "seg" && a.d <= 0);
+    if (n.length) new Notification("IZONE · Seguimientos pendientes", { body: n.map(a => nombreCorto(a.b)).join(", ") });
+    localStorage.setItem(k, "1");
+  } catch { }
+}
+
+function abrirNueva() { if (!puede("bodas")) return; ui.menu = false; ui.draft = nuevaBoda(); ui.draftErr = ""; ui.modal = "nueva"; render(); setTimeout(() => { const n = document.getElementById(fid("d", "novios.n1.nombre")); n && n.focus(); }, 30); }
+function guardarNueva() {
+  const d = ui.draft;
+  if (!d.novios.n1.nombre.trim()) { ui.draftErr = "Escribe al menos el nombre de uno de los novios."; render(); return; }
+  if (!d.fecha) { ui.draftErr = "Pon la fecha de la boda para programar los seguimientos."; render(); return; }
+  const y = new Date().getFullYear(); const n = lista().filter(b => (b.numero || "").startsWith("P-" + y)).length + 1;
+  d.numero = `P-${y}-${String(n).padStart(3, "0")}`;
+  d.seguimiento.frecuencia = num(A.frecuencia) || 1;
+  d.seguimiento.proximo = siguienteSeguimiento(d, hoy());
+  d.presupuesto.iva = num(A.iva); d.presupuesto.senal = num(A.senal);
+  guardarBoda(d); ui.modal = null; ui.draft = null; ui.asistente = puede("economico") ? d.id : null; ui.tab = puede("economico") ? "presupuesto" : "resumen"; ui.bodaId = d.id;
+  ir("boda-" + d.id); toast("Boda guardada");
+}
+
+document.addEventListener("submit", e => {
+  if (e.target.id === "form-boda") { e.preventDefault(); guardarNueva(); return; }
+  if (["form-login", "form-setup", "form-usuario", "form-clave", "form-temporal"].includes(e.target.id)) { e.preventDefault(); enviarFormSeg(e.target.id, new FormData(e.target)); }
+});
+document.addEventListener("input", e => {
+  const el = e.target, D = el.dataset;
+  if (!perfil()) return;
+  if (inputSeg(el) || inputPdf(el)) return;
+  if (D.b != null) { const b = bodaActual(); if (!b) return; setPath(b, D.b, val(el)); if (D.b === "presupuesto.estado" && el.value === "Aceptado" && !b.presupuesto.aceptado) b.presupuesto.aceptado = hoy(); guardarBoda(b); render(); }
+  else if (D.pack != null) { const b = bodaActual(); if (b) cambiarPack(b, el.value); render(); }
+  else if (D.s != null) { setPath(A, D.s, val(el)); guardarAjustes(); render(); }
+  else if (D.canales) { A.canales = el.value.split("\n").map(s => s.trim()).filter(Boolean); if (!A.canales.length) A.canales = ["Otro"]; guardarAjustes(); }
+  else if (D.d != null) { setPath(ui.draft, D.d, val(el)); if (D.d === "captacion.canal") render(); }
+  else if (D.inc != null) { ui.incNueva[D.inc] = el.value; render(); }
+  else if (D.seg) { ui.segNota = el.value; }
+  else if (D.calseg) { ui.calSeg = el.checked; render(); }
+  else if (el.id === "buscar") { ui.q = el.value; render(); }
+});
+document.addEventListener("change", e => { if (e.target.dataset.canales) render(); });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && ui.menu) { ui.menu = false; render(); $("#userbtn").focus(); return; }
+  if (e.key === "Escape" && ui.modal) { ui.modal = null; render(); }
+  if ((e.key === "Enter" || e.key === " ") && e.target.id === "pdfdrop") { e.preventDefault(); e.target.click(); }
+});
+$("#importfile").addEventListener("change", async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try { const d = JSON.parse(await f.text()); const bodas = d.bodas || {}; let n = 0;
+    if (d.ajustes) { A = merge(clone(AJUSTES_DEF), d.ajustes); guardarAjustes(); }
+    for (const id in bodas) { guardarBoda(normalizar(bodas[id], id)); n++; }
+    render(); toast(`${n} bodas importadas`);
+  } catch { toast("Ese archivo no es una copia válida del CRM"); }
+});
+
+document.addEventListener("click", async e => {
+  if (ui.menu && !e.target.closest("#userbtn") && !e.target.closest("#umenu a, #umenu button")) { ui.menu = false; render(); if (!e.target.closest("[data-act], a")) return; }
+  const link = e.target.closest('a[href^="#"]');
+  if (link) {
+    e.preventDefault(); ui.menu = false;
+    const h = link.getAttribute("href").slice(1) || "panel";
+    if (link.dataset.tab) { ui.tab = link.dataset.tab; ui.bodaId = h.slice(5); }
+    ir(h); return;
+  }
+  const el = e.target.closest("[data-act]"); if (!el) return;
+  const act = el.dataset.act, b = bodaActual(), i = Number(el.dataset.i);
+  if (act === "modal-bg") { if (e.target === el) { ui.modal = null; render(); } return; }
+  if (el.closest("#umenu")) ui.menu = false;
+  if (await accionSeg(act, el)) return;
+  if (accionPdf(act, el, b)) return;
+  switch (act) {
+    case "nueva": abrirNueva(); break;
+    case "cerrar-modal": ui.modal = null; render(); break;
+    case "confirmar": { const fn = ui.confirm.fn; ui.modal = null; await fn(); render(); break; }
+    case "tab": ui.tab = el.dataset.v; render(); break;
+    case "cerrar-asistente": ui.asistente = null; render(); break;
+    case "filtro": ui.filtro = el.dataset.v; render(); break;
+    case "anio": ui.anio = el.dataset.v; render(); break;
+    case "add-persona": b[el.dataset.k].push({ id: uid("p"), nombre: "", tel: "", horasExtra: 0 }); guardarBoda(b); render(); break;
+    case "del-persona": b[el.dataset.k].splice(i, 1); guardarBoda(b); render(); break;
+    case "add-peticion": b.peticiones.push({ titulo: "", por: "", ok: false, momento: ui.momF && ui.momF !== "todos" && ui.momF !== "__sin" ? ui.momF : "" }); guardarBoda(b); render(); setTimeout(() => { const n = document.getElementById(fid("b", "peticiones." + (b.peticiones.length - 1) + ".titulo")); n && n.focus(); }, 0); break;
+    case "del-peticion": b.peticiones.splice(i, 1); guardarBoda(b); render(); break;
+    case "add-linea": b.presupuesto.lineas.push({ concepto: "", cantidad: 1, precio: 0 }); guardarBoda(b); render(); setTimeout(() => { const n = document.getElementById(fid("b", "presupuesto.lineas." + (b.presupuesto.lineas.length - 1) + ".concepto")); n && n.focus(); }, 0); break;
+    case "del-linea": b.presupuesto.lineas.splice(i, 1); guardarBoda(b); render(); break;
+    case "add-pago": b.presupuesto.pagos.push({ fecha: hoy(), nota: b.presupuesto.pagos.length ? "Pago" : "Señal de reserva", importe: b.presupuesto.pagos.length ? 0 : num(b.presupuesto.senal) }); guardarBoda(b); render(); break;
+    case "del-pago": b.presupuesto.pagos.splice(i, 1); guardarBoda(b); render(); break;
+    case "add-inc": { const n = ui.incNueva; if (!n.texto.trim()) return; b.incidencias.push({ id: uid("i"), fecha: hoy(), tipo: n.tipo, autor: n.autor, texto: n.texto, solucion: "", estado: "Abierta" }); ui.incNueva = { tipo: n.tipo, autor: "", texto: "" }; guardarBoda(b); render(); toast("Incidencia guardada"); break; }
+    case "inc-estado": b.incidencias[i].estado = b.incidencias[i].estado === "Resuelta" ? "Abierta" : "Resuelta"; guardarBoda(b); render(); break;
+    case "del-inc": confirmar("¿Borrar esta incidencia?", "Se eliminará del historial de la boda.", "Borrar", () => { b.incidencias.splice(i, 1); guardarBoda(b); }); break;
+    case "seg-hecho": { const bb = store.bodas[el.dataset.id]; if (!bb) return; segHecho(bb, ui.ruta === "boda" ? ui.segNota : ""); if (ui.ruta === "boda") ui.segNota = ""; render(); break; }
+    case "del-seg": b.seguimiento.historial.splice(i, 1); guardarBoda(b); render(); break;
+    case "contrato-editar": b.contrato.texto = textoContrato(b); b.contrato.personalizado = true; guardarBoda(b); render(); break;
+    case "contrato-plantilla": confirmar("¿Volver a la plantilla?", "Se perderán los cambios hechos a mano en el texto de este contrato. El contrato volverá a rellenarse solo con los datos de la boda.", "Volver a la plantilla", () => { b.contrato.personalizado = false; guardarBoda(b); }); break;
+    case "copiar": try { await navigator.clipboard.writeText(el.dataset.txt); toast("Copiado"); } catch { toast("No se pudo copiar"); } break;
+    case "copiar-doc": { const n = document.getElementById("doc-" + el.dataset.doc); const t = el.dataset.doc === "contrato" ? textoContrato(b) : n.innerText; try { await navigator.clipboard.writeText(t); toast("Texto copiado"); } catch { const r = document.createRange(); r.selectNodeContents(n); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("Texto seleccionado: pulsa Ctrl+C"); } break; }
+    case "imprimir": window.print(); break;
+    case "borrar-boda": confirmar(`¿Borrar la boda de ${nombres(b)}?`, "Se borrarán sus datos, presupuesto, contrato, incidencias y seguimientos. No se puede deshacer.", "Borrar boda", async () => { const id = b.id; ir("bodas"); await borrarBoda(id); toast("Boda borrada"); }); break;
+    case "ejemplos": for (const x of ejemplos()) guardarBoda(normalizar(x, x.id)); render(); toast("Bodas de ejemplo cargadas"); break;
+    case "borrar-ejemplos": confirmar("¿Borrar las bodas de ejemplo?", "Solo se borran las marcadas como ejemplo. Tus bodas no se tocan.", "Borrar ejemplos", async () => { for (const x of lista().filter(x => x.ejemplo)) await borrarBoda(x.id); toast("Ejemplos borrados"); }); break;
+    case "add-pack": A.packs.push({ id: uid("p"), nombre: "Nuevo pack", precio: 0, incluye: "" }); guardarAjustes(); render(); break;
+    case "del-pack": { const p = A.packs[i]; const usos = lista().filter(x => x.packId === p.id).length; confirmar(`¿Borrar ${p.nombre}?`, usos ? `Lo usan ${usos} bodas; pasarán a mostrarse con el pack básico hasta que les asignes otro.` : "Ninguna boda lo usa.", "Borrar pack", () => { A.packs.splice(i, 1); guardarAjustes(); }); break; }
+    case "pack-up": [A.packs[i - 1], A.packs[i]] = [A.packs[i], A.packs[i - 1]]; guardarAjustes(); render(); break;
+    case "pack-down": [A.packs[i + 1], A.packs[i]] = [A.packs[i], A.packs[i + 1]]; guardarAjustes(); render(); break;
+    case "reset-contrato": confirmar("¿Restaurar la plantilla original?", "Se sustituirá el texto actual de la plantilla del contrato.", "Restaurar", () => { A.contrato = CONTRATO_DEF; guardarAjustes(); }); break;
+    case "exportar": descargar(`izone-crm-copia-${hoy()}.json`, "application/json", JSON.stringify({ app: "izone-crm", fecha: hoy(), ajustes: A, bodas: store.bodas }, null, 2)); break;
+    case "importar": $("#importfile").click(); break;
+    case "ics": descargar("izone-bodas.ics", "text/calendar", ics()); break;
+    case "notif": try { await Notification.requestPermission(); render(); revisarNotificaciones(); } catch { } break;
+  }
+});
+
+/* ============ ejemplos ============ */
+function ejemplos() {
+  const H = hoy(), m = n => addMonths(H, n);
+  const base = (o) => { const b = merge(nuevaBoda(), o); b.ejemplo = true; return b; };
+  const p = (n, t = "", h = 0) => ({ id: uid("p"), nombre: n, tel: t, horasExtra: h });
+  return [
+    base({ numero: "P-EJ-001", estado: "Confirmada", creado: m(-5), novios: { n1: { nombre: "Lucía Fernández Gil", dni: "", tel: "600 111 222", email: "" }, n2: { nombre: "Marcos Ruiz Prieto", dni: "", tel: "600 333 444", email: "" }, direccion: "" }, fecha: m(6), horaInicio: "18:00", horaFin: "03:00", invitados: 180, lugar: { nombre: "Finca El Olivar", direccion: "Ctra. de Toledo km 12", localidad: "Toledo", contacto: "" }, packId: "premium", packProvisional: false, happyMoment: true, captacion: { canal: "Wedding planner", detalle: "Bodas con Alma (Carmen)" }, djs: [p("Álex Mora", "", 1)], auxiliares: [p("Sara León"), p("Iván Ortega")], playlist: { url: "https://open.spotify.com/", canciones: 142 }, peticiones: [{ titulo: "Bésame mucho · Luis Miguel", por: "Madre de la novia", ok: true }], presupuesto: { estado: "Aceptado", aceptado: m(-5), pagos: [{ fecha: m(-5), nota: "Señal de reserva", importe: 500 }] }, incidencias: [{ id: uid("i"), fecha: m(-1), tipo: "Mensaje de familiar", autor: "Madre de la novia", texto: "Quiere que suene «Bésame mucho» en la entrada al banquete.", solucion: "Añadida a la playlist.", estado: "Resuelta" }], seguimiento: { proximo: addDays(H, 3), frecuencia: 1, historial: [{ fecha: m(-1), nota: "Confirman pack Premium y happy moment." }] } }),
+    base({ numero: "P-EJ-002", estado: "Reservada", creado: m(-2), novios: { n1: { nombre: "Paula Gómez Sanz", tel: "611 222 333" }, n2: { nombre: "Andrea Vidal Ramos", tel: "" } }, fecha: m(7), lugar: { nombre: "Hacienda Los Almendros", localidad: "Sevilla" }, packId: "basico", packProvisional: true, captacion: { canal: "Redes sociales", detalle: "Instagram" }, djs: [p("Nacho Beltrán")], auxiliares: [p("Sara León"), p("Rubén Díaz")], playlist: { url: "", canciones: 38 }, seguimiento: { proximo: addDays(H, -6), frecuencia: 1, historial: [] } }),
+    base({ numero: "P-EJ-003", estado: "Confirmada", creado: m(-3), novios: { n1: { nombre: "Elena Martín Casas" }, n2: { nombre: "Javier López Soto" } }, fecha: m(10), lugar: { nombre: "Finca El Olivar", localidad: "Toledo" }, packId: "deluxe", packProvisional: false, happyMoment: true, captacion: { canal: "Boca a boca", detalle: "Recomendados por Lucía y Marcos" }, djs: [p("Álex Mora", "", 2)], auxiliares: [p("Iván Ortega", "", 1), p("Rubén Díaz", "", 1)], playlist: { url: "https://open.spotify.com/", canciones: 210 }, incidencias: [{ id: uid("i"), fecha: addDays(H, -4), tipo: "Logística", autor: "Finca El Olivar", texto: "El montaje de luces tiene que estar terminado antes de las 17:30.", solucion: "", estado: "Abierta" }], seguimiento: { proximo: addDays(H, 12), frecuencia: 1, historial: [] } }),
+    base({ numero: "P-EJ-004", estado: "Celebrada", creado: m(-12), novios: { n1: { nombre: "Nerea Díaz Molina" }, n2: { nombre: "Daniel Prieto Vega" } }, fecha: m(-2), lugar: { nombre: "Palacio de Galiana", localidad: "Toledo" }, packId: "plus", packProvisional: false, captacion: { canal: "Wedding planner", detalle: "Bodas con Alma (Carmen)" }, djs: [p("Nacho Beltrán")], auxiliares: [p("Sara León"), p("Iván Ortega")], playlist: { url: "", canciones: 175 }, presupuesto: { estado: "Aceptado", pagos: [{ fecha: m(-12), nota: "Señal", importe: 500 }, { fecha: m(-2), nota: "Resto", importe: 1496.5 }] } }),
+    base({ numero: "P-EJ-005", estado: "Confirmada", creado: m(-8), novios: { n1: { nombre: "Claudia Ortega Ruiz" }, n2: { nombre: "Hugo Vidal Pardo" } }, fecha: addDays(H, 25), lugar: { nombre: "Castillo de Viñuelas", localidad: "Madrid" }, packId: "plus", packProvisional: false, happyMoment: true, captacion: { canal: "Redes sociales", detalle: "TikTok" }, djs: [p("Álex Mora")], auxiliares: [p("Rubén Díaz"), p("Iván Ortega")], playlist: { url: "https://open.spotify.com/", canciones: 96 }, presupuesto: { estado: "Aceptado", pagos: [{ fecha: m(-8), nota: "Señal", importe: 500 }] }, seguimiento: { proximo: H, frecuencia: 1, historial: [] } })
+  ];
+}
+
+engancharPdf();
+leerRuta();
+iniciar();
+</script>
