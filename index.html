@@ -1,3 +1,10 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0a0c" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f4f6" media="(prefers-color-scheme: light)">
 <title>CRM Bodas IZONE</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -55,6 +62,14 @@ html,body{min-height:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--bg)}
 button,input,select,textarea{font:inherit;color:inherit}
+select option,select optgroup{background-color:var(--paper);color:var(--paper-ink)}
+select option:checked{background-color:var(--accent);color:#fff}
+select option:disabled{color:var(--muted)}
+#loc-sug{position:fixed;z-index:200;margin:0;padding:6px;list-style:none;overflow:auto;background:var(--paper);color:var(--paper-ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px -12px var(--shadow)}
+#loc-sug li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 12px;border-radius:10px;cursor:pointer}
+#loc-sug li small{color:var(--muted);font-size:12.5px;white-space:nowrap}
+#loc-sug li:hover,#loc-sug li[aria-selected="true"]{background:var(--accent-soft)}
+#loc-sug li b{font-weight:600;color:var(--accent)}
 a{color:var(--accent)}
 h1,h2,h3{margin:0;text-wrap:balance;font-weight:600;letter-spacing:-.01em}
 .tab-num{font-variant-numeric:tabular-nums}
@@ -352,7 +367,8 @@ table.dbt pre{margin:0;max-height:360px;overflow:auto;font-size:12.5px;line-heig
   :root{--paper:#fff;--paper-ink:#000}
 }
 </style>
-
+</head>
+<body>
 <div class="blobs" aria-hidden="true"><i></i><i></i><i></i></div>
 <div id="gate"></div>
 
@@ -492,7 +508,7 @@ function nuevaBoda() {
     id: uid("b"), creado: hoy(), estado: "Reservada", numero: "", ejemplo: false,
     novios: { n1: { nombre: "", dni: "", tel: "", email: "" }, n2: { nombre: "", dni: "", tel: "", email: "" }, direccion: "" },
     fecha: "", horaInicio: "", horaFin: "", invitados: "",
-    lugar: { nombre: "", direccion: "", localidad: "", contacto: "" },
+    lugar: { nombre: "", direccion: "", localidad: "", cp: "", provincia: "", comunidad: "", pais: "", contacto: "" },
     packId: (A.packs[0] || {}).id || "", packProvisional: true, happyMoment: false,
     captacion: { canal: "Redes sociales", detalle: "" },
     djs: [{ id: uid("d"), nombre: "", tel: "", horasExtra: 0 }],
@@ -916,6 +932,109 @@ function accesosCsv() {
   return "﻿" + rows.map(r => r.map(q).join(";")).join("\r\n");
 }
 
+/* --- Autocompletado de localidad: los 8.131 municipios de España (INE), sin distinguir tildes ni mayúsculas --- */
+const LOC_ATTR = 'autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="loc-sug" data-loc="1"';
+const sinTildes = s => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+/* Capitales de provincia y ciudades grandes: salen primero cuando empiezan igual */
+const LOC_DESTACADAS = "Albacete,Alicante,Almería,Ávila,Badajoz,Barcelona,Burgos,Cáceres,Cádiz,Castellón de la Plana,Ciudad Real,Córdoba,A Coruña,Cuenca,Girona,Granada,Guadalajara,Huelva,Huesca,Jaén,León,Lleida,Logroño,Lugo,Madrid,Málaga,Murcia,Pamplona,Ourense,Oviedo,Palencia,Palma,Las Palmas de Gran Canaria,Pontevedra,Salamanca,Santa Cruz de Tenerife,Santander,Segovia,Sevilla,Soria,Tarragona,Teruel,Toledo,Valencia,Valladolid,Bilbao,Vitoria-Gasteiz,Donostia,San Sebastián,Zamora,Zaragoza,Ceuta,Melilla,Mérida,Santiago de Compostela,Vigo,Gijón,Marbella,Jerez de la Frontera,Elche,Cartagena,Alcalá de Henares,Móstoles,Fuenlabrada,Getafe,Leganés,Alcorcón,Hospitalet de Llobregat,Badalona,Terrassa,Sabadell,Mataró,Reus,Algeciras,Dos Hermanas,Benidorm,Torrevieja,Ponferrada,Aranjuez,Talavera de la Reina,Ronda,Sitges,Ibiza,Eivissa".split(",");
+const loc = { datos: null, cargando: null, input: null, items: [], activo: -1 };
+function cargarLocalidades() {
+  if (loc.datos || loc.cargando) return loc.cargando;
+  loc.cargando = fetch("localidades.json").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(d => {
+    loc.datos = d.m.map(([nombre, p, cps]) => {
+      const n = sinTildes(nombre);
+      return { nombre, prov: d.p[p], com: d.c[d.pc[p]], cps: cps ? cps.split(" ") : [], n, variantes: n.split(" / "), palabras: n.split(/[\s\-/'’(),]+/).filter(Boolean) };
+    });
+    const top = new Set(LOC_DESTACADAS.map(sinTildes));
+    for (const m of loc.datos) if (top.has(m.n) || m.variantes.some(v => top.has(v))) m.destacada = true;
+  }).catch(() => { loc.cargando = null; });
+  return loc.cargando;
+}
+function buscarLocalidades(texto) {
+  const q = sinTildes(texto); if (!q || !loc.datos) return [];
+  const usadas = new Set(lista().map(b => sinTildes(b.lugar.localidad)).filter(Boolean));
+  const out = [];
+  for (const m of loc.datos) {
+    let r = m.n.startsWith(q) ? 0 : m.variantes.some(v => v.startsWith(q)) ? 1 : m.palabras.some(w => w.startsWith(q)) ? 2 : -1;
+    if (r < 0) continue;
+    if (usadas.has(m.n)) r -= 0.5; else if (m.destacada) r -= 0.3;
+    out.push([r, m]);
+  }
+  return out.sort((a, b) => a[0] - b[0] || a[1].nombre.length - b[1].nombre.length || a[1].nombre.localeCompare(b[1].nombre, "es")).slice(0, 8).map(x => x[1]);
+}
+function cajaLoc() {
+  let u = document.getElementById("loc-sug");
+  if (!u) { u = document.createElement("ul"); u.id = "loc-sug"; u.setAttribute("role", "listbox"); u.setAttribute("aria-label", "Localidades"); u.hidden = true; document.body.appendChild(u); }
+  return u;
+}
+function cerrarLoc() { const u = document.getElementById("loc-sug"); if (u) u.hidden = true; if (loc.input) { loc.input.setAttribute("aria-expanded", "false"); loc.input.removeAttribute("aria-activedescendant"); } loc.items = []; loc.activo = -1; }
+function colocarLoc() {
+  const u = document.getElementById("loc-sug"), el = loc.input; if (!u || u.hidden || !el || !el.isConnected) return cerrarLoc();
+  const r = el.getBoundingClientRect(), abajo = innerHeight - r.bottom, arriba = r.top;
+  u.style.left = Math.max(8, r.left) + "px"; u.style.width = Math.min(r.width, innerWidth - 16) + "px";
+  if (abajo < 220 && arriba > abajo) { u.style.top = ""; u.style.bottom = (innerHeight - r.top + 4) + "px"; u.style.maxHeight = Math.min(320, arriba - 12) + "px"; }
+  else { u.style.bottom = ""; u.style.top = (r.bottom + 4) + "px"; u.style.maxHeight = Math.min(320, abajo - 12) + "px"; }
+}
+function pintarLoc() {
+  const u = cajaLoc(), el = loc.input;
+  if (!el || !loc.items.length) return cerrarLoc();
+  const q = sinTildes(el.value).length;
+  u.innerHTML = loc.items.map((m, i) => {
+    const pre = m.n.startsWith(sinTildes(el.value)) ? `<b>${esc(m.nombre.slice(0, q))}</b>${esc(m.nombre.slice(q))}` : esc(m.nombre);
+    return `<li id="loc-op-${i}" role="option" aria-selected="${i === loc.activo}" data-i="${i}"><span>${pre}</span><small>${esc(m.prov)}</small></li>`;
+  }).join("");
+  u.hidden = false; el.setAttribute("aria-expanded", "true");
+  if (loc.activo >= 0) el.setAttribute("aria-activedescendant", "loc-op-" + loc.activo); else el.removeAttribute("aria-activedescendant");
+  colocarLoc();
+  const a = u.querySelector('[aria-selected="true"]'); a && a.scrollIntoView({ block: "nearest" });
+}
+async function sugerirLoc(el) {
+  loc.input = el;
+  if (!loc.datos) { await cargarLocalidades(); if (loc.input !== el) return; }
+  loc.items = buscarLocalidades(el.value); loc.activo = -1;
+  if (loc.items.length === 1 && sinTildes(loc.items[0].nombre) === sinTildes(el.value)) loc.items = [];
+  requestAnimationFrame(pintarLoc);
+}
+/* Al elegir una localidad se rellenan país, comunidad, provincia y, si el municipio solo tiene uno, el código postal */
+function datosDeLocalidad(m, cpActual) {
+  const cp = m.cps.length === 1 ? m.cps[0] : m.cps.includes(cpActual) ? cpActual : "";
+  return { localidad: m.nombre, provincia: m.prov, comunidad: m.com, pais: "España", cp };
+}
+function elegirLoc(i) {
+  const m = loc.items[i], el = loc.input; if (!m || !el) return;
+  cerrarLoc();
+  const obj = el.dataset.b != null ? bodaActual() : el.dataset.d != null ? ui.draft : null;
+  if (obj) {
+    if (!obj.lugar) obj.lugar = {};
+    Object.assign(obj.lugar, datosDeLocalidad(m, obj.lugar.cp));
+    if (el.dataset.b != null) guardarBoda(obj);
+    el.value = m.nombre; render();
+    if (m.cps.length > 1 && !obj.lugar.cp) toast(`${m.nombre} tiene ${m.cps.length} códigos postales: elige el tuyo en «Código postal»`);
+  } else { el.value = m.nombre; el.dispatchEvent(new Event("input", { bubbles: true })); }
+  listaCps(m.nombre);
+  el.focus();
+}
+/* Sugerencias del campo «Código postal» según la localidad elegida */
+function listaCps(nombre) {
+  let dl = document.getElementById("cp-list");
+  if (!dl) { dl = document.createElement("datalist"); dl.id = "cp-list"; document.body.appendChild(dl); }
+  const m = loc.datos && loc.datos.find(x => x.n === sinTildes(nombre));
+  dl.innerHTML = m ? m.cps.map(c => `<option value="${c}"></option>`).join("") : "";
+}
+document.addEventListener("focusin", e => { if (e.target.dataset && e.target.dataset.cp) { const b = bodaActual(); cargarLocalidades().then(() => listaCps(b ? b.lugar.localidad : "")); } });
+document.addEventListener("input", e => { if (e.target.dataset && e.target.dataset.loc) sugerirLoc(e.target); });
+document.addEventListener("focusin", e => { if (e.target.dataset && e.target.dataset.loc) { cargarLocalidades(); if (e.target.value) sugerirLoc(e.target); } });
+document.addEventListener("focusout", e => { if (e.target === loc.input) setTimeout(() => { if (document.activeElement !== loc.input) cerrarLoc(); }, 150); });
+document.addEventListener("keydown", e => {
+  if (!e.target.dataset || !e.target.dataset.loc || !loc.items.length || cajaLoc().hidden) return;
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); const n = loc.items.length; loc.activo = e.key === "ArrowDown" ? (loc.activo + 1) % n : (loc.activo - 1 + n) % n; pintarLoc(); }
+  else if (e.key === "Enter" && loc.activo >= 0) { e.preventDefault(); e.stopImmediatePropagation(); elegirLoc(loc.activo); }
+  else if (e.key === "Escape") { e.stopImmediatePropagation(); cerrarLoc(); }
+  else if (e.key === "Tab" && loc.activo >= 0) elegirLoc(loc.activo);
+}, true);
+document.addEventListener("pointerdown", e => { const li = e.target.closest && e.target.closest("#loc-sug li"); if (li) { e.preventDefault(); elegirLoc(Number(li.dataset.i)); } }, true);
+addEventListener("scroll", colocarLoc, true); addEventListener("resize", colocarLoc);
+
 /* --- Base de datos (solo administradores): ver las tablas tal como están en Supabase, exportarlas y hacer copias --- */
 const DB_TABLAS = [["bodas", "Bodas"], ["economico", "Presupuestos y pagos"], ["perfiles", "Empleados"], ["accesos", "Accesos"], ["roles", "Roles"], ["ajustes", "Ajustes"]];
 const DB_MAX_FILAS = 300;
@@ -948,7 +1067,7 @@ function dbDefinicion(t) {
   const R = dbx.raw;
   if (t === "bodas") return { filas: R.bodas.map(r => ({ id: r.id, json: r.data, b: normalizar(clone(r.data), r.id) })).sort((x, y) => (x.b.fecha || "9").localeCompare(y.b.fecha || "9")), cols: [
     ["Nº", f => f.b.numero], ["Fecha", f => f.b.fecha ? fecha(f.b.fecha) : ""], ["Estado", f => f.b.estado], ["Novios", f => nombres(f.b)],
-    ["Lugar", f => f.b.lugar.nombre], ["Localidad", f => f.b.lugar.localidad], ["Pack", f => packDe(f.b).nombre + (f.b.packProvisional ? " (provisional)" : "")],
+    ["Lugar", f => f.b.lugar.nombre], ["Localidad", f => f.b.lugar.localidad], ["Provincia", f => f.b.lugar.provincia], ["CP", f => f.b.lugar.cp], ["Pack", f => packDe(f.b).nombre + (f.b.packProvisional ? " (provisional)" : "")],
     ["Invitados", f => f.b.invitados], ["Captación", f => [f.b.captacion.canal, f.b.captacion.detalle].filter(Boolean).join(" · ")],
     ["DJ", f => f.b.djs.map(d => d.nombre).filter(Boolean).join(", ")], ["Teléfono", f => f.b.novios.n1.tel || f.b.novios.n2.tel], ["Creada", f => f.b.creado ? fecha(f.b.creado) : ""]] };
   if (t === "economico") return { filas: R.bodas_economico.map(r => { const b = dbBodaCompleta(r.boda_id); return { id: r.boda_id, json: r.data, b, c: b ? calc(b) : null }; }).filter(f => f.b).sort((x, y) => (x.b.fecha || "9").localeCompare(y.b.fecha || "9")), cols: [
@@ -1586,7 +1705,7 @@ function tabResumen(b) {
       <div class="panel glass"><h2 class="sec-h">La boda</h2>
         <div class="fields">${inp("fecha", "Fecha", "date")}${inp("horaInicio", "Hora de inicio", "time")}${inp("horaFin", "Hora de fin", "time")}${inp("invitados", "Invitados", "number")}${sel("estado", "Estado", ["Reservada", "Confirmada", "Celebrada", "Cancelada"])}</div></div>
       <div class="panel glass"><h2 class="sec-h">Lugar</h2>
-        <div class="fields">${inp("lugar.nombre", "Nombre del lugar")}${inp("lugar.localidad", "Localidad")}${inp("lugar.direccion", "Dirección", "text", "wide")}${inp("lugar.contacto", "Contacto del lugar", "text", "wide")}</div></div>
+        <div class="fields">${inp("lugar.nombre", "Nombre del lugar")}${inp("lugar.localidad", "Localidad", "text", LOC_ATTR)}${inp("lugar.cp", "Código postal", "text", 'inputmode="numeric" maxlength="5" list="cp-list" autocomplete="off" data-cp="1"')}${inp("lugar.provincia", "Provincia")}${inp("lugar.comunidad", "Comunidad autónoma")}${inp("lugar.pais", "País")}${inp("lugar.direccion", "Dirección", "text", "wide")}${inp("lugar.contacto", "Contacto del lugar", "text", "wide")}</div></div>
     </div>
   </section>
   <section class="grid g2" style="align-items:start">
@@ -1686,7 +1805,7 @@ function vars(b) {
     novio1: v(b.novios.n1.nombre), dni1: v(b.novios.n1.dni), tel1: v(b.novios.n1.tel), email1: v(b.novios.n1.email),
     novio2: v(b.novios.n2.nombre), dni2: v(b.novios.n2.dni), tel2: v(b.novios.n2.tel), email2: v(b.novios.n2.email),
     direccion_novios: v(b.novios.direccion), fecha_boda: b.fecha ? fechaLarga(b.fecha) : B, hora_inicio: v(b.horaInicio), hora_fin: v(b.horaFin), invitados: v(b.invitados),
-    lugar: v(b.lugar.nombre), lugar_direccion: v([b.lugar.direccion, b.lugar.localidad].filter(Boolean).join(", ")),
+    lugar: v(b.lugar.nombre), lugar_direccion: v([b.lugar.direccion, [b.lugar.cp, b.lugar.localidad].filter(Boolean).join(" "), b.lugar.provincia && b.lugar.provincia !== b.lugar.localidad ? b.lugar.provincia : ""].filter(Boolean).join(", ")),
     pack: p.nombre, pack_incluye: (p.incluye || "").split("\n").filter(Boolean).map(s => "· " + s).join("\n"),
     happy_moment: b.happyMoment ? "incluido" : "no contratado", horas_extra: horas,
     djs: v(b.djs.map(d => d.nombre).filter(Boolean).join(", ")), auxiliares: v(b.auxiliares.map(d => d.nombre).filter(Boolean).join(", ")),
@@ -1897,13 +2016,13 @@ function vistaModal() {
   if (ui.modal === "confirm") { const m = ui.confirm; return `<div class="modal" data-act="modal-bg"><div class="box glass small" role="dialog" aria-modal="true" aria-labelledby="mt"><h2 id="mt">${esc(m.titulo)}</h2><p class="muted" style="margin:0">${esc(m.texto)}</p><div class="foot"><button class="btn" type="button" data-act="cerrar-modal">Cancelar</button><button class="btn btn-primary" type="button" data-act="confirmar" id="btn-confirmar">${esc(m.boton)}</button></div></div></div>`; }
   const d = ui.draft;
   const g = p => esc(getPath(d, p) ?? "");
-  const di = (p, l, t = "text", w = false) => `<label class="f ${w ? "wide" : ""}"><span>${l}</span><input type="${t}" id="${fid("d", p)}" data-d="${p}" value="${g(p)}" ${t === "number" ? 'min="0" step="any"' : ""}></label>`;
+  const di = (p, l, t = "text", w = false, at = "") => `<label class="f ${w ? "wide" : ""}"><span>${l}</span><input type="${t}" id="${fid("d", p)}" data-d="${p}" value="${g(p)}" ${t === "number" ? 'min="0" step="any"' : ""} ${at}></label>`;
   const canal = d.captacion.canal;
   const detLabel = { "Redes sociales": "¿Qué red?", "Wedding planner": "¿Qué wedding planner?", "Boca a boca": "¿Quién los recomendó?", "Finca / lugar": "¿Qué finca?", "Feria de bodas": "¿Qué feria?" }[canal] || "Detalle";
   return `<div class="modal" data-act="modal-bg"><form class="box glass" id="form-boda" role="dialog" aria-modal="true" aria-labelledby="mt" novalidate>
     <div class="row" style="justify-content:space-between"><h2 id="mt">Añadir boda</h2><button class="btn iconbtn btn-ghost" type="button" data-act="cerrar-modal" aria-label="Cerrar">${ICON.x}</button></div>
     <fieldset><legend><i>1</i> Novios</legend><div class="fields">${di("novios.n1.nombre", "Nombre y apellidos (1) *")}${di("novios.n1.tel", "Teléfono (1)", "tel")}${di("novios.n1.email", "Email (1)", "email")}${di("novios.n2.nombre", "Nombre y apellidos (2)")}${di("novios.n2.tel", "Teléfono (2)", "tel")}${di("novios.n2.email", "Email (2)", "email")}</div></fieldset>
-    <fieldset><legend><i>2</i> La boda</legend><div class="fields">${di("fecha", "Fecha *", "date")}${di("lugar.nombre", "Lugar")}${di("lugar.localidad", "Localidad")}${di("invitados", "Invitados", "number")}</div></fieldset>
+    <fieldset><legend><i>2</i> La boda</legend><div class="fields">${di("fecha", "Fecha *", "date")}${di("lugar.nombre", "Lugar")}${di("lugar.localidad", "Localidad", "text", false, LOC_ATTR)}${di("invitados", "Invitados", "number")}</div></fieldset>
     <fieldset><legend><i>3</i> Pack y extras</legend><div class="fields"><label class="f"><span>Pack</span><select id="d-pack" data-d="packId">${A.packs.map(p => `<option value="${esc(p.id)}" ${d.packId === p.id ? "selected" : ""}>${esc(p.nombre)} · ${eur(p.precio)}</option>`).join("")}</select></label></div>
       <label class="check"><input type="checkbox" class="switch" id="d-prov" data-d="packProvisional" ${d.packProvisional ? "checked" : ""}>Pack provisional (aún no han decidido)</label>
       <label class="check"><input type="checkbox" class="switch" id="d-hm" data-d="happyMoment" ${d.happyMoment ? "checked" : ""}>Happy moment contratado</label></fieldset>
@@ -2084,3 +2203,5 @@ engancharPdf();
 leerRuta();
 iniciar();
 </script>
+</body>
+</html>
