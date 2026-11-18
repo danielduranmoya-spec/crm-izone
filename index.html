@@ -89,6 +89,18 @@ table.disp-cal td.dc.sel button{outline:2px solid var(--ink);outline-offset:1px}
 .rowcard.disp-row{grid-template-columns:minmax(0,1.3fr) minmax(140px,1fr) minmax(0,1.1fr) auto}
 .rowcard.disp-row.au{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto}
 @media (max-width:720px){.rowcard.disp-row{grid-template-columns:1fr 1fr}}
+.ficha-lugar{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 16px;align-items:end;padding:12px 14px;margin:0 0 14px;border-radius:14px;background:var(--accent-soft);font-size:14px}
+.ll-grid{grid-template-columns:minmax(260px,1fr) minmax(0,2fr)}
+@media (max-width:900px){.ll-grid{grid-template-columns:1fr}}
+.ll-item{width:100%;border:0;font:inherit;color:inherit;cursor:pointer}
+.ll-item .t,.ll-item .s{display:block}
+.ll-item.sel{background:var(--accent-soft)}
+.ll-h{font-size:14px;margin:16px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:500}
+.reu{padding:14px 16px;border-radius:16px;background:var(--glass-strong);border:1px solid var(--line)}
+.reu-datos{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px 18px;margin-top:10px;font-size:14px}
+.reu-datos .wide{grid-column:1/-1}
+.reu-gente{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:4px 14px}
+.mono{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;letter-spacing:.04em}
 #loc-sug{position:fixed;z-index:200;margin:0;padding:6px;list-style:none;overflow:auto;background:var(--paper);color:var(--paper-ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px -12px var(--shadow)}
 #loc-sug li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 12px;border-radius:10px;cursor:pointer}
 #loc-sug li small{color:var(--muted);font-size:12.5px;white-space:nowrap}
@@ -455,6 +467,8 @@ const nombreCorto = b => { const a = (b.novios.n1.nombre || "").trim().split(" "
 const nombres = b => [b.novios.n1.nombre, b.novios.n2.nombre].map(s => (s || "").trim()).filter(Boolean).join(" & ") || "Boda sin nombre";
 
 const ICON = {
+  tel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h3.2l1.6 4.2-2.1 1.4a11 11 0 006.2 6.2l1.4-2.1 4.2 1.6V18a2.5 2.5 0 01-2.7 2.5A17 17 0 012.5 6.2 2.5 2.5 0 015 3.5z"/></svg>',
+  reu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2.5"/><path d="M7.5 11V8a4.5 4.5 0 019 0v3"/><circle cx="12" cy="16" r="1.4"/></svg>',
   disp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M8.5 15l2.2 2.2 4.8-4.7"/></svg>',
   db: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6.5c0 1.7 3.6 3 8 3s8-1.3 8-3V5.5"/><path d="M4 12v6.5c0 1.7 3.6 3 8 3s8-1.3 8-3V12"/></svg>',
   equipo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.5a3.5 3.5 0 010 7M18 14.5a6.5 6.5 0 013.5 5.5"/></svg>',
@@ -520,7 +534,8 @@ const AJUSTES_DEF = {
     { id: "premium", nombre: "Pack Premium", precio: 2200, incluye: "Todo el Pack Plus\nPista de baile iluminada\nMáquina de humo bajo para el primer baile\nAnimación del banquete" },
     { id: "deluxe", nombre: "Pack Deluxe", precio: 2900, incluye: "Todo el Pack Premium\nCabina DJ de diseño\nPantalla con proyección\nPirotecnia fría para el primer baile" }
   ],
-  precios: { horaExtraDj: 150, horaExtraAux: 40, happyMoment: 300 },
+  precios: { horaExtraDj: 150, horaExtraAux: 40, happyMoment: 300, auxiliarExtra: 120, djExtra: 400 },
+  auxIncluidos: 2, djsIncluidos: 1,
   iva: 21, senal: 500, frecuencia: 1, avisoDias: 7,
   canales: ["Redes sociales", "Wedding planner", "Boca a boca", "Web / Google", "Feria de bodas", "Finca / lugar", "Otro"],
   plantilla: [], ausencias: [],
@@ -531,7 +546,7 @@ let A = clone(AJUSTES_DEF);
 
 function nuevaBoda() {
   return {
-    id: uid("b"), creado: hoy(), estado: "Reservada", numero: "", ejemplo: false,
+    id: uid("b"), creado: hoy(), estado: "Llamada", numero: "", ejemplo: false,
     novios: { n1: { nombre: "", dni: "", tel: "", email: "" }, n2: { nombre: "", dni: "", tel: "", email: "" }, direccion: "" },
     fecha: "", horaInicio: "", horaFin: "", invitados: "",
     lugar: { nombre: "", direccion: "", localidad: "", cp: "", provincia: "", comunidad: "", pais: "", contacto: "" },
@@ -551,7 +566,7 @@ function normalizar(o, id) {
   for (const k of ["djs", "auxiliares", "peticiones", "incidencias"]) if (!Array.isArray(b[k])) b[k] = [];
   for (const k of ["lineas", "pagos", "historial"]) if (!Array.isArray(b.presupuesto[k])) b.presupuesto[k] = [];
   if (!Array.isArray(b.seguimiento.historial)) b.seguimiento.historial = [];
-  while (b.auxiliares.length < 2) b.auxiliares.push({ id: uid("a"), nombre: "", tel: "", horasExtra: 0 });
+  if (b.estado === "Confirmada") b.estado = "Cerrada";
   return b;
 }
 
@@ -566,6 +581,9 @@ function calc(b) {
   const hDj = b.djs.reduce((s, d) => s + num(d.horasExtra), 0), hAux = b.auxiliares.reduce((s, d) => s + num(d.horasExtra), 0);
   if (hDj) out.push({ auto: "hdj", concepto: "Horas extra DJ", cantidad: hDj, precio: pv(pr.hdj, A.precios.horaExtraDj), def: A.precios.horaExtraDj });
   if (hAux) out.push({ auto: "haux", concepto: "Horas extra auxiliares", cantidad: hAux, precio: pv(pr.haux, A.precios.horaExtraAux), def: A.precios.horaExtraAux });
+  const auxExtra = Math.max(0, b.auxiliares.length - num(A.auxIncluidos)), djExtra = Math.max(0, b.djs.length - num(A.djsIncluidos));
+  if (auxExtra) out.push({ auto: "auxextra", concepto: `Auxiliar adicional (incluidos ${num(A.auxIncluidos)})`, cantidad: auxExtra, precio: pv(pr.auxextra, A.precios.auxiliarExtra), def: A.precios.auxiliarExtra });
+  if (djExtra) out.push({ auto: "djextra", concepto: `DJ adicional (incluido${num(A.djsIncluidos) === 1 ? "" : "s"} ${num(A.djsIncluidos)})`, cantidad: djExtra, precio: pv(pr.djextra, A.precios.djExtra), def: A.precios.djExtra });
   const subtotal = out.reduce((s, l) => s + l.cantidad * l.precio, 0) + P.lineas.reduce((s, l) => s + num(l.cantidad) * num(l.precio), 0);
   const base = Math.max(0, subtotal - num(P.descuento));
   const iva = base * num(P.iva) / 100, total = base + iva;
@@ -587,7 +605,7 @@ function avisos() {
   for (const b of lista()) {
     if (!pendienteDeBoda(b)) continue;
     const s = b.seguimiento.proximo;
-    if (s) { const d = dias(s); if (d <= lim) out.push({ b, k: "seg", sev: d < 0 ? "bad" : d === 0 ? "acc" : "warn", fecha: s, d, t: d < 0 ? `Seguimiento vencido hace ${-d} ${-d === 1 ? "día" : "días"}` : d === 0 ? "Seguimiento para hoy" : `Seguimiento en ${d} ${d === 1 ? "día" : "días"}` }); }
+    if (s && segActivo(b)) { const d = dias(s); if (d <= lim) out.push({ b, k: "seg", sev: d < 0 ? "bad" : d === 0 ? "acc" : "warn", fecha: s, d, t: d < 0 ? `Seguimiento vencido hace ${-d} ${-d === 1 ? "día" : "días"}` : d === 0 ? "Seguimiento para hoy" : `Seguimiento en ${d} ${d === 1 ? "día" : "días"}` }); }
     if (b.fecha) {
       const d = dias(b.fecha), c = calc(b);
       if (d >= 0 && d <= 30) out.push({ b, k: "boda", sev: "acc", fecha: b.fecha, d, t: d === 0 ? "La boda es hoy" : `La boda es en ${d} ${d === 1 ? "día" : "días"}` });
@@ -604,7 +622,7 @@ function avisos() {
 
 /* ============ almacenamiento ============ */
 const LS_KEY = "izone-crm-v1";
-const store = { mode: "cargando", db: null, main: {}, eco: {}, canal: null, bodas: {}, dirty: new Set(), timers: {}, ver: {}, chains: {}, error: "", downloads: null };
+const store = { llamadas: {}, mode: "cargando", db: null, main: {}, eco: {}, canal: null, bodas: {}, dirty: new Set(), timers: {}, ver: {}, chains: {}, error: "", downloads: null };
 const lista = () => Object.values(store.bodas).sort((a, b) => (a.fecha || "9999").localeCompare(b.fecha || "9999"));
 
 function lsRead() { try { return JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch { return null; } }
@@ -629,8 +647,14 @@ function escribir(path, getData, v) {
     .catch(e => toast("No se pudo guardar: " + errTxt(e)));
 }
 function separar(b) { const c = clone(b); const eco = { presupuesto: c.presupuesto, contrato: c.contrato }; delete c.presupuesto; delete c.contrato; return { main: c, eco }; }
-function componer(id) { const m = store.main[id]; return m ? normalizar(Object.assign(clone(m), clone(store.eco[id] || {})), id) : null; }
-function guardarBoda(b) { store.bodas[b.id] = b; const id = b.id; programar("bodas/" + id, () => store.bodas[id]); }
+function componer(id) {
+  const m = store.main[id]; if (!m) return null;
+  const b = normalizar(Object.assign(clone(m), clone(store.eco[id] || {})), id), P = b.presupuesto;
+  /* Punto de partida para detectar cambios en el presupuesto */
+  if (store.eco[id]) { const t = Math.round(calc(b).total * 100) / 100; if (P.ultimoTotal == null) P.ultimoTotal = t; if (P.estado === "Aceptado" && P.totalAceptado == null) P.totalAceptado = t; }
+  return b;
+}
+function guardarBoda(b) { registrarCambioPresupuesto(b); store.bodas[b.id] = b; const id = b.id; programar("bodas/" + id, () => store.bodas[id]); }
 function guardarAjustes() { programar("ajustes/general", () => A); }
 async function borrarBoda(id) {
   const path = "bodas/" + id; clearTimeout(store.timers[path]); delete store.timers[path]; store.dirty.delete(path);
@@ -657,6 +681,7 @@ async function cargarDatos() {
   for (const r of (e.data || [])) store.eco[r.boda_id] = r.data;
   A = a.data && a.data.data ? merge(clone(AJUSTES_DEF), a.data.data) : clone(AJUSTES_DEF);
   store.bodas = {}; for (const id in store.main) store.bodas[id] = componer(id);
+  await cargarLlamadas();
   store.cargado = true; store.error = "";
   escucharCambios();
 }
@@ -670,6 +695,8 @@ function escucharCambios() {
     .on("postgres_changes", { event: "*", schema: "public", table: "ajustes" }, p => { if (!store.dirty.has("ajustes/general") && p.new && p.new.data) { A = merge(clone(AJUSTES_DEF), p.new.data); render(); } })
     .on("postgres_changes", { event: "*", schema: "public", table: "perfiles" }, seg)
     .on("postgres_changes", { event: "*", schema: "public", table: "roles" }, seg)
+    .on("postgres_changes", { event: "*", schema: "public", table: "llamadas" }, p => { const id = (p.new && p.new.id) || (p.old && p.old.id); if (!id || llTimers[id]) return; if (p.eventType === "DELETE") delete store.llamadas[id]; else store.llamadas[id] = merge(llamadaVacia(), p.new.data); render(); })
+    .on("postgres_changes", { event: "*", schema: "public", table: "reuniones" }, () => { if (esAdmin()) cargarReuniones(); })
     .subscribe();
 }
 function cambio(tipo, p) {
@@ -686,7 +713,7 @@ function cambio(tipo, p) {
 /* Las contraseñas, el horario de las contraseñas temporales y los permisos los comprueba el servidor de Supabase
    (Auth + seguridad por filas). El navegador solo decide qué pantallas enseñar. */
 const MAX_ADMINS = 3;
-const SECCIONES = [["panel", "Panel y avisos"], ["bodas", "Bodas"], ["calendario", "Calendario"], ["estadisticas", "Estadísticas"], ["economico", "Presupuestos, pagos y contratos"], ["ajustes", "Ajustes"]];
+const SECCIONES = [["panel", "Panel y avisos"], ["bodas", "Bodas"], ["llamadas", "Registro de llamadas"], ["calendario", "Calendario"], ["estadisticas", "Estadísticas"], ["economico", "Presupuestos, pagos y contratos"], ["ajustes", "Ajustes"]];
 const SES_KEY = "izone-acceso";
 const INACTIVIDAD_MIN = 30;
 const sec = { listo: false, hayUsuarios: true, yo: null, perfiles: {}, roles: {}, accesos: {}, usuarios: {}, temporales: {}, accesoId: null, offset: 0, fallos: 0, bloqueo: 0, error: "", aviso: "", actividad: Date.now(), latido: 0, comprobando: false };
@@ -734,10 +761,10 @@ const numAdmins = () => Object.values(sec.usuarios).filter(u => u.rol === "admin
 function puede(s) {
   const p = perfil(); if (!p) return false;
   if (p.tipo === "usuario" && p.rol === "admin") return true;
-  if (s === "equipo" || s === "accesos" || s === "datos") return false;
+  if (s === "equipo" || s === "accesos" || s === "datos" || s === "reuniones") return false;
   return ((sec.roles[p.rol] || {}).secciones || []).includes(s);
 }
-const RUTAS = ["panel", "bodas", "calendario", "disponibilidad", "estadisticas", "ajustes", "equipo", "accesos", "datos"];
+const RUTAS = ["panel", "bodas", "llamadas", "calendario", "disponibilidad", "estadisticas", "ajustes", "equipo", "accesos", "reuniones", "datos"];
 const permisoDeRuta = r => ({ avisos: "panel", boda: "bodas", disponibilidad: "calendario" }[r] || r);
 const primeraRuta = () => RUTAS.find(r => puede(permisoDeRuta(r))) || null;
 function estadoTemporal(t) {
@@ -781,6 +808,8 @@ async function tomarSesion(accesoPrevio, motivoEntrada) {
     if (e2) throw e2;
     sec.accesoId = id; try { sessionStorage.setItem(SES_KEY, id); } catch { }
   }
+  if (est.reunion && est.reunion.pendiente) { sec.reunion = est.reunion; return ""; }
+  sec.reunion = null;
   await cargarSeguridad();
   await cargarDatos();
   return "";
@@ -807,7 +836,7 @@ async function cerrarSesion(motivo) {
   if (!sec.yo) return;
   const acc = sec.accesoId;
   sec.yo = null; sec.accesoId = null; ui.modal = null; ui.menu = false; ui.pdf = null;
-  store.bodas = {}; store.main = {}; store.eco = {}; store.cargado = false; sec.perfiles = {}; sec.accesos = {}; mapearPerfiles(); dbx.raw = null; dbx.error = ""; ui.dbQ = ""; ui.dbVer = null;
+  store.bodas = {}; store.main = {}; store.eco = {}; store.llamadas = {}; store.cargado = false; sec.reunion = null; reu.lista = []; reu.asistencia = []; reu.cargado = false; gcal.token = null; ui.llSel = null; sec.perfiles = {}; sec.accesos = {}; mapearPerfiles(); dbx.raw = null; dbx.error = ""; ui.dbQ = ""; ui.dbVer = null;
   try { sessionStorage.removeItem(SES_KEY); } catch { }
   sec.aviso = motivo === "Cerró sesión" ? "" : "Se cerró la sesión: " + motivo.charAt(0).toLowerCase() + motivo.slice(1) + ".";
   render();
@@ -824,10 +853,14 @@ async function vigilar() {
     if (!error && est) {
       sec.offset = new Date(est.ahora).getTime() - Date.now();
       if (!est.ok) { sec.comprobando = false; return cerrarSesion(est.motivo || "Acceso no válido"); }
-      const cambioRol = sec.yo.rol !== est.perfil.rol; sec.yo = est.perfil; if (cambioRol) { await cargarSeguridad(); await cargarDatos(); }
+      const cambioRol = sec.yo.rol !== est.perfil.rol; sec.yo = est.perfil;
+      if (est.reunion && est.reunion.pendiente) { if (!sec.reunion) { sec.reunion = est.reunion; ui.modal = null; ui.menu = false; ui.gateErr = ""; render(); } sec.comprobando = false; return; }
+      if (sec.reunion) { sec.reunion = null; await cargarSeguridad(); await cargarDatos(); render(); }
+      else if (cambioRol) { await cargarSeguridad(); await cargarDatos(); }
     }
     if (Date.now() - sec.latido > 60000 && sec.accesoId) { sec.latido = Date.now(); await sb.rpc("registrar_latido", { acceso: sec.accesoId }); }
     if (esAdmin() && (ui.ruta === "accesos" || ui.ruta === "equipo")) { await cargarAccesos(); render(); }
+    if (esAdmin() && ui.ruta === "reuniones") await cargarReuniones();
   } catch { }
   sec.comprobando = false;
 }
@@ -851,6 +884,7 @@ async function funcionAdmin(body) {
 function vistaGate() {
   const marca = `<div class="gate-logo"><span class="mark"><b>I</b>-ZONE</span><span class="sub">events</span></div>`;
   const caja = inner => `<div class="gate"><div class="gate-box glass">${marca}${inner}</div><p class="gate-note">CRM interno de IZONE EVENTS. Cada entrada y salida queda registrada.</p></div>`;
+  if (sec.yo && sec.reunion) return vistaGateReunion();
   if (!SUPA_URL) return caja(`<p class="err">Falta configurar la conexión con Supabase.</p>`);
   if (sec.error) return caja(`<p class="err" role="alert">${esc(sec.error)}</p><button class="btn" type="button" onclick="location.reload()">Recargar</button>`);
   if (!secListo() || ui.gateBusy === "cargando") return caja(`<p class="muted" style="text-align:center">Cargando…</p>`);
@@ -874,7 +908,7 @@ function vistaGate() {
 /* --- menú del usuario --- */
 function vistaMenu() {
   const p = perfil(); if (!p) return "";
-  const nombresRuta = { panel: "Panel", bodas: "Bodas", calendario: "Calendario", disponibilidad: "Disponibilidad del equipo", estadisticas: "Estadísticas", ajustes: "Ajustes", equipo: "Equipo y permisos", accesos: "Historial de accesos", datos: "Base de datos" };
+  const nombresRuta = { panel: "Panel", bodas: "Bodas", llamadas: "Registro de llamadas", reuniones: "Reuniones", calendario: "Calendario", disponibilidad: "Disponibilidad del equipo", estadisticas: "Estadísticas", ajustes: "Ajustes", equipo: "Equipo y permisos", accesos: "Historial de accesos", datos: "Base de datos" };
   const t = p.tipo === "temporal" ? `<span class="chip warn">Temporal hasta ${esc(new Date(p.hasta).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }))}</span>` : "";
   return `<div class="um-head"><span class="avatar">${esc(iniciales(p.nombre))}</span><div style="min-width:0"><div class="t">${esc(p.nombre)}</div><div class="s">${esc(p.email)}</div></div></div>
     <div class="row" style="gap:6px;padding:0 6px 8px"><span class="chip ${p.rol === "admin" ? "acc" : ""}">${esc(rolNombre(p.rol))}</span>${t}</div>
@@ -1030,11 +1064,11 @@ function datosDeLocalidad(m, cpActual) {
 function elegirLoc(i) {
   const m = loc.items[i], el = loc.input; if (!m || !el) return;
   cerrarLoc();
-  const obj = el.dataset.b != null ? bodaActual() : el.dataset.d != null ? ui.draft : null;
+  const obj = el.dataset.b != null ? bodaActual() : el.dataset.d != null ? ui.draft : el.dataset.l != null ? llamadaActual() : null;
   if (obj) {
     if (!obj.lugar) obj.lugar = {};
     Object.assign(obj.lugar, datosDeLocalidad(m, obj.lugar.cp));
-    if (el.dataset.b != null) guardarBoda(obj);
+    if (el.dataset.b != null) guardarBoda(obj); else if (el.dataset.l != null) guardarLlamada(obj);
     el.value = m.nombre; render();
     if (m.cps.length > 1 && !obj.lugar.cp) toast(`${m.nombre} tiene ${m.cps.length} códigos postales: elige el tuyo en «Código postal»`);
   } else { el.value = m.nombre; el.dispatchEvent(new Event("input", { bubbles: true })); }
@@ -1048,7 +1082,7 @@ function listaCps(nombre) {
   const m = loc.datos && loc.datos.find(x => x.n === sinTildes(nombre));
   dl.innerHTML = m ? m.cps.map(c => `<option value="${c}"></option>`).join("") : "";
 }
-document.addEventListener("focusin", e => { if (e.target.dataset && e.target.dataset.cp) { const b = bodaActual(); cargarLocalidades().then(() => listaCps(b ? b.lugar.localidad : "")); } });
+document.addEventListener("focusin", e => { if (e.target.dataset && e.target.dataset.cp) { const b = e.target.dataset.l != null ? llamadaActual() : bodaActual(); cargarLocalidades().then(() => listaCps(b ? b.lugar.localidad : "")); } });
 document.addEventListener("input", e => { if (e.target.dataset && e.target.dataset.loc) sugerirLoc(e.target); });
 document.addEventListener("focusin", e => { if (e.target.dataset && e.target.dataset.loc) { cargarLocalidades(); if (e.target.value) sugerirLoc(e.target); } });
 document.addEventListener("focusout", e => { if (e.target === loc.input) setTimeout(() => { if (document.activeElement !== loc.input) cerrarLoc(); }, 150); });
@@ -1194,6 +1228,302 @@ function inputDisp(el) {
   if (m) { const b = bodaActual(), p = b && plantilla().find(p => normN(p.nombre) === normN(el.value)); const x = b && b[m[1]][m[2]]; if (p && p.tel && x && telLibre(x.tel, p)) { x.tel = p.tel; guardarBoda(b); } }
   const md = D.d && /^(djs|auxiliares)\.(\d+)\.nombre$/.exec(D.d);
   if (md) { const p = plantilla().find(p => normN(p.nombre) === normN(el.value)); if (p && p.tel && telLibre(getPath(ui.draft, `${md[1]}.${md[2]}.tel`), p)) setPath(ui.draft, `${md[1]}.${md[2]}.tel`, p.tel); }
+  return false;
+}
+
+/* ============ Estados de la boda ============ */
+const ESTADOS = ["Llamada", "Presupuesto enviado", "Reservada", "Cerrada", "Celebrada", "Cancelada"];
+const ESTADO_INFO = { "Llamada": "Primer contacto", "Presupuesto enviado": "Esperando respuesta", "Reservada": "Fecha reservada con señal, falta cerrar", "Cerrada": "Contratada", "Celebrada": "Ya se celebró", "Cancelada": "No sigue adelante" };
+const cerrada = b => b.estado === "Cerrada" || b.estado === "Celebrada";
+const sinCerrar = b => ["Llamada", "Presupuesto enviado", "Reservada"].includes(b.estado);
+/* Seguimiento mensual con los novios: solo para bodas cerradas que aún no se han celebrado */
+const segActivo = b => b.estado === "Cerrada" && pendienteDeBoda(b);
+
+/* ============ Lugar: ficha completa y lugares ya usados ============ */
+function lineaLugar(L, conNombre = true) {
+  const loc = [L.cp, L.localidad].filter(Boolean).join(" ");
+  const prov = L.provincia && sinTildes(L.provincia) !== sinTildes(L.localidad) ? L.provincia : "";
+  return [conNombre ? L.nombre : "", L.direccion, loc, prov, L.comunidad, L.pais && L.pais !== "España" ? L.pais : ""].filter(Boolean).join(" · ");
+}
+function fichaLugar(b) {
+  const L = b.lugar, q = [L.nombre, L.direccion, L.cp, L.localidad, L.provincia, L.pais].filter(Boolean).join(", ");
+  setTimeout(() => completarBodaActual(b), 0);
+  if (!L.nombre && !L.localidad) return `<p class="muted" style="margin:0 0 12px;font-size:13.5px">Escribe el lugar y la localidad: el código postal, la provincia, la comunidad y el país se rellenan solos.</p>`;
+  const dato = (t, v) => `<div><div class="eyebrow">${t}</div><div>${v ? esc(v) : `<span class="muted">—</span>`}</div></div>`;
+  return `<div class="ficha-lugar">${dato("Lugar", L.nombre)}${dato("Localidad", L.localidad)}${dato("Código postal", L.cp)}${dato("Provincia", L.provincia)}${dato("Comunidad autónoma", L.comunidad)}${dato("País", L.pais)}
+    ${q ? `<a class="btn btn-sm" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}" target="_blank" rel="noopener">${ICON.ext}Ver en el mapa</a>` : ""}</div>`;
+}
+/* Lugares de bodas anteriores, para rellenar dirección y localidad al escribir el nombre */
+function lugaresConocidos() {
+  const m = new Map();
+  for (const b of lista()) { const L = b.lugar, n = normN(L.nombre); if (!n) continue; const prev = m.get(n); if (!prev || Object.values(L).filter(Boolean).length > Object.values(prev).filter(Boolean).length) m.set(n, clone(L)); }
+  for (const l of Object.values(store.llamadas || {})) { const L = l.lugar || {}, n = normN(L.nombre); if (n && !m.has(n)) m.set(n, clone(L)); }
+  return m;
+}
+const datalistLugares = id => `<datalist id="${id}">${[...lugaresConocidos().values()].sort((a, b) => a.nombre.localeCompare(b.nombre, "es")).map(L => `<option value="${esc(L.nombre)}" label="${esc(lineaLugar(L, false))}"></option>`).join("")}</datalist>`;
+function rellenarLugar(obj, nombre) {
+  const L = lugaresConocidos().get(normN(nombre)); if (!L || !obj.lugar) return false;
+  /* Un lugar conocido trae su dirección y su localidad; el contacto solo se rellena si está vacío */
+  let cambio = false;
+  const ubic = ["direccion", "localidad", "cp", "provincia", "comunidad", "pais"];
+  if (L.localidad || L.direccion) for (const k of ubic) if ((obj.lugar[k] || "") !== (L[k] || "")) { obj.lugar[k] = L[k] || ""; cambio = true; }
+  if (!obj.lugar.contacto && L.contacto) { obj.lugar.contacto = L.contacto; cambio = true; }
+  return completarUbicacion(obj) || cambio;
+}
+
+/* Si hay localidad pero faltan provincia, comunidad o país (bodas antiguas), se completan con la lista del INE */
+function completarUbicacion(obj) {
+  const L = obj.lugar; if (!L || !L.localidad || (L.provincia && L.comunidad && L.pais)) return false;
+  if (!loc.datos) { cargarLocalidades(); return false; }
+  const m = loc.datos.find(x => x.n === sinTildes(L.localidad)); if (!m) return false;
+  const d = datosDeLocalidad(m, L.cp); let c = false;
+  for (const k of ["provincia", "comunidad", "pais", "cp"]) if (!L[k] && d[k]) { L[k] = d[k]; c = true; }
+  return c;
+}
+const completadas = new Set();
+function completarBodaActual(b) {
+  if (!b || completadas.has(b.id) || !puede("bodas")) return;
+  if (!loc.datos) { cargarLocalidades().then(() => completarBodaActual(b)); return; }
+  completadas.add(b.id);
+  if (completarUbicacion(b)) { guardarBoda(b); render(); }
+}
+
+/* ============ Número de auxiliares ============ */
+const MAX_AUX = 10;
+function ajustarAuxiliares(obj, n) {
+  n = Math.max(0, Math.min(MAX_AUX, Number(n) || 0));
+  const quitados = obj.auxiliares.slice(n).filter(a => (a.nombre || "").trim());
+  while (obj.auxiliares.length < n) obj.auxiliares.push({ id: uid("a"), nombre: "", tel: "", horasExtra: 0 });
+  obj.auxiliares.length = n;
+  return quitados;
+}
+const selNumAux = (attr, n) => `<label class="f" style="max-width:190px"><span>Número de auxiliares</span><select ${attr}>${Array.from({ length: MAX_AUX + 1 }, (_, i) => `<option value="${i}" ${i === n ? "selected" : ""}>${i}</option>`).join("")}</select></label>`;
+
+/* ============ Presupuesto: se recalcula y deja constancia de cada cambio ============ */
+function registrarCambioPresupuesto(b) {
+  const P = b.presupuesto; if (!P || !puede("economico")) return;
+  const t = Math.round(calc(b).total * 100) / 100;
+  if (P.estado === "Aceptado" && P.totalAceptado == null) P.totalAceptado = t;
+  if (P.ultimoTotal == null || !["Enviado", "Aceptado"].includes(P.estado)) { P.ultimoTotal = t; return; }
+  if (Math.abs(t - P.ultimoTotal) < 0.005) return;
+  const last = P.historial[P.historial.length - 1];
+  if (last && last.auto && last.fecha === hoy()) last.totalDespues = t;
+  else P.historial.push({ fecha: hoy(), auto: true, de: "Cambios en la boda", a: "presupuesto actualizado", totalAntes: P.ultimoTotal, totalDespues: t });
+  P.ultimoTotal = t;
+}
+
+/* ============ Registro de llamadas ============ */
+const RESULTADOS = ["Pendiente", "Convertida en boda", "Descartada"];
+const llamadaVacia = () => ({ id: uid("l"), fecha: dtLocal(new Date()), atendio: (perfil() || {}).nombre || "", nombre: "", pareja: "", tel: "", email: "", fechaBoda: "", lugar: { nombre: "", direccion: "", localidad: "", cp: "", provincia: "", comunidad: "", pais: "", contacto: "" }, invitados: "", canal: (A.canales || [])[0] || "", detalle: "", packId: "", notas: "", resultado: "Pendiente", motivo: "", bodaId: "" });
+async function cargarLlamadas() {
+  if (!puede("llamadas")) { store.llamadas = {}; return; }
+  const { data, error } = await sb.from("llamadas").select("id,data").order("creado", { ascending: false }).limit(2000);
+  if (error) return;
+  store.llamadas = {}; for (const r of data) store.llamadas[r.id] = merge(llamadaVacia(), r.data);
+}
+const llTimers = {};
+function guardarLlamada(l) {
+  store.llamadas[l.id] = l; clearTimeout(llTimers[l.id]);
+  llTimers[l.id] = setTimeout(async () => { delete llTimers[l.id]; const { error } = await sb.from("llamadas").upsert({ id: l.id, data: clone(l) }); if (error) toast("No se pudo guardar la llamada: " + errTxt(error)); }, 500);
+}
+const llamadaActual = () => (store.llamadas || {})[ui.llSel];
+function vistaLlamadas() {
+  const L = Object.values(store.llamadas || {}), f = ui.llF || "Pendiente", q = normN(ui.llQ || "");
+  const vis = L.filter(l => (f === "todas" || l.resultado === f) && (!q || normN([l.nombre, l.pareja, l.tel, l.email, l.lugar.nombre, l.lugar.localidad, l.notas].join(" ")).includes(q))).sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
+  const cuenta = r => L.filter(l => l.resultado === r).length;
+  const lst = `<section class="panel glass"><h2 class="sec-h">Llamadas<span class="spacer"></span><button class="btn btn-primary btn-sm" type="button" data-act="ll-nueva">${ICON.plus}Nueva llamada</button></h2>
+    <div class="row" style="margin-bottom:10px">${[["Pendiente", "Pendientes"], ["Convertida en boda", "Convertidas"], ["Descartada", "Descartadas"], ["todas", "Todas"]].map(([k, t]) => `<button class="chipbtn" type="button" data-act="ll-f" data-v="${k}" aria-pressed="${f === k}">${t}${k !== "todas" ? ` <span class="muted">${cuenta(k)}</span>` : ""}</button>`).join("")}</div>
+    <input type="search" id="ll-buscar" placeholder="Buscar nombre, teléfono, lugar…" value="${esc(ui.llQ || "")}" aria-label="Buscar llamadas" style="margin-bottom:10px">
+    <div class="list">${vis.map(l => `<button type="button" class="item ll-item ${l.id === ui.llSel ? "sel" : ""}" data-act="ll-sel" data-id="${l.id}"><span class="sev ${l.resultado === "Pendiente" ? "warn" : l.resultado === "Descartada" ? "bad" : "acc"}"></span><span class="grow" style="text-align:left"><span class="t">${esc(l.nombre || "Sin nombre")}${l.pareja ? " & " + esc(l.pareja) : ""}</span><span class="s">${esc(l.fecha ? new Date(l.fecha).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "")}${l.fechaBoda ? " · boda " + fecha(l.fechaBoda) : ""}${l.lugar.localidad ? " · " + esc(l.lugar.localidad) : ""}</span></span></button>`).join("") || `<p class="muted">No hay llamadas ${f === "todas" ? "" : "en esta lista"}.</p>`}</div></section>`;
+  const l = llamadaActual();
+  const li = (p, t, ty = "text", at = "") => `<label class="f"><span>${t}</span><input type="${ty}" id="${fid("l", p)}" data-l="${p}" value="${esc(getPath(l, p) ?? "")}" ${at}></label>`;
+  const ls = (p, t, opts) => `<label class="f"><span>${t}</span><select id="${fid("l", p)}" data-l="${p}">${opts.map(o => { const [v, x] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}" ${String(getPath(l, p)) === String(v) ? "selected" : ""}>${esc(x)}</option>`; }).join("")}</select></label>`;
+  const det = !l ? `<section class="panel glass empty"><p class="muted">Elige una llamada o pulsa <b>Nueva llamada</b> mientras hablas con los novios.</p></section>` : `<section class="panel glass">
+    <h2 class="sec-h">${esc(l.nombre || "Nueva llamada")}<span class="chip ${l.resultado === "Pendiente" ? "warn" : l.resultado === "Descartada" ? "bad" : "ok"}">${esc(l.resultado)}</span></h2>
+    <div class="fields">${li("fecha", "Fecha y hora de la llamada", "datetime-local")}${li("atendio", "La atendió")}</div>
+    <h3 class="ll-h">Contacto</h3><div class="fields">${li("nombre", "Nombre y apellidos")}${li("pareja", "Pareja")}${li("tel", "Teléfono", "tel")}${li("email", "Email", "email")}</div>
+    <h3 class="ll-h">La boda</h3><div class="fields">${li("fechaBoda", "Fecha que buscan", "date")}${li("invitados", "Invitados (aprox.)", "number", 'min="0"')}${li("lugar.nombre", "Lugar", "text", 'list="ll-lugares" autocomplete="off"')}${li("lugar.localidad", "Localidad", "text", LOC_ATTR)}${li("lugar.cp", "Código postal", "text", 'inputmode="numeric" maxlength="5" list="cp-list" autocomplete="off" data-cp="1"')}${li("lugar.provincia", "Provincia")}${li("lugar.comunidad", "Comunidad autónoma")}${li("lugar.pais", "País")}
+      ${ls("packId", "Pack que les interesa", [["", "Sin decidir"], ...A.packs.map(p => [p.id, `${p.nombre} · ${eur(p.precio)}`])])}${ls("canal", "¿Cómo nos conocieron?", A.canales)}${li("detalle", "Detalle (red, planner, quién…)")}</div>
+    ${datalistLugares("ll-lugares")}
+    ${l.fechaBoda ? resumenDisponibilidad(l.fechaBoda) : ""}
+    <div class="fields" style="margin-top:12px"><label class="f wide"><span>Notas de la llamada</span><textarea id="l-notas" data-l="notas" rows="4" placeholder="Qué buscan, dudas, presupuesto que manejan, cuándo volver a llamar…">${esc(l.notas)}</textarea></label></div>
+    ${l.resultado === "Descartada" ? `<div class="fields">${li("motivo", "Motivo del descarte")}</div>` : ""}
+    <div class="row" style="margin-top:14px;justify-content:flex-end;gap:8px">
+      ${l.bodaId && store.bodas[l.bodaId] ? `<a class="btn btn-primary btn-sm" href="#boda-${l.bodaId}">Abrir la boda</a>` : `${puede("bodas") ? `<button class="btn btn-primary btn-sm" type="button" data-act="ll-convertir">Crear la boda con estos datos</button>` : ""}`}
+      ${l.resultado !== "Descartada" && !l.bodaId ? `<button class="btn btn-sm" type="button" data-act="ll-descartar">Descartar</button>` : l.resultado === "Descartada" ? `<button class="btn btn-sm" type="button" data-act="ll-reabrir">Volver a pendiente</button>` : ""}
+      <button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="ll-borrar">Borrar</button></div></section>`;
+  return `<section class="grid ll-grid" style="align-items:start">${lst}${det}</section>`;
+}
+function convertirLlamada(l) {
+  if (!puede("bodas")) return;
+  if (!(l.nombre || "").trim()) { toast("Escribe al menos el nombre de quien llama"); return; }
+  const b = nuevaBoda();
+  b.estado = "Llamada"; b.fecha = l.fechaBoda || ""; b.invitados = l.invitados || "";
+  b.novios.n1 = Object.assign(b.novios.n1, { nombre: l.nombre, tel: l.tel, email: l.email }); b.novios.n2.nombre = l.pareja || "";
+  b.lugar = Object.assign(b.lugar, clone(l.lugar)); b.captacion = { canal: l.canal, detalle: l.detalle };
+  if (l.packId) b.packId = l.packId;
+  b.notas = [`Llamada del ${l.fecha ? new Date(l.fecha).toLocaleString("es-ES", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) : ""}${l.atendio ? " (atendió " + l.atendio + ")" : ""}`, l.notas].filter(Boolean).join("\n");
+  b.llamadaId = l.id;
+  const y = new Date().getFullYear(); b.numero = `P-${y}-${String(lista().filter(x => (x.numero || "").startsWith("P-" + y)).length + 1).padStart(3, "0")}`;
+  b.presupuesto.iva = num(A.iva); b.presupuesto.senal = num(A.senal); b.seguimiento.frecuencia = num(A.frecuencia) || 1; b.seguimiento.proximo = "";
+  guardarBoda(b);
+  l.resultado = "Convertida en boda"; l.bodaId = b.id; guardarLlamada(l);
+  ui.bodaId = b.id; ui.tab = "resumen"; ir("boda-" + b.id); toast("Boda creada desde la llamada");
+}
+function accionLlamadas(act, el) {
+  if (!act.startsWith("ll-")) return false;
+  if (!puede("llamadas")) return true;
+  const l = llamadaActual();
+  switch (act) {
+    case "ll-f": ui.llF = el.dataset.v; render(); break;
+    case "ll-sel": ui.llSel = el.dataset.id; render(); break;
+    case "ll-nueva": { const n = llamadaVacia(); store.llamadas[n.id] = n; guardarLlamada(n); ui.llSel = n.id; ui.llF = "Pendiente"; render(); setTimeout(() => { const x = document.getElementById(fid("l", "nombre")); x && x.focus(); }, 30); break; }
+    case "ll-convertir": if (l) convertirLlamada(l); break;
+    case "ll-descartar": if (l) { l.resultado = "Descartada"; guardarLlamada(l); render(); } break;
+    case "ll-reabrir": if (l) { l.resultado = "Pendiente"; guardarLlamada(l); render(); } break;
+    case "ll-borrar": if (l) confirmar("¿Borrar esta llamada?", "Se borrará del registro. La boda creada desde ella, si la hay, no se toca.", "Borrar", async () => { const { error } = await sb.from("llamadas").delete().eq("id", l.id); if (error) toast("No se pudo borrar: " + errTxt(error)); else { delete store.llamadas[l.id]; ui.llSel = null; } }); break;
+  }
+  return true;
+}
+
+/* ============ Reuniones (solo administradores) ============ */
+const reu = { lista: [], asistencia: [], cargado: false };
+async function cargarReuniones() {
+  if (!esAdmin()) return;
+  const [r, a] = await Promise.all([sb.from("reuniones").select("*").order("desde", { ascending: false }).limit(300), sb.from("reunion_asistencia").select("*")]);
+  if (!r.error) reu.lista = r.data; if (!a.error) reu.asistencia = a.data; reu.cargado = true; render();
+}
+function estadoReunion(m) { if (m.cancelada) return "Cancelada"; const t = ahora().getTime(); return t < new Date(m.desde).getTime() ? "Programada" : t < new Date(m.hasta).getTime() ? "En curso" : "Terminada"; }
+const nombrePerfil = id => (sec.perfiles[id] || {}).nombre || "Cuenta borrada";
+function vistaReuniones() {
+  if (!reu.cargado) { setTimeout(cargarReuniones, 0); return `<section class="panel glass empty"><p class="muted">Cargando reuniones…</p></section>`; }
+  const chip = e => `<span class="chip ${{ "En curso": "ok", Programada: "warn", Terminada: "line", Cancelada: "bad" }[e]}">${e}</span>`;
+  const hora = iso => new Date(iso).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+  const filas = reu.lista.map(m => {
+    const e = estadoReunion(m), as = reu.asistencia.filter(a => a.reunion_id === m.id);
+    return `<div class="reu glass-in"><div class="row" style="justify-content:space-between;gap:10px"><div><b>${esc(m.titulo)}</b> ${chip(e)}</div>
+      <div class="row" style="gap:6px">${e === "Programada" || e === "En curso" ? `<button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="reu-cancelar" data-id="${m.id}">${e === "En curso" ? "Terminar ya" : "Cancelar"}</button>` : ""}</div></div>
+      <div class="reu-datos">
+        <div><div class="eyebrow">Fecha</div>${esc(fechaLarga(ymd(new Date(m.desde))))}</div>
+        <div><div class="eyebrow">Horario</div>${hora(m.desde)} – ${hora(m.hasta)}</div>
+        <div><div class="eyebrow">Contraseña de la reunión</div><span class="mono">${esc(m.clave)}</span> <button class="btn btn-sm btn-ghost" type="button" data-act="copiar" data-txt="${esc(m.clave)}">Copiar</button></div>
+        <div><div class="eyebrow">Creada</div>${fh(m.creado)}${m.creado_por ? " por " + esc(m.creado_por) : ""}</div>
+        <div class="wide"><div class="eyebrow">Participantes (${m.participantes.length})</div>${m.participantes.map(id => { const a = as.find(x => x.user_id === id); return `<span class="chip ${a ? "ok" : "line"}" title="${a ? "Entró a las " + hora(a.entrada) : "No ha entrado"}">${esc(nombrePerfil(id))}${a ? " · entró " + hora(a.entrada) : ""}</span>`; }).join(" ") || "Nadie"}</div>
+        ${m.notas ? `<div class="wide"><div class="eyebrow">Notas</div><span style="white-space:pre-line">${esc(m.notas)}</span></div>` : ""}
+        ${m.cancelada ? `<div class="wide muted">Cancelada ${m.cancelada_el ? "el " + fh(m.cancelada_el) : ""}</div>` : ""}</div></div>`;
+  }).join("");
+  return `<section class="panel glass"><h2 class="sec-h">Reuniones<span class="chip line">${reu.lista.length}</span><span class="spacer"></span><button class="btn btn-primary btn-sm" type="button" data-act="reu-nueva">${ICON.plus}Nueva reunión</button></h2>
+    <p class="muted" style="font-size:13.5px;margin:-6px 0 14px;max-width:80ch">Mientras una reunión está en curso, solo pueden entrar al CRM sus participantes. Cada uno entra con su correo, su contraseña y su rol de siempre, y además tiene que escribir la contraseña de la reunión. Los demás empleados no pueden entrar hasta que termine, y a quien esté dentro se le cierra la sesión. Los administradores siempre pueden entrar. Aquí queda el registro: contraseña, fecha, horario, participantes y a qué hora entró cada uno.</p>
+    <div class="stack">${filas || `<p class="muted">Todavía no hay reuniones.</p>`}</div></section>`;
+}
+function vistaModalReunion() {
+  const d = ui.reuDraft, err = ui.formErr ? `<p class="err" role="alert">${esc(ui.formErr)}</p>` : "";
+  const gente = Object.values(sec.perfiles).filter(p => !(p.rol === "admin" && !p.temporal)).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+  return `<div class="modal" data-act="modal-bg"><form class="box glass" id="form-reunion-nueva" role="dialog" aria-modal="true" aria-labelledby="mt" novalidate>
+    <div class="row" style="justify-content:space-between"><h2 id="mt">Nueva reunión</h2><button class="btn iconbtn btn-ghost" type="button" data-act="cerrar-modal" aria-label="Cerrar">${ICON.x}</button></div>
+    <div class="fields"><label class="f wide"><span>Título</span><input type="text" name="titulo" id="r-titulo" data-keep="1" value="${esc(d.titulo)}" placeholder="Reunión de coordinación de temporada"></label>
+      <label class="f"><span>Empieza</span><input type="datetime-local" name="desde" id="r-desde" data-keep="1" value="${esc(d.desde)}"></label>
+      <label class="f"><span>Termina</span><input type="datetime-local" name="hasta" id="r-hasta" data-keep="1" value="${esc(d.hasta)}"></label>
+      <label class="f"><span>Contraseña de la reunión</span><span class="row" style="gap:6px;flex-wrap:nowrap"><input type="text" name="clave" id="r-clave" data-keep="1" value="${esc(d.clave)}" autocomplete="off" class="mono"><button class="btn btn-sm" type="button" data-act="reu-gen">Otra</button></span></label></div>
+    <fieldset style="margin-top:12px"><legend>Participantes</legend>
+      ${gente.length ? `<div class="reu-gente">${gente.map(p => `<label class="check"><input type="checkbox" name="part" value="${p.id}" data-keep="1" ${d.part.includes(p.id) ? "checked" : ""}>${esc(p.nombre)} <span class="muted">${esc(rolNombre(p.rol))}${p.temporal ? " · temporal" : ""}</span></label>`).join("")}</div>` : `<p class="muted">No hay empleados que no sean administradores.</p>`}
+      <p class="muted" style="font-size:13px;margin:8px 0 0">Los administradores no hace falta añadirlos: siempre pueden entrar.</p></fieldset>
+    <div class="fields" style="margin-top:12px"><label class="f wide"><span>Notas (orden del día, acuerdos…)</span><textarea name="notas" id="r-notas" data-keep="1" rows="3">${esc(d.notas)}</textarea></label></div>
+    ${err}<div class="foot"><button class="btn" type="button" data-act="cerrar-modal">Cancelar</button><button class="btn btn-primary" type="submit" ${ui.formBusy ? "disabled" : ""}>Crear reunión</button></div></form></div>`;
+}
+async function crearReunion(f) {
+  const titulo = (f.get("titulo") || "").toString().trim(), desde = new Date(f.get("desde")), hasta = new Date(f.get("hasta")), clave = (f.get("clave") || "").toString().trim(), part = f.getAll("part").map(String), notas = (f.get("notas") || "").toString();
+  const fail = m => { ui.formErr = m; ui.formBusy = false; render(); };
+  Object.assign(ui.reuDraft, { titulo, desde: f.get("desde"), hasta: f.get("hasta"), clave, part, notas });
+  if (!titulo) return fail("Ponle un título.");
+  if (isNaN(desde) || isNaN(hasta)) return fail("Pon la hora de inicio y de fin.");
+  if (hasta <= desde) return fail("La hora de fin tiene que ser posterior a la de inicio.");
+  if (hasta <= ahora()) return fail("La hora de fin ya ha pasado.");
+  if (clave.length < 6) return fail("La contraseña de la reunión debe tener al menos 6 caracteres.");
+  if (!part.length) return fail("Elige al menos un participante.");
+  ui.formBusy = true; ui.formErr = ""; render();
+  const { error } = await sb.from("reuniones").insert({ titulo, desde: desde.toISOString(), hasta: hasta.toISOString(), clave, participantes: part, notas, creado_por: sec.yo.nombre });
+  if (error) return fail("No se pudo crear: " + errTxt(error));
+  ui.formBusy = false; ui.modal = null; await cargarReuniones(); toast("Reunión creada. Pasa la contraseña a los participantes.");
+}
+function accionReuniones(act, el) {
+  if (!act.startsWith("reu-")) return false;
+  if (!esAdmin()) { toast("Solo los administradores pueden hacer esto"); return true; }
+  if (act === "reu-nueva") { const d0 = ahora(); d0.setMinutes(Math.ceil(d0.getMinutes() / 15) * 15, 0, 0); ui.reuDraft = { titulo: "", desde: dtLocal(d0), hasta: dtLocal(new Date(d0.getTime() + 3600000)), clave: generarClave(), part: [], notas: "" }; ui.formErr = ""; ui.formBusy = false; ui.modal = "reunion"; render(); setTimeout(() => { const n = $("#r-titulo"); n && n.focus(); }, 30); }
+  if (act === "reu-gen") { const n = $("#r-clave"); if (n) n.value = generarClave(); }
+  if (act === "reu-cancelar") { const m = reu.lista.find(x => x.id === el.dataset.id); if (m) confirmar(estadoReunion(m) === "En curso" ? `¿Terminar «${m.titulo}» ahora?` : `¿Cancelar «${m.titulo}»?`, "El acceso al CRM vuelve a ser normal para todo el equipo. La reunión queda en el registro.", estadoReunion(m) === "En curso" ? "Terminar" : "Cancelar reunión", async () => { const { error } = await sb.from("reuniones").update({ cancelada: true, cancelada_el: new Date().toISOString() }).eq("id", m.id); if (error) toast("No se pudo cambiar: " + errTxt(error)); await cargarReuniones(); }); }
+  return true;
+}
+/* Pantalla para la contraseña de la reunión (participantes) */
+function vistaGateReunion() {
+  const r = sec.reunion, hasta = new Date(r.hasta).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+  return `<div class="gate"><div class="gate-box glass"><div class="gate-logo"><span class="mark"><b>I</b>-ZONE</span><span class="sub">events</span></div>
+    <form id="form-reunion" class="stack" novalidate><div><h2>Reunión en curso</h2><p class="muted" style="margin:6px 0 0;font-size:14px">«${esc(r.titulo)}» hasta las ${hasta}. Hola, ${esc(sec.yo.nombre)}: escribe la contraseña de la reunión para entrar con tu rol de siempre.</p></div>
+    <label class="f"><span>Contraseña de la reunión</span><input type="text" name="clave" id="g-reunion" data-keep="1" autocomplete="off" autocapitalize="off" spellcheck="false" required></label>
+    ${ui.gateErr ? `<p class="err" role="alert">${esc(ui.gateErr)}</p>` : ""}
+    <button class="btn btn-primary" type="submit" ${ui.gateBusy ? "disabled" : ""}>${ui.gateBusy ? "Comprobando…" : "Entrar a la reunión"}</button>
+    <button class="btn btn-ghost" type="button" data-act="salir">Salir</button></form></div><p class="gate-note">Mientras dure la reunión solo entran sus participantes. Queda registrado.</p></div>`;
+}
+document.addEventListener("submit", async e => {
+  if (e.target.id === "form-reunion-nueva") { e.preventDefault(); if (!ui.formBusy) crearReunion(new FormData(e.target)); return; }
+  if (e.target.id !== "form-reunion") return;
+  e.preventDefault(); if (ui.gateBusy) return;
+  const clave = (new FormData(e.target).get("clave") || "").toString().trim();
+  if (!clave) { ui.gateErr = "Escribe la contraseña de la reunión."; render(); return; }
+  ui.gateBusy = true; ui.gateErr = ""; render();
+  const { data, error } = await sb.rpc("entrar_reunion", { clave });
+  ui.gateBusy = false;
+  if (error || !data || !data.ok) { ui.gateErr = (data && data.motivo) || errTxt(error); render(); const n = $("#g-reunion"); if (n) { n.value = ""; n.focus(); } return; }
+  sec.reunion = null; ui.gateErr = "";
+  try { await cargarSeguridad(); await cargarDatos(); } catch (er) { store.error = errTxt(er); }
+  render(); toast(`Has entrado a «${data.titulo}»`);
+}, true);
+
+/* ============ Google Calendar (solo administradores) ============ */
+const gcal = { token: null, cargando: false };
+const urlCalendario = () => gcal.token ? `${SUPA_URL}/functions/v1/calendario-ics?t=${gcal.token}` : "";
+async function cargarTokenCalendario() {
+  if (!esAdmin() || gcal.cargando || gcal.token !== null) return;
+  gcal.cargando = true; const { data } = await sb.from("secretos").select("valor").eq("id", "ics_token").maybeSingle(); gcal.cargando = false;
+  gcal.token = data ? data.valor : ""; render();
+}
+async function nuevoTokenCalendario() {
+  const t = [...crypto.getRandomValues(new Uint8Array(24))].map(n => n.toString(16).padStart(2, "0")).join("");
+  const { error } = await sb.from("secretos").upsert({ id: "ics_token", valor: t });
+  if (error) { toast("No se pudo crear el enlace: " + errTxt(error)); return; }
+  gcal.token = t; render(); toast("Enlace del calendario creado");
+}
+function panelGoogleCalendar() {
+  if (!esAdmin()) return "";
+  if (gcal.token === null) setTimeout(cargarTokenCalendario, 0);
+  const url = urlCalendario();
+  return `<div class="panel glass"><h2 class="sec-h">Google Calendar</h2>
+    <p class="muted" style="font-size:13.5px;margin:-6px 0 12px">Conecta las bodas <b>cerradas</b> con Google Calendar. Las demás (llamadas, presupuestos enviados, reservadas o canceladas) no aparecen. Se actualiza solo: Google revisa el enlace cada pocas horas.</p>
+    ${url ? `<label class="f"><span>Enlace privado del calendario</span><input type="text" readonly value="${esc(url)}" id="gcal-url" onclick="this.select()"></label>
+      <div class="row" style="margin-top:10px;gap:8px"><button class="btn btn-sm btn-primary" type="button" data-act="copiar" data-txt="${esc(url)}">Copiar enlace</button><a class="btn btn-sm" href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl" target="_blank" rel="noopener">${ICON.ext}Abrir Google Calendar</a><button class="btn btn-sm btn-ghost" type="button" data-act="gcal-nuevo">Cambiar enlace</button></div>
+      <ol class="muted" style="font-size:13.5px;margin:12px 0 0;padding-left:20px"><li>Copia el enlace.</li><li>En Google Calendar: <b>Otros calendarios → + → Desde URL</b>.</li><li>Pega el enlace y pulsa <b>Añadir calendario</b>.</li></ol>
+      <p class="muted" style="font-size:12.5px;margin:8px 0 0">Quien tenga el enlace ve las bodas cerradas (novios, lugar y equipo, sin datos económicos ni DNI). Si se comparte por error, pulsa «Cambiar enlace» y el anterior deja de funcionar.</p>`
+      : gcal.token === "" ? `<button class="btn btn-sm btn-primary" type="button" data-act="gcal-nuevo">Crear enlace para Google Calendar</button>` : `<p class="muted">Cargando…</p>`}</div>`;
+}
+function accionGcal(act) {
+  if (act === "pres-ok") { const b = bodaActual(); if (b && puede("economico")) { b.presupuesto.totalAceptado = Math.round(calc(b).total * 100) / 100; guardarBoda(b); render(); toast("Anotado: los novios ya conocen el nuevo total"); } return true; }
+  if (act !== "gcal-nuevo") return false;
+  if (!esAdmin()) return true;
+  if (gcal.token) confirmar("¿Cambiar el enlace del calendario?", "El enlace anterior dejará de funcionar y tendrás que volver a añadir el calendario en Google con el nuevo.", "Cambiar enlace", nuevoTokenCalendario);
+  else nuevoTokenCalendario();
+  return true;
+}
+
+/* ============ Entradas de formulario de estas mejoras ============ */
+function inputMejoras(el) {
+  const D = el.dataset;
+  if (D.naux != null) { const b = bodaActual(); if (!b) return true; const q = ajustarAuxiliares(b, el.value); guardarBoda(b); render(); if (q.length) toast(`Quitado: ${q.map(a => a.nombre).join(", ")}`); return true; }
+  if (D.dnaux != null) { if (ui.draft) { ajustarAuxiliares(ui.draft, el.value); render(); } return true; }
+  if (D.l != null) { const l = llamadaActual(); if (!l) return true; setPath(l, D.l, val(el)); if (D.l === "lugar.nombre") rellenarLugar(l, el.value); guardarLlamada(l); if (["resultado", "fechaBoda", "lugar.nombre"].includes(D.l)) render(); return true; }
+  if (el.id === "ll-buscar") { ui.llQ = el.value; render(); return true; }
+  if (D.b === "lugar.nombre") { const b = bodaActual(); if (b && rellenarLugar(b, el.value)) { setPath(b, "lugar.nombre", el.value); guardarBoda(b); render(); return true; } }
+  if (D.d === "lugar.nombre" && ui.draft) { setPath(ui.draft, "lugar.nombre", el.value); if (rellenarLugar(ui.draft, el.value)) render(); return true; }
+  if (D.b === "estado") { const b = bodaActual(); if (b && el.value === "Cerrada" && !b.seguimiento.proximo && b.fecha && dias(b.fecha) > 0) { b.seguimiento.frecuencia = num(b.seguimiento.frecuencia) || num(A.frecuencia) || 1; b.seguimiento.proximo = siguienteSeguimiento(b, hoy()); } }
   return false;
 }
 
@@ -1663,7 +1993,7 @@ function leerRuta(h) {
   if (h == null) { try { h = (location.hash || "#panel").slice(1); } catch { h = "panel"; } }
   if (h.startsWith("cal-")) { ui.cal = h.slice(4); h = "calendario"; }
   if (h.startsWith("boda-")) { const id = h.slice(5); if (ui.bodaId !== id) ui.tab = ui.asistente === id ? "presupuesto" : "resumen"; ui.ruta = "boda"; ui.bodaId = id; }
-  else if (["panel", "bodas", "calendario", "disponibilidad", "estadisticas", "ajustes", "avisos", "equipo", "accesos", "datos"].includes(h)) { ui.ruta = h; }
+  else if (["panel", "bodas", "llamadas", "calendario", "disponibilidad", "estadisticas", "ajustes", "avisos", "equipo", "accesos", "reuniones", "datos"].includes(h)) { ui.ruta = h; }
   else ui.ruta = "panel";
 }
 let rutaActual = "";
@@ -1702,7 +2032,7 @@ function morph(el, html) { const t = document.createElement("template"); t.inner
 function render() {
   const ae = document.activeElement, id = ae && ae.id; let s1 = null, s2 = null;
   try { s1 = ae.selectionStart; s2 = ae.selectionEnd; } catch { }
-  if (!(secListo() && perfil())) {
+  if (!(secListo() && perfil()) || sec.reunion) {
     document.body.classList.add("locked"); morph($("#gate"), vistaGate()); morph($("#modal"), "");
     document.title = "CRM Bodas IZONE";
     if (id) { const n = document.getElementById(id); if (n && n !== document.activeElement) n.focus({ preventScroll: true }); }
@@ -1719,11 +2049,11 @@ function render() {
 function renderNav() {
   const av = store.cargado ? avisos() : [];
   const urg = av.filter(a => a.k === "seg").length;
-  const items = [["panel", "Panel", ICON.panel], ["bodas", "Bodas", ICON.bodas], ["calendario", "Calendario", ICON.cal], ["disponibilidad", "Disponibilidad", ICON.disp], ["estadisticas", "Estadísticas", ICON.stats], ["ajustes", "Ajustes", ICON.ajustes], ["equipo", "Equipo", ICON.equipo], ["accesos", "Accesos", ICON.accesos], ["datos", "Base de datos", ICON.db]].filter(([h]) => puede(permisoDeRuta(h)));
+  const items = [["panel", "Panel", ICON.panel], ["bodas", "Bodas", ICON.bodas], ["llamadas", "Llamadas", ICON.tel], ["calendario", "Calendario", ICON.cal], ["disponibilidad", "Disponibilidad", ICON.disp], ["estadisticas", "Estadísticas", ICON.stats], ["ajustes", "Ajustes", ICON.ajustes], ["equipo", "Equipo", ICON.equipo], ["accesos", "Accesos", ICON.accesos], ["reuniones", "Reuniones", ICON.reu], ["datos", "Base de datos", ICON.db]].filter(([h]) => puede(permisoDeRuta(h)));
   rutaActual = rutaActual || (ui.ruta === "boda" ? "boda-" + ui.bodaId : ui.ruta);
   const cur = ui.ruta === "boda" ? "bodas" : ui.ruta === "avisos" ? "panel" : ui.ruta;
   $("#nav").innerHTML = items.map(([h, l, i]) => `<a href="#${h}" ${cur === h ? 'aria-current="page"' : ""}>${i}<span>${l}</span>${h === "panel" && urg ? `<span class="count">${urg}</span>` : ""}</a>`).join("");
-  const m = items.filter(([h]) => h !== "disponibilidad").slice(0, 4).map(([h, l, i]) => `<a href="#${h}" ${cur === h ? 'aria-current="page"' : ""}>${i}<span>${{ "Estadísticas": "Datos", "Calendario": "Agenda" }[l] || l}</span></a>`);
+  const m = items.filter(([h]) => !["disponibilidad", "llamadas"].includes(h)).slice(0, 4).map(([h, l, i]) => `<a href="#${h}" ${cur === h ? 'aria-current="page"' : ""}>${i}<span>${{ "Estadísticas": "Datos", "Calendario": "Agenda" }[l] || l}</span></a>`);
   if (puede("bodas")) m.splice(Math.min(2, m.length), 0, `<button class="btn btn-primary add" data-act="nueva" type="button" aria-label="Añadir boda">${ICON.plus}</button>`);
   $("#mobnav").innerHTML = m.join("");
   $("#bell").innerHTML = ICON.bell + (av.length ? `<span class="badge">${av.length}</span>` : "");
@@ -1733,7 +2063,7 @@ function renderNav() {
   $("#userbtn").innerHTML = `<span class="avatar">${esc(iniciales(yo.nombre))}</span><span class="un">${esc(yo.nombre)}</span>${ICON.chev}`;
   $("#userbtn").setAttribute("aria-expanded", String(!!ui.menu)); $("#userbtn").setAttribute("aria-label", `${yo.nombre}, ${rolNombre(yo.rol)}: abrir menú`);
   $("#umenu").hidden = !ui.menu; $("#umenu").innerHTML = ui.menu ? vistaMenu() : "";
-  const titles = { disponibilidad: "Disponibilidad del equipo", calendario: "Calendario", panel: "Panel", bodas: "Bodas", estadisticas: "Estadísticas", ajustes: "Ajustes", avisos: "Avisos", equipo: "Equipo y permisos", accesos: "Historial de accesos", datos: "Base de datos" };
+  const titles = { llamadas: "Registro de llamadas", reuniones: "Reuniones", disponibilidad: "Disponibilidad del equipo", calendario: "Calendario", panel: "Panel", bodas: "Bodas", estadisticas: "Estadísticas", ajustes: "Ajustes", avisos: "Avisos", equipo: "Equipo y permisos", accesos: "Historial de accesos", datos: "Base de datos" };
   const b = bodaActual();
   $("#title").textContent = ui.ruta === "boda" ? (b ? nombres(b) : "Boda") : titles[ui.ruta];
   document.title = "CRM Bodas IZONE";
@@ -1752,6 +2082,8 @@ function vista() {
     case "boda": return err + vistaBoda();
     case "estadisticas": return err + vistaStats();
     case "calendario": return err + vistaCalendario();
+    case "llamadas": return err + vistaLlamadas();
+    case "reuniones": return err + vistaReuniones();
     case "disponibilidad": return err + vistaDisponibilidad();
     case "ajustes": return err + vistaAjustes();
     case "avisos": return err + vistaAvisos(true);
@@ -1803,9 +2135,9 @@ function vistaAvisos(full) {
 
 /* ---------- Lista de bodas ---------- */
 function vistaBodas() {
-  const filtros = [["proximas", "Próximas"], ["todas", "Todas"], ["provisional", "Pack provisional"], ["celebradas", "Celebradas"], ["canceladas", "Canceladas"]];
+  const filtros = [["proximas", "Próximas"], ["sincerrar", "Sin cerrar"], ["cerradas", "Cerradas"], ["todas", "Todas"], ["provisional", "Pack provisional"], ["celebradas", "Celebradas"], ["canceladas", "Canceladas"]];
   const q = ui.q.trim().toLowerCase();
-  let L = lista().filter(b => ({ proximas: pendienteDeBoda(b), todas: true, provisional: b.packProvisional && activa(b), celebradas: b.estado === "Celebrada" || (activa(b) && b.fecha && dias(b.fecha) < 0), canceladas: b.estado === "Cancelada" }[ui.filtro]));
+  let L = lista().filter(b => ({ proximas: pendienteDeBoda(b), sincerrar: sinCerrar(b), cerradas: b.estado === "Cerrada", todas: true, provisional: b.packProvisional && activa(b), celebradas: b.estado === "Celebrada" || (activa(b) && b.fecha && dias(b.fecha) < 0), canceladas: b.estado === "Cancelada" }[ui.filtro]));
   if (q) L = L.filter(b => [nombres(b), b.lugar.nombre, b.lugar.localidad, b.captacion.detalle, packDe(b).nombre, ...b.djs.map(d => d.nombre)].join(" ").toLowerCase().includes(q));
   if (ui.filtro === "celebradas") L.reverse();
   return `<section class="panel glass" style="padding:14px 16px"><div class="row">
@@ -1819,11 +2151,11 @@ function tarjeta(b) {
   const seg = b.seguimiento.proximo && pendienteDeBoda(b) ? dias(b.seguimiento.proximo) : null;
   return `<a class="card glass" href="#boda-${b.id}">
     <div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap">${datebox(b.fecha)}<div class="stack" style="gap:4px;align-items:flex-end">${estadoChip(b)}${d != null && d >= 0 && activa(b) ? `<span class="muted tab-num" style="font-size:13px">faltan ${d} días</span>` : ""}</div></div>
-    <div><div class="names">${esc(nombres(b))}</div><div class="muted">${esc(b.lugar.nombre || "Lugar sin definir")}${b.lugar.localidad ? " · " + esc(b.lugar.localidad) : ""}</div></div>
+    <div><div class="names">${esc(nombres(b))}</div><div class="muted">${esc(b.lugar.nombre || "Lugar sin definir")}${b.lugar.localidad ? " · " + esc(b.lugar.localidad) + (b.lugar.provincia && sinTildes(b.lugar.provincia) !== sinTildes(b.lugar.localidad) ? " (" + esc(b.lugar.provincia) + ")" : "") : ""}</div></div>
     <div class="meta"><span class="chip ${b.packProvisional ? "warn" : ""}">${esc(packDe(b).nombre)}${b.packProvisional ? " · provisional" : ""}</span>${b.happyMoment ? `<span class="chip">Happy moment</span>` : ""}${inc ? `<span class="chip bad">${inc} incidencia${inc > 1 ? "s" : ""}</span>` : ""}${seg != null && seg <= 0 ? `<span class="chip bad">Seguimiento pendiente</span>` : ""}${b.ejemplo ? `<span class="chip line">Ejemplo</span>` : ""}</div>
     <div class="foot"><span class="muted">${esc(b.captacion.canal)}${b.captacion.detalle ? " · " + esc(b.captacion.detalle) : ""}</span>${puede("economico") ? `<b class="tab-num">${eur(c.total)}</b>` : ""}</div></a>`;
 }
-function estadoChip(b) { const m = { Reservada: "warn", Confirmada: "ok", Celebrada: "line", Cancelada: "bad" }; return `<span class="chip ${m[b.estado] || ""}">${esc(b.estado)}</span>`; }
+function estadoChip(b) { const m = { Llamada: "line", "Presupuesto enviado": "warn", Reservada: "acc", Cerrada: "ok", Confirmada: "ok", Celebrada: "line", Cancelada: "bad" }; return `<span class="chip ${m[b.estado] || ""}">${esc(b.estado)}</span>`; }
 
 /* ---------- Detalle de boda ---------- */
 const inp = (path, label, type = "text", extra = "") => `<label class="f ${extra.includes("wide") ? "wide" : ""}"><span>${label}</span><input type="${type}" id="${fid("b", path)}" data-b="${path}" value="${esc(getPath(bodaActual(), path) ?? "")}" ${type === "number" ? 'min="0" step="any" inputmode="decimal"' : ""} ${extra.replace("wide", "")}></label>`;
@@ -1846,7 +2178,7 @@ function vistaBoda() {
   <section class="hero glass">
     <div class="grow"><div class="row" style="gap:8px">${estadoChip(b)}<span class="chip ${b.packProvisional ? "warn" : "acc"}">${esc(packDe(b).nombre)}${b.packProvisional ? " · provisional" : ""}</span>${b.happyMoment ? `<span class="chip">Happy moment</span>` : ""}${b.ejemplo ? `<span class="chip line">Ejemplo</span>` : ""}</div>
       <div class="names">${esc(nombres(b))}</div>
-      <div class="muted">${b.fecha ? esc(fechaLarga(b.fecha)) : "Sin fecha"} · ${esc(b.lugar.nombre || "Lugar sin definir")} · ${puede("economico") ? `Presupuesto ${esc(b.numero || "")} <b class="tab-num" style="color:var(--ink)">${eur(c.total)}</b>` : esc(b.numero || "")}</div></div>
+      <div class="muted">${b.fecha ? esc(fechaLarga(b.fecha)) : "Sin fecha"} · ${esc(b.lugar.nombre || "Lugar sin definir")}${b.lugar.localidad ? ", " + esc(b.lugar.localidad) : ""}${b.lugar.provincia && sinTildes(b.lugar.provincia) !== sinTildes(b.lugar.localidad) ? " (" + esc(b.lugar.provincia) + ")" : ""} · ${puede("economico") ? `Presupuesto ${esc(b.numero || "")} <b class="tab-num" style="color:var(--ink)">${eur(c.total)}</b>` : esc(b.numero || "")}</div></div>
     ${d != null && activa(b) && b.estado !== "Celebrada" ? `<div style="text-align:right"><div class="count tab-num">${d >= 0 ? d : "—"}</div><div class="eyebrow">${d >= 0 ? (d === 1 ? "día para la boda" : "días para la boda") : "ya celebrada"}</div></div>` : ""}
   </section>
   ${asist}
@@ -1866,9 +2198,10 @@ function tabResumen(b) {
     </div>
     <div class="stack" style="gap:18px">
       <div class="panel glass"><h2 class="sec-h">La boda</h2>
-        <div class="fields">${inp("fecha", "Fecha", "date")}${inp("horaInicio", "Hora de inicio", "time")}${inp("horaFin", "Hora de fin", "time")}${inp("invitados", "Invitados", "number")}${sel("estado", "Estado", ["Reservada", "Confirmada", "Celebrada", "Cancelada"])}</div></div>
+        <div class="fields">${inp("fecha", "Fecha", "date")}${inp("horaInicio", "Hora de inicio", "time")}${inp("horaFin", "Hora de fin", "time")}${inp("invitados", "Invitados", "number")}${sel("estado", "Estado", ESTADOS.map(e => [e, `${e} · ${ESTADO_INFO[e]}`]))}</div></div>
       <div class="panel glass"><h2 class="sec-h">Lugar</h2>
-        <div class="fields">${inp("lugar.nombre", "Nombre del lugar")}${inp("lugar.localidad", "Localidad", "text", LOC_ATTR)}${inp("lugar.cp", "Código postal", "text", 'inputmode="numeric" maxlength="5" list="cp-list" autocomplete="off" data-cp="1"')}${inp("lugar.provincia", "Provincia")}${inp("lugar.comunidad", "Comunidad autónoma")}${inp("lugar.pais", "País")}${inp("lugar.direccion", "Dirección", "text", "wide")}${inp("lugar.contacto", "Contacto del lugar", "text", "wide")}</div></div>
+        ${fichaLugar(b)}${datalistLugares("b-lugares")}
+        <div class="fields">${inp("lugar.nombre", "Nombre del lugar", "text", 'list="b-lugares" autocomplete="off"')}${inp("lugar.localidad", "Localidad", "text", LOC_ATTR)}${inp("lugar.cp", "Código postal", "text", 'inputmode="numeric" maxlength="5" list="cp-list" autocomplete="off" data-cp="1"')}${inp("lugar.provincia", "Provincia")}${inp("lugar.comunidad", "Comunidad autónoma")}${inp("lugar.pais", "País")}${inp("lugar.direccion", "Dirección", "text", "wide")}${inp("lugar.contacto", "Contacto del lugar", "text", "wide")}</div></div>
     </div>
   </section>
   <section class="grid g2" style="align-items:start">
@@ -1887,7 +2220,8 @@ function tabResumen(b) {
 
 function personas(b, key, titulo, min) {
   const arr = b[key];
-  return `<div class="panel glass"><h2 class="sec-h">${titulo}<span class="chip line">${arr.length}</span><span class="spacer"></span><button class="btn btn-sm" type="button" data-act="add-persona" data-k="${key}">${ICON.plus}Añadir</button></h2>
+  return `<div class="panel glass"><h2 class="sec-h">${titulo}<span class="chip line">${arr.length}</span><span class="spacer"></span>${key === "auxiliares" ? "" : `<button class="btn btn-sm" type="button" data-act="add-persona" data-k="${key}">${ICON.plus}Añadir</button>`}</h2>
+    ${key === "auxiliares" ? `<div class="fields" style="margin-bottom:12px">${selNumAux(`id="b-naux" data-naux="1"`, arr.length)}</div>` : ""}
     ${datalistEquipo("pl-" + key, key, b.fecha, b.id)}
     <div class="stack">${arr.map((p, i) => `<div class="rowcard">
       ${inp(`${key}.${i}.nombre`, "Nombre", "text", `list="pl-${key}" autocomplete="off"`)}${inp(`${key}.${i}.tel`, "Teléfono", "tel")}${inp(`${key}.${i}.horasExtra`, "Horas extra", "number")}
@@ -1897,8 +2231,8 @@ function personas(b, key, titulo, min) {
 function tabEquipo(b) {
   const url = (b.playlist.url || "").trim(); const okUrl = /^https?:\/\//i.test(url);
   return `<section class="grid g2" style="align-items:start">
-    <div class="stack" style="gap:18px">${personas(b, "djs", "DJs", 1)}${personas(b, "auxiliares", "Auxiliares", 2)}
-      <p class="muted" style="font-size:13.5px;margin:0 6px">Las horas extra se suman al presupuesto: ${eur(A.precios.horaExtraDj)} por hora de DJ y ${eur(A.precios.horaExtraAux)} por hora de auxiliar (cámbialo en Ajustes).</p></div>
+    <div class="stack" style="gap:18px">${personas(b, "djs", "DJs", 1)}${personas(b, "auxiliares", "Auxiliares", 0)}
+      <p class="muted" style="font-size:13.5px;margin:0 6px">Todo se suma solo al presupuesto: ${eur(A.precios.horaExtraDj)} por hora extra de DJ, ${eur(A.precios.horaExtraAux)} por hora extra de auxiliar, ${eur(A.precios.auxiliarExtra)} por cada auxiliar a partir del ${num(A.auxIncluidos) + 1}.º y ${eur(A.precios.djExtra)} por cada DJ adicional (cámbialo en Ajustes).</p></div>
     <div class="stack" style="gap:18px">
       <div class="panel glass"><h2 class="sec-h">Playlist de la boda</h2>
         <div class="fields">${inp("playlist.url", "Enlace a la playlist (Spotify, Apple Music…)", "url", "wide placeholder=\"https://open.spotify.com/playlist/…\"")}${inp("playlist.canciones", "Canciones en la playlist", "number")}</div>
@@ -1927,6 +2261,8 @@ function tabPresupuesto(b) {
     <button class="btn btn-sm" type="button" data-act="copiar-doc" data-doc="presupuesto">Copiar texto</button>
     ${enIframe ? "" : `<button class="btn btn-sm" type="button" data-act="imprimir">Imprimir / PDF</button>`}
   </section>
+  ${P.estado === "Aceptado" && P.totalAceptado != null && Math.abs(c.total - P.totalAceptado) > 0.5 ? `<section class="banner glass"><div class="grow"><b>El total ha cambiado desde que lo aceptaron:</b> ${eur(P.totalAceptado)} → ${eur(c.total)}. Envíales el presupuesto actualizado.</div><button class="btn btn-sm" type="button" data-act="pres-ok">Marcar como comunicado</button></section>` : ""}
+  <p class="muted" style="margin:0 4px;font-size:13px">El presupuesto se recalcula solo con cualquier cambio: pack, happy moment, número de DJs y auxiliares, horas extra, conceptos, descuento o IVA.</p>
   <article class="doc printable" id="doc-presupuesto">
     <div class="doc-head"><div><div class="logo"><span class="mark" style="font-size:30px"><b>I</b>-ZONE</span><span class="sub" style="font-size:19px">events</span></div>
       <div style="font-size:13px;margin-top:10px;color:inherit;opacity:.8">${[E.nombre, E.cif && "CIF " + E.cif, E.direccion, E.telefono, E.email].filter(Boolean).map(esc).join("<br>")}</div></div>
@@ -1956,8 +2292,8 @@ function tabPresupuesto(b) {
     <div class="panel glass"><h2 class="sec-h">Pagos recibidos<span class="spacer"></span><button class="btn btn-sm" type="button" data-act="add-pago">${ICON.plus}Añadir pago</button></h2>
       ${P.pagos.length ? `<div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th class="num">Importe</th><th></th></tr></thead><tbody>${P.pagos.map((p, i) => `<tr><td><input type="date" id="${fid("b", "presupuesto.pagos." + i + ".fecha")}" data-b="presupuesto.pagos.${i}.fecha" value="${esc(p.fecha)}" aria-label="Fecha"></td><td><input type="text" id="${fid("b", "presupuesto.pagos." + i + ".nota")}" data-b="presupuesto.pagos.${i}.nota" value="${esc(p.nota)}" aria-label="Concepto del pago"></td><td class="num"><input type="number" min="0" step="any" style="width:100px;text-align:right" id="${fid("b", "presupuesto.pagos." + i + ".importe")}" data-b="presupuesto.pagos.${i}.importe" value="${esc(p.importe)}" aria-label="Importe"></td><td><button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="del-pago" data-i="${i}" aria-label="Quitar pago">${ICON.x}</button></td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">Sin pagos registrados.</p>`}
       <div class="fields" style="margin-top:14px">${area("presupuesto.notas", "Notas internas del presupuesto", 2)}</div></div>
-    <div class="panel glass"><h2 class="sec-h">Historial de cambios de pack</h2>
-      ${P.historial.length ? `<div class="list">${P.historial.slice().reverse().map(h => `<div class="item"><div class="grow"><div class="t">${esc(h.de)} → ${esc(h.a)}</div><div class="s">${fecha(h.fecha)} · total ${eur(h.totalAntes)} → ${eur(h.totalDespues)}</div></div></div>`).join("")}</div>` : `<p class="muted">Sin cambios de pack todavía.</p>`}</div>
+    <div class="panel glass"><h2 class="sec-h">Historial de cambios del presupuesto</h2>
+      ${P.historial.length ? `<div class="list">${P.historial.slice().reverse().map(h => `<div class="item"><div class="grow"><div class="t">${h.auto ? "Presupuesto actualizado por cambios en la boda" : `${esc(h.de)} → ${esc(h.a)}`}</div><div class="s">${fecha(h.fecha)} · total ${eur(h.totalAntes)} → ${eur(h.totalDespues)}</div></div></div>`).join("")}</div>` : `<p class="muted">Sin cambios de pack todavía.</p>`}</div>
   </section>`;
 }
 
@@ -2021,6 +2357,7 @@ function tabIncidencias(b) {
 }
 
 function tabSeguimiento(b) {
+  if (!segActivo(b)) return `<section class="panel glass empty"><h2>Sin seguimiento</h2><p class="muted" style="max-width:56ch">El seguimiento mensual con los novios solo se hace en las bodas <b>cerradas</b> que todavía no se han celebrado. Esta boda está en «${esc(b.estado)}». Cuando la cierres, se programa solo.</p>${b.seguimiento.historial.length ? `<p class="muted">Tiene ${b.seguimiento.historial.length} seguimientos anteriores guardados.</p>` : ""}</section>`;
   const s = b.seguimiento, d = s.proximo ? dias(s.proximo) : null;
   return `<section class="grid g2" style="align-items:start">
     <div class="panel glass"><h2 class="sec-h">Próximo seguimiento</h2>
@@ -2039,12 +2376,12 @@ function vistaCalendario() {
   const [y, m] = ui.cal.split("-").map(Number);
   const first = new Date(y, m - 1, 1), offset = (first.getDay() + 6) % 7, nDias = new Date(y, m, 0).getDate();
   const semanas = Math.ceil((offset + nDias) / 7), H = hoy();
-  const contratadas = lista().filter(b => activa(b) && b.fecha);
+  const contratadas = lista().filter(b => activa(b) && b.fecha && (ui.calTodas || cerrada(b)));
   const porDia = {}; for (const b of contratadas) (porDia[b.fecha] = porDia[b.fecha] || []).push(b);
-  const segDia = {}; if (ui.calSeg) for (const b of lista().filter(pendienteDeBoda)) if (b.seguimiento.proximo) (segDia[b.seguimiento.proximo] = segDia[b.seguimiento.proximo] || []).push(b);
+  const segDia = {}; if (ui.calSeg) for (const b of lista().filter(segActivo)) if (b.seguimiento.proximo) (segDia[b.seguimiento.proximo] = segDia[b.seguimiento.proximo] || []).push(b);
   const delMes = contratadas.filter(b => b.fecha.startsWith(ui.cal));
   const prev = addMonths(ui.cal + "-01", -1).slice(0, 7), next = addMonths(ui.cal + "-01", 1).slice(0, 7);
-  const cls = b => b.estado === "Confirmada" ? "conf" : b.estado === "Celebrada" ? "done" : "res";
+  const cls = b => b.estado === "Cerrada" ? "conf" : b.estado === "Celebrada" ? "done" : "res";
   let celdas = "";
   for (let i = 0; i < semanas * 7; i++) {
     const d = new Date(y, m - 1, 1 - offset + i), k = ymd(d), fuera = d.getMonth() !== m - 1;
@@ -2060,9 +2397,10 @@ function vistaCalendario() {
       <a class="btn btn-sm iconbtn" href="#cal-${next}" aria-label="Mes siguiente" style="width:36px;height:36px;transform:scaleX(-1)">${ICON.back}</a>
       <a class="btn btn-sm" href="#cal-${H.slice(0, 7)}">Hoy</a>
       <span style="flex:1"></span>
+      <label class="check" style="font-size:14px"><input type="checkbox" class="switch" id="cal-todas" data-caltodas="1" ${ui.calTodas ? "checked" : ""}>Ver también las no cerradas</label>
       <label class="check" style="font-size:14px"><input type="checkbox" class="switch" id="cal-seg" data-calseg="1" ${ui.calSeg ? "checked" : ""}>Ver seguimientos</label>
     </div>
-    <div class="row cal-legend" style="margin-top:10px;gap:14px;font-size:13px"><span><i class="lg conf"></i>Confirmada</span><span><i class="lg res"></i>Reservada</span><span><i class="lg done"></i>Celebrada</span>${ui.calSeg ? `<span><i class="lg seg"></i>Seguimiento</span>` : ""}</div></section>
+    <div class="row cal-legend" style="margin-top:10px;gap:14px;font-size:13px"><span><i class="lg conf"></i>Cerrada</span><span><i class="lg done"></i>Celebrada</span>${ui.calTodas ? `<span><i class="lg res"></i>Sin cerrar (llamada, presupuesto, reservada)</span>` : `<span class="muted">Solo se ven las bodas cerradas.</span>`}${ui.calSeg ? `<span><i class="lg seg"></i>Seguimiento</span>` : ""}</div></section>
   <section class="panel glass" style="padding:14px">
     <div class="cal cal-head">${["lun", "mar", "mié", "jue", "vie", "sáb", "dom"].map(d => `<span>${d}</span>`).join("")}</div>
     <div class="cal">${celdas}</div></section>
@@ -2150,7 +2488,7 @@ function vistaAjustes() {
     <div class="panel glass"><h2 class="sec-h">Datos de la empresa</h2><p class="muted" style="font-size:13.5px;margin:-6px 0 12px">Aparecen en todos los presupuestos y contratos.</p>
       <div class="fields">${sinp("empresa.nombre", "Nombre")}${sinp("empresa.cif", "CIF")}${sinp("empresa.direccion", "Dirección", "text", true)}${sinp("empresa.localidad", "Localidad (lugar de firma)")}${sinp("empresa.telefono", "Teléfono", "tel")}${sinp("empresa.email", "Email", "email")}</div></div>
     <div class="panel glass"><h2 class="sec-h">Precios y seguimiento</h2>
-      <div class="fields">${sinp("precios.horaExtraDj", "Hora extra DJ (€)", "number")}${sinp("precios.horaExtraAux", "Hora extra auxiliar (€)", "number")}${sinp("precios.happyMoment", "Happy moment (€)", "number")}${sinp("iva", "IVA por defecto (%)", "number")}${sinp("senal", "Señal por defecto (€)", "number")}
+      <div class="fields">${sinp("precios.horaExtraDj", "Hora extra DJ (€)", "number")}${sinp("precios.horaExtraAux", "Hora extra auxiliar (€)", "number")}${sinp("precios.happyMoment", "Happy moment (€)", "number")}${sinp("precios.auxiliarExtra", "Auxiliar adicional (€)", "number")}${sinp("auxIncluidos", "Auxiliares incluidos en el pack", "number")}${sinp("precios.djExtra", "DJ adicional (€)", "number")}${sinp("djsIncluidos", "DJs incluidos en el pack", "number")}${sinp("iva", "IVA por defecto (%)", "number")}${sinp("senal", "Señal por defecto (€)", "number")}
       <label class="f"><span>Seguimiento de cada boda</span><select id="s-frecuencia" data-s="frecuencia">${[[1, "Cada mes"], [2, "Cada 2 meses"], [3, "Cada 3 meses"]].map(([v, l]) => `<option value="${v}" ${A.frecuencia == v ? "selected" : ""}>${l}</option>`).join("")}</select></label>
       ${sinp("avisoDias", "Avisar con días de antelación", "number")}</div>
       ${notif ? `<div class="row" style="margin-top:14px"><button class="btn btn-sm" type="button" data-act="notif">Activar avisos del navegador</button><span class="muted" style="font-size:13px">${Notification.permission === "granted" ? "Activados." : ""}</span></div>` : ""}</div>
@@ -2168,7 +2506,8 @@ function vistaAjustes() {
   <section class="grid g2" style="align-items:start">
     <div class="panel glass"><h2 class="sec-h">Copias y calendario</h2>
       <p class="muted" style="font-size:13.5px;margin:-6px 0 12px">${store.mode === "db" ? "Las bodas se guardan en el servidor del CRM. Puedes descargar una copia cuando quieras." : "Las bodas se guardan solo en este navegador. Descarga una copia de vez en cuando."}</p>
-      <div class="row"><button class="btn btn-sm" type="button" data-act="exportar">Descargar copia (.json)</button><button class="btn btn-sm" type="button" data-act="importar">Importar copia</button><button class="btn btn-sm" type="button" data-act="ics">Bodas y seguimientos al calendario (.ics)</button></div></div>
+      <div class="row"><button class="btn btn-sm" type="button" data-act="exportar">Descargar copia (.json)</button><button class="btn btn-sm" type="button" data-act="importar">Importar copia</button><button class="btn btn-sm" type="button" data-act="ics">Bodas cerradas al calendario (.ics)</button></div></div>
+    ${panelGoogleCalendar()}
     <div class="panel glass"><h2 class="sec-h">Canales de captación</h2>
       <div class="fields"><label class="f wide"><span>Uno por línea</span><textarea id="s-canales" data-canales="1" rows="6">${esc(A.canales.join("\n"))}</textarea></label></div></div>
   </section>`;
@@ -2177,6 +2516,7 @@ function vistaAjustes() {
 /* ---------- Modal: añadir boda ---------- */
 function vistaModal() {
   if (["usuario", "clave", "temporal", "temporal-ok"].includes(ui.modal)) return vistaModalSeg();
+  if (ui.modal === "reunion") return vistaModalReunion();
   if (ui.modal === "confirm") { const m = ui.confirm; return `<div class="modal" data-act="modal-bg"><div class="box glass small" role="dialog" aria-modal="true" aria-labelledby="mt"><h2 id="mt">${esc(m.titulo)}</h2><p class="muted" style="margin:0">${esc(m.texto)}</p><div class="foot"><button class="btn" type="button" data-act="cerrar-modal">Cancelar</button><button class="btn btn-primary" type="button" data-act="confirmar" id="btn-confirmar">${esc(m.boton)}</button></div></div></div>`; }
   const d = ui.draft;
   const g = p => esc(getPath(d, p) ?? "");
@@ -2186,13 +2526,13 @@ function vistaModal() {
   return `<div class="modal" data-act="modal-bg"><form class="box glass" id="form-boda" role="dialog" aria-modal="true" aria-labelledby="mt" novalidate>
     <div class="row" style="justify-content:space-between"><h2 id="mt">Añadir boda</h2><button class="btn iconbtn btn-ghost" type="button" data-act="cerrar-modal" aria-label="Cerrar">${ICON.x}</button></div>
     <fieldset><legend><i>1</i> Novios</legend><div class="fields">${di("novios.n1.nombre", "Nombre y apellidos (1) *")}${di("novios.n1.tel", "Teléfono (1)", "tel")}${di("novios.n1.email", "Email (1)", "email")}${di("novios.n2.nombre", "Nombre y apellidos (2)")}${di("novios.n2.tel", "Teléfono (2)", "tel")}${di("novios.n2.email", "Email (2)", "email")}</div></fieldset>
-    <fieldset><legend><i>2</i> La boda</legend><div class="fields">${di("fecha", "Fecha *", "date")}${di("lugar.nombre", "Lugar")}${di("lugar.localidad", "Localidad", "text", false, LOC_ATTR)}${di("invitados", "Invitados", "number")}</div></fieldset>
+    <fieldset><legend><i>2</i> La boda</legend><div class="fields">${di("fecha", "Fecha *", "date")}<label class="f"><span>Estado</span><select id="d-estado" data-d="estado">${ESTADOS.filter(e => e !== "Celebrada").map(e => `<option ${d.estado === e ? "selected" : ""}>${e}</option>`).join("")}</select></label>${di("lugar.nombre", "Lugar", "text", false, 'list="nd-lugares" autocomplete="off"')}${di("lugar.localidad", "Localidad", "text", false, LOC_ATTR)}${di("invitados", "Invitados", "number")}</div></fieldset>
     <fieldset><legend><i>3</i> Pack y extras</legend><div class="fields"><label class="f"><span>Pack</span><select id="d-pack" data-d="packId">${A.packs.map(p => `<option value="${esc(p.id)}" ${d.packId === p.id ? "selected" : ""}>${esc(p.nombre)} · ${eur(p.precio)}</option>`).join("")}</select></label></div>
       <label class="check"><input type="checkbox" class="switch" id="d-prov" data-d="packProvisional" ${d.packProvisional ? "checked" : ""}>Pack provisional (aún no han decidido)</label>
       <label class="check"><input type="checkbox" class="switch" id="d-hm" data-d="happyMoment" ${d.happyMoment ? "checked" : ""}>Happy moment contratado</label></fieldset>
     <fieldset><legend><i>4</i> Captación</legend><div class="fields"><label class="f"><span>¿Cómo nos conocieron?</span><select id="d-canal" data-d="captacion.canal">${A.canales.map(c => `<option ${canal === c ? "selected" : ""}>${esc(c)}</option>`).join("")}</select></label>${di("captacion.detalle", detLabel)}</div></fieldset>
-    <fieldset><legend><i>5</i> Equipo y música</legend><div class="fields">${di("djs.0.nombre", "DJ", "text", false, 'list="nd-djs" autocomplete="off"')}${di("auxiliares.0.nombre", "Auxiliar 1", "text", false, 'list="nd-aux" autocomplete="off"')}${di("auxiliares.1.nombre", "Auxiliar 2", "text", false, 'list="nd-aux" autocomplete="off"')}${di("playlist.url", "Enlace a la playlist", "url", true)}</div>
-      ${datalistEquipo("nd-djs", "djs", d.fecha, d.id)}${datalistEquipo("nd-aux", "auxiliares", d.fecha, d.id)}${resumenDisponibilidad(d.fecha)}
+    <fieldset><legend><i>5</i> Equipo y música</legend><div class="fields">${di("djs.0.nombre", "DJ", "text", false, 'list="nd-djs" autocomplete="off"')}${selNumAux(`id="d-naux" data-dnaux="1"`, d.auxiliares.length)}${d.auxiliares.map((a, i) => di(`auxiliares.${i}.nombre`, `Auxiliar ${i + 1}`, "text", false, 'list="nd-aux" autocomplete="off"')).join("")}${di("playlist.url", "Enlace a la playlist", "url", true)}</div>
+      ${datalistEquipo("nd-djs", "djs", d.fecha, d.id)}${datalistLugares("nd-lugares")}${datalistEquipo("nd-aux", "auxiliares", d.fecha, d.id)}${resumenDisponibilidad(d.fecha)}
       <p class="muted" style="margin:0;font-size:13.5px">Puedes añadir más DJs, auxiliares y horas extra después, dentro de la boda.</p></fieldset>
     ${ui.draftErr ? `<p class="err" role="alert">${esc(ui.draftErr)}</p>` : ""}
     <div class="foot"><button class="btn" type="button" data-act="cerrar-modal">Cancelar</button><button class="btn btn-primary" type="submit">Guardar y preparar presupuesto</button></div>
@@ -2212,7 +2552,7 @@ function cambiarPack(b, nuevo) {
   if (b.packId === nuevo) return;
   const antes = calc(b).total, de = packDe(b).nombre;
   b.packId = nuevo; b.presupuesto.precios.pack = null;
-  b.presupuesto.historial.push({ fecha: hoy(), de, a: packDe(b).nombre, totalAntes: antes, totalDespues: calc(b).total });
+  b.presupuesto.historial.push({ fecha: hoy(), de, a: packDe(b).nombre, totalAntes: antes, totalDespues: calc(b).total }); b.presupuesto.ultimoTotal = Math.round(calc(b).total * 100) / 100;
   guardarBoda(b); toast(`Presupuesto convertido a ${packDe(b).nombre}`);
 }
 function segHecho(b, nota) {
@@ -2230,9 +2570,9 @@ function ics() {
   const st = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z"; const f = s => s.replace(/-/g, "");
   const e = (id, s, t, desc) => ["BEGIN:VEVENT", "UID:" + id + "@izone-crm", "DTSTAMP:" + st, "DTSTART;VALUE=DATE:" + f(s), "DTEND;VALUE=DATE:" + f(addDays(s, 1)), "SUMMARY:" + t.replace(/[,;]/g, " "), "DESCRIPTION:" + (desc || "").replace(/[,;\n]/g, " "), "END:VEVENT"].join("\r\n");
   const ev = [];
-  for (const b of lista().filter(activa)) {
+  for (const b of lista().filter(cerrada)) {
     if (b.fecha) ev.push(e("boda-" + b.id, b.fecha, "Boda " + nombres(b), (b.lugar.nombre || "") + " · " + packDe(b).nombre));
-    if (b.seguimiento.proximo && pendienteDeBoda(b)) ev.push(e("seg-" + b.id + "-" + b.seguimiento.proximo, b.seguimiento.proximo, "Seguimiento " + nombreCorto(b), "Seguimiento mensual IZONE"));
+    if (b.seguimiento.proximo && segActivo(b)) ev.push(e("seg-" + b.id + "-" + b.seguimiento.proximo, b.seguimiento.proximo, "Seguimiento " + nombreCorto(b), "Seguimiento mensual IZONE"));
   }
   return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//IZONE EVENTS//CRM Bodas//ES", ...ev, "END:VCALENDAR"].join("\r\n");
 }
@@ -2254,7 +2594,7 @@ function guardarNueva() {
   const y = new Date().getFullYear(); const n = lista().filter(b => (b.numero || "").startsWith("P-" + y)).length + 1;
   d.numero = `P-${y}-${String(n).padStart(3, "0")}`;
   d.seguimiento.frecuencia = num(A.frecuencia) || 1;
-  d.seguimiento.proximo = siguienteSeguimiento(d, hoy());
+  d.seguimiento.proximo = d.estado === "Cerrada" ? siguienteSeguimiento(d, hoy()) : "";
   d.presupuesto.iva = num(A.iva); d.presupuesto.senal = num(A.senal);
   guardarBoda(d); ui.modal = null; ui.draft = null; ui.asistente = puede("economico") ? d.id : null; ui.tab = puede("economico") ? "presupuesto" : "resumen"; ui.bodaId = d.id;
   ir("boda-" + d.id); toast("Boda guardada");
@@ -2267,7 +2607,7 @@ document.addEventListener("submit", e => {
 document.addEventListener("input", e => {
   const el = e.target, D = el.dataset;
   if (!perfil()) return;
-  if (inputSeg(el) || inputDb(el) || inputDisp(el) || inputPdf(el)) return;
+  if (inputSeg(el) || inputDb(el) || inputMejoras(el) || inputDisp(el) || inputPdf(el)) return;
   if (D.b != null) { const b = bodaActual(); if (!b) return; setPath(b, D.b, val(el)); if (D.b === "presupuesto.estado" && el.value === "Aceptado" && !b.presupuesto.aceptado) b.presupuesto.aceptado = hoy(); guardarBoda(b); render(); }
   else if (D.pack != null) { const b = bodaActual(); if (b) cambiarPack(b, el.value); render(); }
   else if (D.s != null) { setPath(A, D.s, val(el)); guardarAjustes(); render(); }
@@ -2276,6 +2616,7 @@ document.addEventListener("input", e => {
   else if (D.inc != null) { ui.incNueva[D.inc] = el.value; render(); }
   else if (D.seg) { ui.segNota = el.value; }
   else if (D.calseg) { ui.calSeg = el.checked; render(); }
+  else if (D.caltodas) { ui.calTodas = el.checked; render(); }
   else if (el.id === "buscar") { ui.q = el.value; render(); }
 });
 document.addEventListener("change", e => { if (e.target.dataset.canales) render(); });
@@ -2309,6 +2650,7 @@ document.addEventListener("click", async e => {
   if (await accionSeg(act, el)) return;
   if (await accionDb(act, el)) return;
   if (accionDisp(act, el)) return;
+  if (accionLlamadas(act, el) || accionReuniones(act, el) || accionGcal(act)) return;
   if (accionPdf(act, el, b)) return;
   switch (act) {
     case "nueva": abrirNueva(); break;
