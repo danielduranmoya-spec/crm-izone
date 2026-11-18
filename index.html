@@ -65,6 +65,30 @@ button,input,select,textarea{font:inherit;color:inherit}
 select option,select optgroup{background-color:var(--paper);color:var(--paper-ink)}
 select option:checked{background-color:var(--accent);color:#fff}
 select option:disabled{color:var(--muted)}
+.disp-alerta{grid-column:1/-1;display:flex;gap:8px;align-items:center;margin:0;padding:8px 12px;border-radius:12px;background:var(--bad-soft);color:var(--bad);font-size:13.5px;font-weight:500}
+.disp-resumen{margin:4px 0 0;padding:10px 12px;border-radius:12px;background:var(--accent-soft);font-size:13.5px}
+.disp-grupo h3{font-size:15px;display:flex;gap:8px;align-items:center;margin:0 0 8px}
+.disp-grupo ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.disp-grupo li{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:12px;background:var(--field);border:1px solid var(--line);font-size:14px}
+.disp-dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--ok)}
+.disp-dot.acc{background:var(--accent)} .disp-dot.bad{background:var(--bad)}
+table.disp-cal{border-collapse:separate;border-spacing:2px;width:auto}
+table.disp-cal th{padding:4px 2px;text-align:center;font-size:11px;letter-spacing:0;min-width:28px;line-height:1.2;border:0}
+table.disp-cal th span{display:block;opacity:.7}
+table.disp-cal th.fin{color:var(--ink)} table.disp-cal th.hay{color:var(--accent)} table.disp-cal th.sel{background:var(--accent-soft);border-radius:8px}
+table.disp-cal th.pn{text-align:left;font-size:13.5px;text-transform:none;letter-spacing:0;color:var(--ink);font-weight:600;min-width:150px;padding-right:10px;position:sticky;left:0;background:var(--glass-strong);z-index:1;border-radius:8px}
+table.disp-cal th.pn small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
+table.disp-cal td.dc{padding:0;border:0}
+table.disp-cal td.dc button{width:28px;height:30px;border-radius:7px;border:1px solid var(--line);background:var(--field);color:#fff;font-size:12px;font-weight:700;cursor:pointer;padding:0}
+table.disp-cal td.dc.boda button{background:var(--accent);border-color:transparent}
+table.disp-cal td.dc.doble button{background:var(--bad);border-color:transparent}
+table.disp-cal td.dc.aus button{background:repeating-linear-gradient(135deg,var(--line) 0 4px,transparent 4px 8px);color:var(--muted)}
+table.disp-cal td.dc.sel button{outline:2px solid var(--ink);outline-offset:1px}
+.disp-key{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px}
+.disp-key.boda{background:var(--accent)} .disp-key.doble{background:var(--bad)} .disp-key.aus{background:repeating-linear-gradient(135deg,var(--muted) 0 3px,transparent 3px 6px);border:1px solid var(--line)}
+.rowcard.disp-row{grid-template-columns:minmax(0,1.3fr) minmax(140px,1fr) minmax(0,1.1fr) auto}
+.rowcard.disp-row.au{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto}
+@media (max-width:720px){.rowcard.disp-row{grid-template-columns:1fr 1fr}}
 #loc-sug{position:fixed;z-index:200;margin:0;padding:6px;list-style:none;overflow:auto;background:var(--paper);color:var(--paper-ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px -12px var(--shadow)}
 #loc-sug li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 12px;border-radius:10px;cursor:pointer}
 #loc-sug li small{color:var(--muted);font-size:12.5px;white-space:nowrap}
@@ -431,6 +455,7 @@ const nombreCorto = b => { const a = (b.novios.n1.nombre || "").trim().split(" "
 const nombres = b => [b.novios.n1.nombre, b.novios.n2.nombre].map(s => (s || "").trim()).filter(Boolean).join(" & ") || "Boda sin nombre";
 
 const ICON = {
+  disp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M8.5 15l2.2 2.2 4.8-4.7"/></svg>',
   db: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6.5c0 1.7 3.6 3 8 3s8-1.3 8-3V5.5"/><path d="M4 12v6.5c0 1.7 3.6 3 8 3s8-1.3 8-3V12"/></svg>',
   equipo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.5a3.5 3.5 0 010 7M18 14.5a6.5 6.5 0 013.5 5.5"/></svg>',
   accesos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h5a2 2 0 012 2v14a2 2 0 01-2 2h-5"/><path d="M10 17l5-5-5-5M15 12H3"/></svg>',
@@ -498,6 +523,7 @@ const AJUSTES_DEF = {
   precios: { horaExtraDj: 150, horaExtraAux: 40, happyMoment: 300 },
   iva: 21, senal: 500, frecuencia: 1, avisoDias: 7,
   canales: ["Redes sociales", "Wedding planner", "Boca a boca", "Web / Google", "Feria de bodas", "Finca / lugar", "Otro"],
+  plantilla: [], ausencias: [],
   contrato: CONTRATO_DEF
 };
 
@@ -568,6 +594,7 @@ function avisos() {
       if (b.packProvisional && d >= 0 && d <= 90) out.push({ b, k: "pack", sev: "warn", fecha: b.fecha, d, t: "Pack todavía provisional" });
       if (d >= 0 && d <= 14 && c.pendiente > 0.5 && puede("economico")) out.push({ b, k: "pago", sev: "warn", fecha: b.fecha, d, t: `Quedan ${eur(c.pendiente)} por cobrar` });
     }
+    if (b.fecha && dias(b.fecha) >= 0) for (const c of conflictosBoda(b)) out.push({ b, k: "equipo", sev: "bad", fecha: b.fecha, d: dias(b.fecha), t: `${c.nombre}: ${c.e.tipo === "ausente" ? textoEstado(c.e).toLowerCase() : "tiene otra boda ese día (" + c.e.bodas.map(nombreCorto).join(", ") + ")"}` });
     const inc = b.incidencias.filter(i => i.estado !== "Resuelta").length;
     if (inc) out.push({ b, k: "inc", sev: "bad", fecha: b.fecha, d: 999, t: `${inc} ${inc === 1 ? "incidencia abierta" : "incidencias abiertas"}` });
   }
@@ -710,9 +737,9 @@ function puede(s) {
   if (s === "equipo" || s === "accesos" || s === "datos") return false;
   return ((sec.roles[p.rol] || {}).secciones || []).includes(s);
 }
-const RUTAS = ["panel", "bodas", "calendario", "estadisticas", "ajustes", "equipo", "accesos", "datos"];
-const permisoDeRuta = r => ({ avisos: "panel", boda: "bodas" }[r] || r);
-const primeraRuta = () => RUTAS.find(puede) || null;
+const RUTAS = ["panel", "bodas", "calendario", "disponibilidad", "estadisticas", "ajustes", "equipo", "accesos", "datos"];
+const permisoDeRuta = r => ({ avisos: "panel", boda: "bodas", disponibilidad: "calendario" }[r] || r);
+const primeraRuta = () => RUTAS.find(r => puede(permisoDeRuta(r))) || null;
 function estadoTemporal(t) {
   if (t.revocado) return "Revocada";
   const now = ahora().getTime();
@@ -847,11 +874,11 @@ function vistaGate() {
 /* --- menú del usuario --- */
 function vistaMenu() {
   const p = perfil(); if (!p) return "";
-  const nombresRuta = { panel: "Panel", bodas: "Bodas", calendario: "Calendario", estadisticas: "Estadísticas", ajustes: "Ajustes", equipo: "Equipo y permisos", accesos: "Historial de accesos", datos: "Base de datos" };
+  const nombresRuta = { panel: "Panel", bodas: "Bodas", calendario: "Calendario", disponibilidad: "Disponibilidad del equipo", estadisticas: "Estadísticas", ajustes: "Ajustes", equipo: "Equipo y permisos", accesos: "Historial de accesos", datos: "Base de datos" };
   const t = p.tipo === "temporal" ? `<span class="chip warn">Temporal hasta ${esc(new Date(p.hasta).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }))}</span>` : "";
   return `<div class="um-head"><span class="avatar">${esc(iniciales(p.nombre))}</span><div style="min-width:0"><div class="t">${esc(p.nombre)}</div><div class="s">${esc(p.email)}</div></div></div>
     <div class="row" style="gap:6px;padding:0 6px 8px"><span class="chip ${p.rol === "admin" ? "acc" : ""}">${esc(rolNombre(p.rol))}</span>${t}</div>
-    <div class="um-sep"></div>${RUTAS.filter(puede).map(r => `<a href="#${r}">${esc(nombresRuta[r])}</a>`).join("")}
+    <div class="um-sep"></div>${RUTAS.filter(r => puede(permisoDeRuta(r))).map(r => `<a href="#${r}">${esc(nombresRuta[r])}</a>`).join("")}
     ${puede("bodas") ? `<button type="button" data-act="nueva">Añadir boda</button>` : ""}
     <div class="um-sep"></div>${p.tipo === "usuario" ? `<button type="button" data-act="mi-clave">Cambiar mi contraseña</button>` : ""}
     <button type="button" data-act="salir" class="danger">Cerrar sesión</button>`;
@@ -1034,6 +1061,141 @@ document.addEventListener("keydown", e => {
 }, true);
 document.addEventListener("pointerdown", e => { const li = e.target.closest && e.target.closest("#loc-sug li"); if (li) { e.preventDefault(); elegirLoc(Number(li.dataset.i)); } }, true);
 addEventListener("scroll", colocarLoc, true); addEventListener("resize", colocarLoc);
+
+/* ============ Disponibilidad del equipo (DJs y auxiliares) ============ */
+/* La plantilla y las ausencias se guardan en Ajustes. Las personas que ya aparecen en alguna boda cuentan aunque no tengan ficha. */
+const PUESTOS = ["DJ", "Auxiliar", "DJ y auxiliar"];
+const normN = s => sinTildes(s).replace(/\s+/g, " ");
+const plantilla = () => Array.isArray(A.plantilla) ? A.plantilla : (A.plantilla = []);
+const ausencias = () => Array.isArray(A.ausencias) ? A.ausencias : (A.ausencias = []);
+const sirvePara = (p, k) => p.puesto === "DJ y auxiliar" || (k === "djs" ? p.puesto === "DJ" : p.puesto === "Auxiliar");
+function personasEquipo() {
+  const m = new Map();
+  for (const p of plantilla()) { const n = normN(p.nombre); if (n && !m.has(n)) m.set(n, { nombre: p.nombre.trim(), puesto: p.puesto || "DJ", tel: p.tel || "", ficha: true }); }
+  for (const b of lista()) for (const [k, puesto] of [["djs", "DJ"], ["auxiliares", "Auxiliar"]]) for (const x of b[k]) {
+    const n = normN(x.nombre); if (!n) continue;
+    const e = m.get(n);
+    if (!e) m.set(n, { nombre: x.nombre.trim(), puesto, tel: x.tel || "", ficha: false });
+    else if (!e.ficha && e.puesto !== puesto) e.puesto = "DJ y auxiliar";
+  }
+  const ord = { "DJ": 0, "DJ y auxiliar": 1, "Auxiliar": 2 };
+  return [...m.values()].sort((a, b) => (ord[a.puesto] - ord[b.puesto]) || a.nombre.localeCompare(b.nombre, "es"));
+}
+/* Bodas (no canceladas) de cada persona en una fecha: Map nombreNormalizado -> [{ b, k }] */
+function asignacionesDia(f) {
+  const out = new Map(); if (!f) return out;
+  for (const b of lista()) {
+    if (!activa(b) || b.fecha !== f) continue;
+    for (const k of ["djs", "auxiliares"]) for (const x of b[k]) { const n = normN(x.nombre); if (!n) continue; if (!out.has(n)) out.set(n, []); if (!out.get(n).some(a => a.b.id === b.id)) out.get(n).push({ b, k }); }
+  }
+  return out;
+}
+const ausenciaDe = (nombre, f) => { const n = normN(nombre); return f && n ? ausencias().find(a => normN(a.nombre) === n && a.desde && a.desde <= f && (a.hasta || a.desde) >= f) : null; };
+function estadoPersona(nombre, f, sinBoda, asig) {
+  const n = normN(nombre), A2 = (asig || asignacionesDia(f)).get(n) || [], bodas = A2.filter(a => a.b.id !== sinBoda).map(a => a.b), aus = ausenciaDe(nombre, f);
+  return { tipo: aus ? "ausente" : bodas.length ? "ocupado" : "libre", bodas, aus };
+}
+const textoEstado = e => e.tipo === "ausente" ? `No disponible${e.aus.motivo ? " (" + e.aus.motivo + ")" : ""}${e.bodas.length ? ", pero está asignado a la boda de " + e.bodas.map(nombreCorto).join(" y ") : ""}` : e.tipo === "ocupado" ? `Ya tiene la boda de ${e.bodas.map(nombreCorto).join(" y ")}` : "Libre";
+/* Problemas de una boda: alguien de su equipo está en otra boda ese día o no está disponible */
+function conflictosBoda(b) {
+  if (!b || !b.fecha || !activa(b)) return [];
+  const asig = asignacionesDia(b.fecha), out = [];
+  for (const k of ["djs", "auxiliares"]) b[k].forEach((x, i) => { if (!normN(x.nombre)) return; const e = estadoPersona(x.nombre, b.fecha, b.id, asig); if (e.tipo !== "libre") out.push({ k, i, nombre: x.nombre.trim(), e }); });
+  return out;
+}
+function avisoConflicto(b, k, i) {
+  const c = conflictosBoda(b).find(c => c.k === k && c.i === i);
+  return c ? `<p class="disp-alerta" role="status">${ICON_ALERTA}${esc(c.nombre)}: ${esc(textoEstado(c.e))} ese día.</p>` : "";
+}
+const ICON_ALERTA = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9.5 17h-19z"/><path d="M12 10v4M12 17.5v.01"/></svg>';
+/* Sugerencias para los campos de nombre: la plantilla con su estado ese día */
+function datalistEquipo(id, k, f, sinBoda) {
+  const asig = asignacionesDia(f);
+  return `<datalist id="${id}">${personasEquipo().filter(p => sirvePara(p, k)).map(p => `<option value="${esc(p.nombre)}" label="${esc(f ? textoEstado(estadoPersona(p.nombre, f, sinBoda, asig)) : p.puesto)}"></option>`).join("")}</datalist>`;
+}
+/* Resumen para el formulario de nueva boda */
+function resumenDisponibilidad(f) {
+  if (!f) return `<p class="muted" style="margin:0;font-size:13.5px">Pon la fecha para ver quién está libre ese día.</p>`;
+  const asig = asignacionesDia(f), P = personasEquipo();
+  const libres = k => P.filter(p => sirvePara(p, k) && estadoPersona(p.nombre, f, null, asig).tipo === "libre").map(p => p.nombre);
+  const nb = lista().filter(b => activa(b) && b.fecha === f).length;
+  const l = (t, L) => `<b>${t}:</b> ${L.length ? esc(L.join(", ")) : "nadie libre"}`;
+  return `<p class="disp-resumen">${nb ? `Ese día ya hay ${nb} ${nb === 1 ? "boda" : "bodas"}. ` : "Ese día no hay otras bodas. "}${l("DJs libres", libres("djs"))} · ${l("Auxiliares libres", libres("auxiliares"))}</p>`;
+}
+
+/* --- Vista «Disponibilidad» --- */
+const DIAS_SEM = ["L", "M", "X", "J", "V", "S", "D"];
+function vistaDisponibilidad() {
+  const f = ui.dispFecha || hoy(), mes = ui.dispMes || f.slice(0, 7), P = personasEquipo(), asig = asignacionesDia(f), edita = puede("ajustes");
+  const bodasDia = lista().filter(b => activa(b) && b.fecha === f);
+  const grupo = (titulo, L, cls) => `<div class="disp-grupo"><h3>${titulo}<span class="chip line">${L.length}</span></h3>${L.length ? `<ul>${L.map(x => `<li><span class="disp-dot ${cls}"></span><span class="grow"><b>${esc(x.p.nombre)}</b> <span class="muted">${esc(x.p.puesto)}</span>${x.e.tipo !== "libre" ? `<br><span class="muted">${esc(textoEstado(x.e))}</span>` : ""}</span>${x.p.tel ? `<a class="btn btn-sm btn-ghost" href="tel:${esc(x.p.tel.replace(/\s/g, ""))}">${esc(x.p.tel)}</a>` : ""}</li>`).join("")}</ul>` : `<p class="muted">Nadie.</p>`}</div>`;
+  const est = P.map(p => ({ p, e: estadoPersona(p.nombre, f, null, asig) }));
+  const dia = `<section class="panel glass"><h2 class="sec-h">¿Quién está libre?</h2>
+    <div class="row" style="align-items:end;gap:12px"><label class="f" style="max-width:220px"><span>Fecha</span><input type="date" id="disp-fecha" value="${esc(f)}"></label>
+      <button class="btn btn-sm" type="button" data-act="disp-hoy">Hoy</button><button class="btn btn-sm" type="button" data-act="disp-sabado">Próximo sábado</button></div>
+    <p style="margin:14px 0 4px"><b>${esc(fechaLarga(f))}</b> · ${bodasDia.length ? bodasDia.map(b => `<a href="#boda-${b.id}">${esc(nombres(b))}</a>`).join(", ") : "sin bodas"}</p>
+    ${P.length ? `<div class="grid g3" style="margin-top:12px">${grupo("Libres", est.filter(x => x.e.tipo === "libre"), "ok")}${grupo("Trabajando ese día", est.filter(x => x.e.tipo === "ocupado"), "acc")}${grupo("No disponibles", est.filter(x => x.e.tipo === "ausente"), "bad")}</div>`
+      : `<p class="muted">Todavía no hay nadie en el equipo. ${edita ? "Añade a tus DJs y auxiliares más abajo." : "Pide a un administrador que añada la plantilla."}</p>`}</section>`;
+  // calendario del mes: personas en filas y días en columnas
+  const [y, m] = mes.split("-").map(Number), nd = new Date(y, m, 0).getDate(), diasMes = Array.from({ length: nd }, (_, i) => ymd(new Date(y, m - 1, i + 1)));
+  const asigMes = new Map(diasMes.map(d => [d, asignacionesDia(d)]));
+  const conBoda = new Set(lista().filter(b => activa(b) && b.fecha && b.fecha.startsWith(mes)).map(b => b.fecha));
+  const nombreMes = (t => t.charAt(0).toUpperCase() + t.slice(1))(new Date(y, m - 1, 1).toLocaleDateString("es-ES", { month: "long", year: "numeric" }));
+  const celda = (p, d) => {
+    const e = estadoPersona(p.nombre, d, null, asigMes.get(d)), n = e.bodas.length;
+    const cls = n > 1 || (n && e.tipo === "ausente") ? "doble" : e.tipo === "ausente" ? "aus" : n ? "boda" : "";
+    const tit = `${p.nombre} · ${fecha(d)}: ${e.tipo === "ausente" ? textoEstado(e) : n ? "boda de " + e.bodas.map(nombreCorto).join(" y ") + (n > 1 ? " (¡dos bodas!)" : "") : "libre"}`;
+    const marca = n > 1 ? "2" : n && e.tipo === "ausente" ? "!" : n ? "●" : e.tipo === "ausente" ? "–" : "";
+    return `<td class="dc ${cls} ${d === f ? "sel" : ""}"><button type="button" data-act="disp-dia" data-v="${d}" title="${esc(tit)}" aria-label="${esc(tit)}">${marca}</button></td>`;
+  };
+  const cal = `<section class="panel glass"><h2 class="sec-h">Calendario del equipo<span class="spacer"></span>
+      <button class="btn btn-sm btn-ghost" type="button" data-act="disp-mes" data-v="-1" aria-label="Mes anterior">‹</button><span style="min-width:150px;text-align:center">${esc(nombreMes)}</span><button class="btn btn-sm btn-ghost" type="button" data-act="disp-mes" data-v="1" aria-label="Mes siguiente">›</button></h2>
+    <div class="row muted" style="gap:14px;font-size:13px;margin:-4px 0 10px"><span><span class="disp-key boda"></span>Boda</span><span><span class="disp-key doble"></span>Conflicto: dos bodas o boda en día libre</span><span><span class="disp-key aus"></span>No disponible</span><span>Pulsa un día para ver quién está libre.</span></div>
+    ${P.length ? `<div class="tbl-wrap"><table class="disp-cal"><thead><tr><th class="pn">Persona</th>${diasMes.map(d => { const dt = parse(d), w = (dt.getDay() + 6) % 7; return `<th class="${w >= 5 ? "fin" : ""} ${conBoda.has(d) ? "hay" : ""} ${d === f ? "sel" : ""}"><span>${DIAS_SEM[w]}</span>${dt.getDate()}</th>`; }).join("")}</tr></thead>
+      <tbody>${P.map(p => `<tr><th class="pn" scope="row">${esc(p.nombre)}<small>${esc(p.puesto)}${p.ficha ? "" : " · sin ficha"}</small></th>${diasMes.map(d => celda(p, d)).join("")}</tr>`).join("")}</tbody></table></div>` : `<p class="muted">Sin personas todavía.</p>`}</section>`;
+  // plantilla y ausencias
+  const sinFicha = P.filter(p => !p.ficha);
+  const pl = plantilla(), au = ausencias();
+  const gestion = edita ? `<section class="grid g2" style="align-items:start">
+    <div class="panel glass"><h2 class="sec-h">Plantilla<span class="chip line">${pl.length}</span><span class="spacer"></span><button class="btn btn-sm" type="button" data-act="pl-add">${ICON.plus}Añadir</button></h2>
+      <p class="muted" style="font-size:13.5px;margin:-6px 0 12px">Las personas de la plantilla aparecen como sugerencia al asignar el equipo de una boda, con su disponibilidad.</p>
+      ${sinFicha.length ? `<div class="banner glass" style="margin-bottom:12px"><div class="grow">${sinFicha.length} ${sinFicha.length === 1 ? "persona aparece" : "personas aparecen"} en bodas pero no en la plantilla: ${esc(sinFicha.map(p => p.nombre).join(", "))}.</div><button class="btn btn-sm" type="button" data-act="pl-importar">Añadirlas</button></div>` : ""}
+      <div class="stack">${pl.map((p, i) => `<div class="rowcard disp-row">${sinp(`plantilla.${i}.nombre`, "Nombre")}<label class="f"><span>Puesto</span><select id="s-plantilla-${i}-puesto" data-s="plantilla.${i}.puesto">${PUESTOS.map(x => `<option ${p.puesto === x ? "selected" : ""}>${x}</option>`).join("")}</select></label>${sinp(`plantilla.${i}.tel`, "Teléfono", "tel")}<button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="pl-del" data-i="${i}" aria-label="Quitar a ${esc(p.nombre || "esta persona")}">${ICON.x}</button></div>`).join("") || `<p class="muted">Sin personas.</p>`}</div></div>
+    <div class="panel glass"><h2 class="sec-h">Vacaciones y días libres<span class="chip line">${au.length}</span><span class="spacer"></span><button class="btn btn-sm" type="button" data-act="au-add" ${P.length ? "" : "disabled"}>${ICON.plus}Añadir</button></h2>
+      <p class="muted" style="font-size:13.5px;margin:-6px 0 12px">Esos días la persona sale como «no disponible» y el CRM avisa si se le asigna una boda.</p>
+      <div class="stack">${au.map((a, i) => `<div class="rowcard disp-row au"><label class="f"><span>Persona</span><select id="s-ausencias-${i}-nombre" data-s="ausencias.${i}.nombre">${P.map(p => `<option ${normN(p.nombre) === normN(a.nombre) ? "selected" : ""}>${esc(p.nombre)}</option>`).join("")}</select></label>${sinp(`ausencias.${i}.motivo`, "Motivo")}<button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="au-del" data-i="${i}" aria-label="Quitar">${ICON.x}</button>${sinp(`ausencias.${i}.desde`, "Desde", "date")}${sinp(`ausencias.${i}.hasta`, "Hasta", "date")}</div>`).join("") || `<p class="muted">Nadie tiene días bloqueados.</p>`}</div></div></section>` : "";
+  return dia + cal + gestion;
+}
+function sabadoProximo() { const d = parse(hoy()); d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7 || 7)); return ymd(d); }
+function accionDisp(act, el) {
+  switch (act) {
+    case "disp-dia": ui.dispFecha = el.dataset.v; render(); return true;
+    case "disp-hoy": ui.dispFecha = hoy(); ui.dispMes = null; render(); return true;
+    case "disp-sabado": ui.dispFecha = sabadoProximo(); ui.dispMes = null; render(); return true;
+    case "disp-mes": { const base = (ui.dispMes || (ui.dispFecha || hoy()).slice(0, 7)) + "-01"; ui.dispMes = addMonths(base, Number(el.dataset.v)).slice(0, 7); render(); return true; }
+  }
+  if (!["pl-add", "pl-del", "pl-importar", "au-add", "au-del"].includes(act)) return false;
+  if (!puede("ajustes")) { toast("Necesitas permiso de Ajustes para cambiar la plantilla"); return true; }
+  const i = Number(el.dataset.i);
+  if (act === "pl-add") { plantilla().push({ id: uid("p"), nombre: "", puesto: "DJ", tel: "" }); guardarAjustes(); render(); setTimeout(() => { const n = document.getElementById(fid("s", `plantilla.${plantilla().length - 1}.nombre`)); n && n.focus(); }, 30); }
+  if (act === "pl-del") { plantilla().splice(i, 1); guardarAjustes(); render(); }
+  if (act === "pl-importar") { const n = personasEquipo().filter(p => !p.ficha); for (const p of n) plantilla().push({ id: uid("p"), nombre: p.nombre, puesto: p.puesto, tel: p.tel }); guardarAjustes(); render(); toast(`${n.length} ${n.length === 1 ? "persona añadida" : "personas añadidas"} a la plantilla`); }
+  if (act === "au-add") { const f = ui.dispFecha || hoy(); ausencias().push({ id: uid("v"), nombre: (personasEquipo()[0] || {}).nombre || "", desde: f, hasta: f, motivo: "" }); guardarAjustes(); render(); }
+  if (act === "au-del") { ausencias().splice(i, 1); guardarAjustes(); render(); }
+  return true;
+}
+/* El teléfono se rellena si está vacío o si era el de otra persona de la plantilla (se cambió de persona) */
+const telLibre = (tel, p) => !(tel || "").trim() || plantilla().some(q => q !== p && q.tel && q.tel.replace(/\s/g, "") === tel.replace(/\s/g, ""));
+function inputDisp(el) {
+  if (el.id === "disp-fecha") { if (el.value) { ui.dispFecha = el.value; ui.dispMes = null; render(); } return true; }
+  const D = el.dataset;
+  // al escribir el nombre de alguien de la plantilla en una boda, se rellena su teléfono
+  const m = D.b && /^(djs|auxiliares)\.(\d+)\.nombre$/.exec(D.b);
+  if (m) { const b = bodaActual(), p = b && plantilla().find(p => normN(p.nombre) === normN(el.value)); const x = b && b[m[1]][m[2]]; if (p && p.tel && x && telLibre(x.tel, p)) { x.tel = p.tel; guardarBoda(b); } }
+  const md = D.d && /^(djs|auxiliares)\.(\d+)\.nombre$/.exec(D.d);
+  if (md) { const p = plantilla().find(p => normN(p.nombre) === normN(el.value)); if (p && p.tel && telLibre(getPath(ui.draft, `${md[1]}.${md[2]}.tel`), p)) setPath(ui.draft, `${md[1]}.${md[2]}.tel`, p.tel); }
+  return false;
+}
 
 /* --- Base de datos (solo administradores): ver las tablas tal como están en Supabase, exportarlas y hacer copias --- */
 const DB_TABLAS = [["bodas", "Bodas"], ["economico", "Presupuestos y pagos"], ["perfiles", "Empleados"], ["accesos", "Accesos"], ["roles", "Roles"], ["ajustes", "Ajustes"]];
@@ -1501,7 +1663,7 @@ function leerRuta(h) {
   if (h == null) { try { h = (location.hash || "#panel").slice(1); } catch { h = "panel"; } }
   if (h.startsWith("cal-")) { ui.cal = h.slice(4); h = "calendario"; }
   if (h.startsWith("boda-")) { const id = h.slice(5); if (ui.bodaId !== id) ui.tab = ui.asistente === id ? "presupuesto" : "resumen"; ui.ruta = "boda"; ui.bodaId = id; }
-  else if (["panel", "bodas", "calendario", "estadisticas", "ajustes", "avisos", "equipo", "accesos", "datos"].includes(h)) { ui.ruta = h; }
+  else if (["panel", "bodas", "calendario", "disponibilidad", "estadisticas", "ajustes", "avisos", "equipo", "accesos", "datos"].includes(h)) { ui.ruta = h; }
   else ui.ruta = "panel";
 }
 let rutaActual = "";
@@ -1557,11 +1719,11 @@ function render() {
 function renderNav() {
   const av = store.cargado ? avisos() : [];
   const urg = av.filter(a => a.k === "seg").length;
-  const items = [["panel", "Panel", ICON.panel], ["bodas", "Bodas", ICON.bodas], ["calendario", "Calendario", ICON.cal], ["estadisticas", "Estadísticas", ICON.stats], ["ajustes", "Ajustes", ICON.ajustes], ["equipo", "Equipo", ICON.equipo], ["accesos", "Accesos", ICON.accesos], ["datos", "Base de datos", ICON.db]].filter(([h]) => puede(h));
+  const items = [["panel", "Panel", ICON.panel], ["bodas", "Bodas", ICON.bodas], ["calendario", "Calendario", ICON.cal], ["disponibilidad", "Disponibilidad", ICON.disp], ["estadisticas", "Estadísticas", ICON.stats], ["ajustes", "Ajustes", ICON.ajustes], ["equipo", "Equipo", ICON.equipo], ["accesos", "Accesos", ICON.accesos], ["datos", "Base de datos", ICON.db]].filter(([h]) => puede(permisoDeRuta(h)));
   rutaActual = rutaActual || (ui.ruta === "boda" ? "boda-" + ui.bodaId : ui.ruta);
   const cur = ui.ruta === "boda" ? "bodas" : ui.ruta === "avisos" ? "panel" : ui.ruta;
   $("#nav").innerHTML = items.map(([h, l, i]) => `<a href="#${h}" ${cur === h ? 'aria-current="page"' : ""}>${i}<span>${l}</span>${h === "panel" && urg ? `<span class="count">${urg}</span>` : ""}</a>`).join("");
-  const m = items.slice(0, 4).map(([h, l, i]) => `<a href="#${h}" ${cur === h ? 'aria-current="page"' : ""}>${i}<span>${{ "Estadísticas": "Datos", "Calendario": "Agenda" }[l] || l}</span></a>`);
+  const m = items.filter(([h]) => h !== "disponibilidad").slice(0, 4).map(([h, l, i]) => `<a href="#${h}" ${cur === h ? 'aria-current="page"' : ""}>${i}<span>${{ "Estadísticas": "Datos", "Calendario": "Agenda" }[l] || l}</span></a>`);
   if (puede("bodas")) m.splice(Math.min(2, m.length), 0, `<button class="btn btn-primary add" data-act="nueva" type="button" aria-label="Añadir boda">${ICON.plus}</button>`);
   $("#mobnav").innerHTML = m.join("");
   $("#bell").innerHTML = ICON.bell + (av.length ? `<span class="badge">${av.length}</span>` : "");
@@ -1571,7 +1733,7 @@ function renderNav() {
   $("#userbtn").innerHTML = `<span class="avatar">${esc(iniciales(yo.nombre))}</span><span class="un">${esc(yo.nombre)}</span>${ICON.chev}`;
   $("#userbtn").setAttribute("aria-expanded", String(!!ui.menu)); $("#userbtn").setAttribute("aria-label", `${yo.nombre}, ${rolNombre(yo.rol)}: abrir menú`);
   $("#umenu").hidden = !ui.menu; $("#umenu").innerHTML = ui.menu ? vistaMenu() : "";
-  const titles = { calendario: "Calendario", panel: "Panel", bodas: "Bodas", estadisticas: "Estadísticas", ajustes: "Ajustes", avisos: "Avisos", equipo: "Equipo y permisos", accesos: "Historial de accesos", datos: "Base de datos" };
+  const titles = { disponibilidad: "Disponibilidad del equipo", calendario: "Calendario", panel: "Panel", bodas: "Bodas", estadisticas: "Estadísticas", ajustes: "Ajustes", avisos: "Avisos", equipo: "Equipo y permisos", accesos: "Historial de accesos", datos: "Base de datos" };
   const b = bodaActual();
   $("#title").textContent = ui.ruta === "boda" ? (b ? nombres(b) : "Boda") : titles[ui.ruta];
   document.title = "CRM Bodas IZONE";
@@ -1590,6 +1752,7 @@ function vista() {
     case "boda": return err + vistaBoda();
     case "estadisticas": return err + vistaStats();
     case "calendario": return err + vistaCalendario();
+    case "disponibilidad": return err + vistaDisponibilidad();
     case "ajustes": return err + vistaAjustes();
     case "avisos": return err + vistaAvisos(true);
     default: return err + vistaPanel();
@@ -1631,7 +1794,7 @@ function vistaAvisos(full) {
   const av = avisos();
   const items = av.map(a => `<div class="item"><span class="sev ${a.sev}"></span><div class="grow"><div class="t">${esc(nombres(a.b))}</div><div class="s">${esc(a.t)}${a.k === "seg" ? " · " + fecha(a.fecha) : a.b.fecha ? " · boda el " + fecha(a.b.fecha) : ""}</div></div>
     ${a.k === "seg" ? `<button class="btn btn-sm" data-act="seg-hecho" data-id="${a.b.id}" type="button">Hecho</button>` : ""}
-    <a class="btn btn-sm btn-ghost" href="#boda-${a.b.id}" data-tab="${{ seg: "seguimiento", inc: "incidencias", pago: "presupuesto", pack: "presupuesto", boda: "resumen" }[a.k]}">Abrir</a></div>`);
+    <a class="btn btn-sm btn-ghost" href="#boda-${a.b.id}" data-tab="${{ seg: "seguimiento", inc: "incidencias", pago: "presupuesto", pack: "presupuesto", boda: "resumen", equipo: "equipo" }[a.k]}">Abrir</a></div>`);
   const shown = full ? items : items.slice(0, 8);
   return `<div class="panel glass"><h2 class="sec-h">Avisos y seguimientos<span class="spacer"></span>${!full && items.length > 8 ? `<a class="btn btn-sm btn-ghost" href="#avisos">Ver los ${items.length}</a>` : ""}</h2>
     <p class="muted" style="margin:-6px 0 10px;font-size:13.5px">Cada boda tiene un seguimiento cada ${A.frecuencia == 1 ? "mes" : A.frecuencia + " meses"}. Al marcarlo como hecho se programa el siguiente.${store.mode === "local" && "Notification" in window && window.top === window ? " Puedes activar avisos del navegador en Ajustes." : ""}</p>
@@ -1725,9 +1888,10 @@ function tabResumen(b) {
 function personas(b, key, titulo, min) {
   const arr = b[key];
   return `<div class="panel glass"><h2 class="sec-h">${titulo}<span class="chip line">${arr.length}</span><span class="spacer"></span><button class="btn btn-sm" type="button" data-act="add-persona" data-k="${key}">${ICON.plus}Añadir</button></h2>
+    ${datalistEquipo("pl-" + key, key, b.fecha, b.id)}
     <div class="stack">${arr.map((p, i) => `<div class="rowcard">
-      ${inp(`${key}.${i}.nombre`, "Nombre")}${inp(`${key}.${i}.tel`, "Teléfono", "tel")}${inp(`${key}.${i}.horasExtra`, "Horas extra", "number")}
-      <button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="del-persona" data-k="${key}" data-i="${i}" ${arr.length <= min ? "disabled title=\"Mínimo " + min + "\"" : ""} aria-label="Quitar">${ICON.x}</button></div>`).join("") || `<p class="muted">Sin asignar.</p>`}</div>
+      ${inp(`${key}.${i}.nombre`, "Nombre", "text", `list="pl-${key}" autocomplete="off"`)}${inp(`${key}.${i}.tel`, "Teléfono", "tel")}${inp(`${key}.${i}.horasExtra`, "Horas extra", "number")}
+      <button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="del-persona" data-k="${key}" data-i="${i}" ${arr.length <= min ? "disabled title=\"Mínimo " + min + "\"" : ""} aria-label="Quitar">${ICON.x}</button>${avisoConflicto(b, key, i)}</div>`).join("") || `<p class="muted">Sin asignar.</p>`}</div>
     ${min ? `<p class="muted" style="font-size:13px;margin:10px 0 0">Mínimo ${min} por boda.</p>` : ""}</div>`;
 }
 function tabEquipo(b) {
@@ -2027,7 +2191,8 @@ function vistaModal() {
       <label class="check"><input type="checkbox" class="switch" id="d-prov" data-d="packProvisional" ${d.packProvisional ? "checked" : ""}>Pack provisional (aún no han decidido)</label>
       <label class="check"><input type="checkbox" class="switch" id="d-hm" data-d="happyMoment" ${d.happyMoment ? "checked" : ""}>Happy moment contratado</label></fieldset>
     <fieldset><legend><i>4</i> Captación</legend><div class="fields"><label class="f"><span>¿Cómo nos conocieron?</span><select id="d-canal" data-d="captacion.canal">${A.canales.map(c => `<option ${canal === c ? "selected" : ""}>${esc(c)}</option>`).join("")}</select></label>${di("captacion.detalle", detLabel)}</div></fieldset>
-    <fieldset><legend><i>5</i> Equipo y música</legend><div class="fields">${di("djs.0.nombre", "DJ")}${di("auxiliares.0.nombre", "Auxiliar 1")}${di("auxiliares.1.nombre", "Auxiliar 2")}${di("playlist.url", "Enlace a la playlist", "url", true)}</div>
+    <fieldset><legend><i>5</i> Equipo y música</legend><div class="fields">${di("djs.0.nombre", "DJ", "text", false, 'list="nd-djs" autocomplete="off"')}${di("auxiliares.0.nombre", "Auxiliar 1", "text", false, 'list="nd-aux" autocomplete="off"')}${di("auxiliares.1.nombre", "Auxiliar 2", "text", false, 'list="nd-aux" autocomplete="off"')}${di("playlist.url", "Enlace a la playlist", "url", true)}</div>
+      ${datalistEquipo("nd-djs", "djs", d.fecha, d.id)}${datalistEquipo("nd-aux", "auxiliares", d.fecha, d.id)}${resumenDisponibilidad(d.fecha)}
       <p class="muted" style="margin:0;font-size:13.5px">Puedes añadir más DJs, auxiliares y horas extra después, dentro de la boda.</p></fieldset>
     ${ui.draftErr ? `<p class="err" role="alert">${esc(ui.draftErr)}</p>` : ""}
     <div class="foot"><button class="btn" type="button" data-act="cerrar-modal">Cancelar</button><button class="btn btn-primary" type="submit">Guardar y preparar presupuesto</button></div>
@@ -2102,12 +2267,12 @@ document.addEventListener("submit", e => {
 document.addEventListener("input", e => {
   const el = e.target, D = el.dataset;
   if (!perfil()) return;
-  if (inputSeg(el) || inputDb(el) || inputPdf(el)) return;
+  if (inputSeg(el) || inputDb(el) || inputDisp(el) || inputPdf(el)) return;
   if (D.b != null) { const b = bodaActual(); if (!b) return; setPath(b, D.b, val(el)); if (D.b === "presupuesto.estado" && el.value === "Aceptado" && !b.presupuesto.aceptado) b.presupuesto.aceptado = hoy(); guardarBoda(b); render(); }
   else if (D.pack != null) { const b = bodaActual(); if (b) cambiarPack(b, el.value); render(); }
   else if (D.s != null) { setPath(A, D.s, val(el)); guardarAjustes(); render(); }
   else if (D.canales) { A.canales = el.value.split("\n").map(s => s.trim()).filter(Boolean); if (!A.canales.length) A.canales = ["Otro"]; guardarAjustes(); }
-  else if (D.d != null) { setPath(ui.draft, D.d, val(el)); if (D.d === "captacion.canal") render(); }
+  else if (D.d != null) { setPath(ui.draft, D.d, val(el)); if (D.d === "captacion.canal" || D.d === "fecha") render(); }
   else if (D.inc != null) { ui.incNueva[D.inc] = el.value; render(); }
   else if (D.seg) { ui.segNota = el.value; }
   else if (D.calseg) { ui.calSeg = el.checked; render(); }
@@ -2143,6 +2308,7 @@ document.addEventListener("click", async e => {
   if (el.closest("#umenu")) ui.menu = false;
   if (await accionSeg(act, el)) return;
   if (await accionDb(act, el)) return;
+  if (accionDisp(act, el)) return;
   if (accionPdf(act, el, b)) return;
   switch (act) {
     case "nueva": abrirNueva(); break;
