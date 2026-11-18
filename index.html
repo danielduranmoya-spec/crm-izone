@@ -324,6 +324,9 @@ body.locked .app,body.locked .mob{display:none}
 table.perm th:not(:first-child),table.perm td:not(:first-child){text-align:center}
 table.perm th{white-space:normal;min-width:84px;vertical-align:bottom}
 table.perm input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+table.dbt td{white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+table.dbt tr.dbjson td{white-space:normal;max-width:none;background:var(--glass-strong)}
+table.dbt pre{margin:0;max-height:360px;overflow:auto;font-size:12.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
 .temp-card{display:grid;gap:10px;padding:14px 16px;border-radius:16px;background:var(--field);border:1px solid var(--line)}
 .temp-card div{display:flex;flex-direction:column;gap:2px}
 .pdfdrop{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:26px 18px;border:2px dashed color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:20px;cursor:pointer;background:var(--field);transition:background .15s}
@@ -375,6 +378,7 @@ table.perm input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent
 <div id="modal"></div>
 <div id="toast" class="toast" hidden></div>
 <input type="file" id="importfile" accept="application/json,.json" hidden>
+<input type="file" id="dbfile" accept="application/json,.json" hidden>
 <input type="file" id="pdffile" accept="application/pdf,.pdf" hidden>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -411,6 +415,7 @@ const nombreCorto = b => { const a = (b.novios.n1.nombre || "").trim().split(" "
 const nombres = b => [b.novios.n1.nombre, b.novios.n2.nombre].map(s => (s || "").trim()).filter(Boolean).join(" & ") || "Boda sin nombre";
 
 const ICON = {
+  db: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6.5c0 1.7 3.6 3 8 3s8-1.3 8-3V5.5"/><path d="M4 12v6.5c0 1.7 3.6 3 8 3s8-1.3 8-3V12"/></svg>',
   equipo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.5a3.5 3.5 0 010 7M18 14.5a6.5 6.5 0 013.5 5.5"/></svg>',
   accesos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h5a2 2 0 012 2v14a2 2 0 01-2 2h-5"/><path d="M10 17l5-5-5-5M15 12H3"/></svg>',
   chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
@@ -686,10 +691,10 @@ const numAdmins = () => Object.values(sec.usuarios).filter(u => u.rol === "admin
 function puede(s) {
   const p = perfil(); if (!p) return false;
   if (p.tipo === "usuario" && p.rol === "admin") return true;
-  if (s === "equipo" || s === "accesos") return false;
+  if (s === "equipo" || s === "accesos" || s === "datos") return false;
   return ((sec.roles[p.rol] || {}).secciones || []).includes(s);
 }
-const RUTAS = ["panel", "bodas", "calendario", "estadisticas", "ajustes", "equipo", "accesos"];
+const RUTAS = ["panel", "bodas", "calendario", "estadisticas", "ajustes", "equipo", "accesos", "datos"];
 const permisoDeRuta = r => ({ avisos: "panel", boda: "bodas" }[r] || r);
 const primeraRuta = () => RUTAS.find(puede) || null;
 function estadoTemporal(t) {
@@ -759,7 +764,7 @@ async function cerrarSesion(motivo) {
   if (!sec.yo) return;
   const acc = sec.accesoId;
   sec.yo = null; sec.accesoId = null; ui.modal = null; ui.menu = false; ui.pdf = null;
-  store.bodas = {}; store.main = {}; store.eco = {}; store.cargado = false; sec.perfiles = {}; sec.accesos = {}; mapearPerfiles();
+  store.bodas = {}; store.main = {}; store.eco = {}; store.cargado = false; sec.perfiles = {}; sec.accesos = {}; mapearPerfiles(); dbx.raw = null; dbx.error = ""; ui.dbQ = ""; ui.dbVer = null;
   try { sessionStorage.removeItem(SES_KEY); } catch { }
   sec.aviso = motivo === "Cerró sesión" ? "" : "Se cerró la sesión: " + motivo.charAt(0).toLowerCase() + motivo.slice(1) + ".";
   render();
@@ -826,7 +831,7 @@ function vistaGate() {
 /* --- menú del usuario --- */
 function vistaMenu() {
   const p = perfil(); if (!p) return "";
-  const nombresRuta = { panel: "Panel", bodas: "Bodas", calendario: "Calendario", estadisticas: "Estadísticas", ajustes: "Ajustes", equipo: "Equipo y permisos", accesos: "Historial de accesos" };
+  const nombresRuta = { panel: "Panel", bodas: "Bodas", calendario: "Calendario", estadisticas: "Estadísticas", ajustes: "Ajustes", equipo: "Equipo y permisos", accesos: "Historial de accesos", datos: "Base de datos" };
   const t = p.tipo === "temporal" ? `<span class="chip warn">Temporal hasta ${esc(new Date(p.hasta).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }))}</span>` : "";
   return `<div class="um-head"><span class="avatar">${esc(iniciales(p.nombre))}</span><div style="min-width:0"><div class="t">${esc(p.nombre)}</div><div class="s">${esc(p.email)}</div></div></div>
     <div class="row" style="gap:6px;padding:0 6px 8px"><span class="chip ${p.rol === "admin" ? "acc" : ""}">${esc(rolNombre(p.rol))}</span>${t}</div>
@@ -910,6 +915,144 @@ function accesosCsv() {
   const rows = [["Nombre", "Correo", "Rol", "Tipo", "Entrada", "Salida", "Detalle", "Dispositivo"]].concat(accesosFiltrados().map(a => [a.nombre, a.email, a.rolNombre, a.tipo, a.entrada ? fh(a.entrada) : "", a.salida ? fh(a.salida) : "", a.motivo, a.dispositivo]));
   return "﻿" + rows.map(r => r.map(q).join(";")).join("\r\n");
 }
+
+/* --- Base de datos (solo administradores): ver las tablas tal como están en Supabase, exportarlas y hacer copias --- */
+const DB_TABLAS = [["bodas", "Bodas"], ["economico", "Presupuestos y pagos"], ["perfiles", "Empleados"], ["accesos", "Accesos"], ["roles", "Roles"], ["ajustes", "Ajustes"]];
+const DB_MAX_FILAS = 300;
+const dbx = { cargando: false, cargado: null, error: "", raw: null };
+async function cargarBaseDatos() {
+  if (dbx.cargando) return;
+  dbx.cargando = true; dbx.error = ""; render();
+  try {
+    const q = await Promise.all([
+      sb.from("bodas").select("id,data"),
+      sb.from("bodas_economico").select("boda_id,data"),
+      sb.from("perfiles").select("*").order("creado"),
+      sb.from("accesos").select("*").order("entrada", { ascending: false }).limit(5000),
+      sb.from("roles").select("*").order("orden"),
+      sb.from("ajustes").select("*")]);
+    const e = q.find(r => r.error); if (e) throw e.error;
+    const [bodas, bodas_economico, perfiles, accesos, roles, ajustes] = q.map(r => r.data || []);
+    dbx.raw = { bodas, bodas_economico, perfiles, accesos, roles, ajustes }; dbx.cargado = new Date();
+  } catch (e) { dbx.error = "No se pudo leer la base de datos: " + errTxt(e); }
+  dbx.cargando = false; render();
+}
+function dbBodaCompleta(id) {
+  const R = dbx.raw, m = (R.bodas.find(x => x.id === id) || {}).data, e = (R.bodas_economico.find(x => x.boda_id === id) || {}).data;
+  return m ? normalizar(Object.assign(clone(m), clone(e || {})), id) : null;
+}
+const siNo = v => v ? "Sí" : "No";
+const fhc = iso => iso ? fh(iso) : "";
+/* Columnas legibles de cada tabla: [cabecera, valor] */
+function dbDefinicion(t) {
+  const R = dbx.raw;
+  if (t === "bodas") return { filas: R.bodas.map(r => ({ id: r.id, json: r.data, b: normalizar(clone(r.data), r.id) })).sort((x, y) => (x.b.fecha || "9").localeCompare(y.b.fecha || "9")), cols: [
+    ["Nº", f => f.b.numero], ["Fecha", f => f.b.fecha ? fecha(f.b.fecha) : ""], ["Estado", f => f.b.estado], ["Novios", f => nombres(f.b)],
+    ["Lugar", f => f.b.lugar.nombre], ["Localidad", f => f.b.lugar.localidad], ["Pack", f => packDe(f.b).nombre + (f.b.packProvisional ? " (provisional)" : "")],
+    ["Invitados", f => f.b.invitados], ["Captación", f => [f.b.captacion.canal, f.b.captacion.detalle].filter(Boolean).join(" · ")],
+    ["DJ", f => f.b.djs.map(d => d.nombre).filter(Boolean).join(", ")], ["Teléfono", f => f.b.novios.n1.tel || f.b.novios.n2.tel], ["Creada", f => f.b.creado ? fecha(f.b.creado) : ""]] };
+  if (t === "economico") return { filas: R.bodas_economico.map(r => { const b = dbBodaCompleta(r.boda_id); return { id: r.boda_id, json: r.data, b, c: b ? calc(b) : null }; }).filter(f => f.b).sort((x, y) => (x.b.fecha || "9").localeCompare(y.b.fecha || "9")), cols: [
+    ["Nº", f => f.b.numero], ["Novios", f => nombres(f.b)], ["Fecha boda", f => f.b.fecha ? fecha(f.b.fecha) : ""], ["Presupuesto", f => f.b.presupuesto.estado],
+    ["Total", f => eur(f.c.total), "num"], ["Pagado", f => eur(f.c.pagado), "num"], ["Pendiente", f => eur(f.c.pendiente), "num"], ["Pagos", f => f.b.presupuesto.pagos.length, "num"],
+    ["Aceptado", f => f.b.presupuesto.aceptado ? fecha(f.b.presupuesto.aceptado) : ""], ["Contrato firmado", f => f.b.contrato.firmado ? fecha(f.b.contrato.firmado) : "No"]] };
+  if (t === "perfiles") return { filas: R.perfiles.map(r => ({ id: r.id, json: r, r })), cols: [
+    ["Nombre", f => f.r.nombre], ["Correo", f => f.r.email], ["Rol", f => rolNombre(f.r.rol)], ["Tipo", f => f.r.temporal ? "Temporal" : "Empleado"],
+    ["Activa", f => f.r.temporal ? (f.r.revocado ? "Revocada" : estadoTemporal({ desde: f.r.valido_desde, hasta: f.r.valido_hasta })) : siNo(f.r.activo)],
+    ["Válida desde", f => fhc(f.r.valido_desde)], ["Válida hasta", f => fhc(f.r.valido_hasta)], ["Creada", f => fhc(f.r.creado)], ["Creada por", f => f.r.creado_por]] };
+  if (t === "accesos") return { filas: R.accesos.map(r => ({ id: r.id, json: r, r })), cols: [
+    ["Persona", f => f.r.nombre], ["Correo", f => f.r.email], ["Rol", f => f.r.rol_nombre || rolNombre(f.r.rol)], ["Tipo", f => ({ usuario: "Empleado", temporal: "Temporal", fallido: "Intento fallido" }[f.r.tipo] || f.r.tipo)],
+    ["Entrada", f => fhc(f.r.entrada)], ["Salida", f => fhc(f.r.salida)], ["Última actividad", f => fhc(f.r.ultimo)], ["Detalle", f => f.r.motivo], ["Dispositivo", f => f.r.dispositivo]] };
+  if (t === "roles") return { filas: R.roles.map(r => ({ id: r.id, json: r, r })), cols: [
+    ["Rol", f => f.r.id === "admin" ? "Administrador" : f.r.nombre], ["Secciones", f => f.r.id === "admin" ? "Todas" : (f.r.secciones || []).map(s => (SECCIONES.find(x => x[0] === s) || [s, s])[1]).join(", ") || "Ninguna"],
+    ["Personas", f => R.perfiles.filter(p => p.rol === f.r.id).length, "num"]] };
+  const aj = (R.ajustes[0] || {}).data || {};
+  return { filas: R.ajustes.map(r => ({ id: r.id, json: r.data, r })), cols: [
+    ["Registro", f => f.r.id], ["Empresa", f => ((f.r.data || {}).empresa || {}).nombre || ""],
+    ["Packs", f => ((f.r.data || {}).packs || []).map(p => `${p.nombre} ${eur(p.precio)}`).join(" · ")], ["Campos guardados", f => Object.keys(f.r.data || {}).length, "num"]], vacio: !Object.keys(aj).length };
+}
+function dbFiltradas(t) {
+  const d = dbDefinicion(t), q = (ui.dbQ || "").trim().toLowerCase();
+  const filas = q ? d.filas.filter(f => d.cols.map(([, v]) => v(f)).join(" ").toLowerCase().includes(q) || JSON.stringify(f.json).toLowerCase().includes(q)) : d.filas;
+  return { d, filas };
+}
+function vistaBaseDatos() {
+  if (!dbx.raw && !dbx.cargando && !dbx.error) setTimeout(cargarBaseDatos, 0);
+  const t = ui.dbT || "bodas", R = dbx.raw;
+  const cuenta = k => !R ? "" : ({ bodas: R.bodas, economico: R.bodas_economico, perfiles: R.perfiles, accesos: R.accesos, roles: R.roles, ajustes: R.ajustes }[k] || []).length;
+  const cab = `<section class="panel glass" style="padding:14px 16px">
+    <div class="row">${DB_TABLAS.map(([k, l]) => `<button class="chipbtn" type="button" data-act="db-t" data-v="${k}" aria-pressed="${t === k}">${l}${R ? ` <span class="muted">${cuenta(k)}</span>` : ""}</button>`).join("")}</div>
+    <div class="row" style="margin-top:10px"><input type="search" id="db-buscar" placeholder="Buscar en esta tabla…" value="${esc(ui.dbQ || "")}" style="max-width:260px" aria-label="Buscar en la tabla">
+    <span style="flex:1"></span>
+    <button class="btn btn-sm" type="button" data-act="db-recargar" ${dbx.cargando ? "disabled" : ""}>${dbx.cargando ? "Leyendo…" : "Actualizar"}</button>
+    <button class="btn btn-sm" type="button" data-act="db-csv" ${R ? "" : "disabled"}>Descargar tabla (.csv)</button></div></section>`;
+  const copia = `<section class="panel glass"><h2 class="sec-h">Copia de seguridad</h2>
+    <p class="muted" style="font-size:13.5px;margin:-6px 0 12px;max-width:72ch">Descarga todo el contenido de la base de datos en un solo archivo. Guárdalo en un lugar seguro (por ejemplo, tu Drive) cada cierto tiempo. Si algo se borra por error, puedes restaurarlo desde aquí.</p>
+    <div class="row"><button class="btn btn-primary btn-sm" type="button" data-act="db-copia" ${R ? "" : "disabled"}>Descargar copia completa (.json)</button><button class="btn btn-sm" type="button" data-act="db-restaurar">Restaurar desde una copia…</button></div>
+    <p class="muted" style="font-size:12.5px;margin:10px 0 0;max-width:72ch">Al restaurar se recuperan bodas, presupuestos, pagos, contratos, ajustes y roles. Lo que exista con el mismo identificador se sobrescribe y lo creado después de la copia se mantiene. Las cuentas de los empleados y el historial de accesos se incluyen en la copia como registro, pero no se restauran: las contraseñas solo las guarda Supabase.</p></section>`;
+  if (dbx.error) return cab + `<section class="banner glass"><div class="grow">${esc(dbx.error)}</div></section>` + copia;
+  if (!R) return cab + `<section class="panel glass empty"><div class="big">···</div><p class="muted">Leyendo la base de datos…</p></section>` + copia;
+  const { d, filas } = dbFiltradas(t), vis = filas.slice(0, DB_MAX_FILAS), nombreT = (DB_TABLAS.find(x => x[0] === t) || [, ""])[1];
+  const celda = (c, f) => { let v; try { v = c[1](f); } catch { v = ""; } return `<td class="${c[2] || ""}">${esc(v == null ? "" : String(v))}</td>`; };
+  const tabla = vis.length ? `<div class="tbl-wrap"><table class="dbt"><thead><tr>${d.cols.map(c => `<th class="${c[2] || ""}">${esc(c[0])}</th>`).join("")}<th>Ficha</th></tr></thead><tbody>
+    ${vis.map(f => `<tr>${d.cols.map(c => celda(c, f)).join("")}<td><button class="btn btn-sm btn-ghost" type="button" data-act="db-ver" data-id="${esc(f.id)}" aria-expanded="${ui.dbVer === f.id}">${ui.dbVer === f.id ? "Ocultar" : "Ver todo"}</button></td></tr>
+    ${ui.dbVer === f.id ? `<tr class="dbjson"><td colspan="${d.cols.length + 1}"><pre>${esc(JSON.stringify(f.json, null, 2))}</pre></td></tr>` : ""}`).join("")}</tbody></table></div>` : `<p class="muted">${(ui.dbQ || "").trim() ? "Nada coincide con la búsqueda." : "Esta tabla está vacía."}</p>`;
+  return cab + `<section class="panel glass"><h2 class="sec-h">${esc(nombreT)}<span class="chip line">${filas.length}</span></h2>
+    <p class="muted" style="font-size:13.5px;margin:-6px 0 12px">Datos leídos directamente de la base de datos de Supabase ${dbx.cargado ? "a las " + dbx.cargado.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) : ""}. Para cambiarlos, usa las secciones normales del CRM.${filas.length > DB_MAX_FILAS ? ` Se muestran las ${DB_MAX_FILAS} primeras filas; la descarga incluye todas.` : ""}</p>
+    ${tabla}</section>` + copia;
+}
+function dbCsv(t) {
+  const { d, filas } = dbFiltradas(t), q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const val = (c, f) => { try { return c[1](f); } catch { return ""; } };
+  return "﻿" + [d.cols.map(c => c[0])].concat(filas.map(f => d.cols.map(c => val(c, f)))).map(r => r.map(q).join(";")).join("\r\n");
+}
+function dbCopia() {
+  return JSON.stringify({ app: "izone-crm", version: 2, fecha: new Date().toISOString(), hechaPor: (perfil() || {}).nombre || "", tablas: dbx.raw }, null, 2);
+}
+/* Admite la copia completa (versión 2) y la copia antigua de Ajustes (bodas + ajustes) */
+function dbLeerCopia(d) {
+  if (!d || d.app !== "izone-crm") throw new Error("no es una copia del CRM");
+  if (d.tablas) {
+    const T = d.tablas;
+    return { bodas: (T.bodas || []).filter(r => r && r.id && r.data), eco: (T.bodas_economico || []).filter(r => r && r.boda_id && r.data), ajustes: (T.ajustes || []).filter(r => r && r.id && r.data), roles: (T.roles || []).filter(r => r && r.id && r.id !== "admin"), fecha: d.fecha };
+  }
+  const bodas = [], eco = [];
+  for (const id in (d.bodas || {})) { const s = separar(normalizar(d.bodas[id], id)); bodas.push({ id, data: s.main }); eco.push({ boda_id: id, data: s.eco }); }
+  return { bodas, eco, ajustes: d.ajustes ? [{ id: "general", data: d.ajustes }] : [], roles: [], fecha: d.fecha };
+}
+async function dbRestaurar(c) {
+  const lote = async (tabla, filas, conflicto) => { for (let i = 0; i < filas.length; i += 200) { const { error } = await sb.from(tabla).upsert(filas.slice(i, i + 200), { onConflict: conflicto }); if (error) throw error; } };
+  try {
+    await lote("bodas", c.bodas.map(r => ({ id: r.id, data: r.data })), "id");
+    await lote("bodas_economico", c.eco.filter(r => c.bodas.some(b => b.id === r.boda_id) || store.main[r.boda_id]).map(r => ({ boda_id: r.boda_id, data: r.data })), "boda_id");
+    await lote("ajustes", c.ajustes.map(r => ({ id: r.id, data: r.data })), "id");
+    await lote("roles", c.roles.map(r => ({ id: r.id, nombre: r.nombre || "Rol", secciones: r.secciones || [], orden: r.orden || 1 })), "id");
+    await Promise.all([cargarDatos(), cargarSeguridad()]); await cargarBaseDatos();
+    toast(`Copia restaurada: ${c.bodas.length} bodas`);
+  } catch (e) { toast("No se pudo restaurar: " + errTxt(e)); }
+}
+async function accionDb(act, el) {
+  if (!act.startsWith("db-")) return false;
+  if (!esAdmin()) { toast("Solo los administradores pueden hacer esto"); return true; }
+  switch (act) {
+    case "db-t": ui.dbT = el.dataset.v; ui.dbVer = null; render(); break;
+    case "db-ver": ui.dbVer = ui.dbVer === el.dataset.id ? null : el.dataset.id; render(); break;
+    case "db-recargar": cargarBaseDatos(); break;
+    case "db-csv": if (dbx.raw) descargar(`izone-${ui.dbT || "bodas"}-${hoy()}.csv`, "text/csv", dbCsv(ui.dbT || "bodas")); break;
+    case "db-copia": if (dbx.raw) descargar(`izone-crm-copia-completa-${hoy()}.json`, "application/json", dbCopia()); break;
+    case "db-restaurar": $("#dbfile").click(); break;
+  }
+  return true;
+}
+function inputDb(el) {
+  if (el.id !== "db-buscar") return false;
+  ui.dbQ = el.value; render(); return true;
+}
+$("#dbfile").addEventListener("change", async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f || !esAdmin()) return;
+  let c; try { c = dbLeerCopia(JSON.parse(await f.text())); } catch { toast("Ese archivo no es una copia válida del CRM"); return; }
+  const cuando = c.fecha ? ` del ${new Date(c.fecha).toLocaleString("es-ES", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}` : "";
+  confirmar(`¿Restaurar la copia${cuando}?`, `Se recuperarán ${c.bodas.length} ${c.bodas.length === 1 ? "boda" : "bodas"}, ${c.eco.length} ${c.eco.length === 1 ? "presupuesto" : "presupuestos"}${c.ajustes.length ? ", los ajustes" : ""}${c.roles.length ? ` y ${c.roles.length} ${c.roles.length === 1 ? "rol" : "roles"}` : ""}. Las bodas que ya existan con el mismo identificador se sustituirán por la versión de la copia. Lo creado después de la copia no se borra.`, "Restaurar", () => dbRestaurar(c));
+});
 
 /* --- ventanas de usuarios y contraseñas --- */
 const dtLocal = d => { const z = new Date(d.getTime() - d.getTimezoneOffset() * 60000); return z.toISOString().slice(0, 16); };
@@ -1239,13 +1382,14 @@ function leerRuta(h) {
   if (h == null) { try { h = (location.hash || "#panel").slice(1); } catch { h = "panel"; } }
   if (h.startsWith("cal-")) { ui.cal = h.slice(4); h = "calendario"; }
   if (h.startsWith("boda-")) { const id = h.slice(5); if (ui.bodaId !== id) ui.tab = ui.asistente === id ? "presupuesto" : "resumen"; ui.ruta = "boda"; ui.bodaId = id; }
-  else if (["panel", "bodas", "calendario", "estadisticas", "ajustes", "avisos", "equipo", "accesos"].includes(h)) { ui.ruta = h; }
+  else if (["panel", "bodas", "calendario", "estadisticas", "ajustes", "avisos", "equipo", "accesos", "datos"].includes(h)) { ui.ruta = h; }
   else ui.ruta = "panel";
 }
 let rutaActual = "";
 /* Navega dentro del CRM sin depender de que el visor siga los enlaces con # */
 function ir(h) {
   rutaActual = h; leerRuta(h); render(); window.scrollTo({ top: 0 });
+  if (ui.ruta === "datos" && esAdmin() && dbx.raw) cargarBaseDatos();
   try { if (location.hash.slice(1) !== h) history.replaceState(null, "", "#" + h); } catch { }
 }
 window.addEventListener("hashchange", () => { let h = "panel"; try { h = location.hash.slice(1) || "panel"; } catch { } if (h === rutaActual) return; rutaActual = h; leerRuta(h); render(); window.scrollTo({ top: 0 }); });
@@ -1294,7 +1438,7 @@ function render() {
 function renderNav() {
   const av = store.cargado ? avisos() : [];
   const urg = av.filter(a => a.k === "seg").length;
-  const items = [["panel", "Panel", ICON.panel], ["bodas", "Bodas", ICON.bodas], ["calendario", "Calendario", ICON.cal], ["estadisticas", "Estadísticas", ICON.stats], ["ajustes", "Ajustes", ICON.ajustes], ["equipo", "Equipo", ICON.equipo], ["accesos", "Accesos", ICON.accesos]].filter(([h]) => puede(h));
+  const items = [["panel", "Panel", ICON.panel], ["bodas", "Bodas", ICON.bodas], ["calendario", "Calendario", ICON.cal], ["estadisticas", "Estadísticas", ICON.stats], ["ajustes", "Ajustes", ICON.ajustes], ["equipo", "Equipo", ICON.equipo], ["accesos", "Accesos", ICON.accesos], ["datos", "Base de datos", ICON.db]].filter(([h]) => puede(h));
   rutaActual = rutaActual || (ui.ruta === "boda" ? "boda-" + ui.bodaId : ui.ruta);
   const cur = ui.ruta === "boda" ? "bodas" : ui.ruta === "avisos" ? "panel" : ui.ruta;
   $("#nav").innerHTML = items.map(([h, l, i]) => `<a href="#${h}" ${cur === h ? 'aria-current="page"' : ""}>${i}<span>${l}</span>${h === "panel" && urg ? `<span class="count">${urg}</span>` : ""}</a>`).join("");
@@ -1308,7 +1452,7 @@ function renderNav() {
   $("#userbtn").innerHTML = `<span class="avatar">${esc(iniciales(yo.nombre))}</span><span class="un">${esc(yo.nombre)}</span>${ICON.chev}`;
   $("#userbtn").setAttribute("aria-expanded", String(!!ui.menu)); $("#userbtn").setAttribute("aria-label", `${yo.nombre}, ${rolNombre(yo.rol)}: abrir menú`);
   $("#umenu").hidden = !ui.menu; $("#umenu").innerHTML = ui.menu ? vistaMenu() : "";
-  const titles = { calendario: "Calendario", panel: "Panel", bodas: "Bodas", estadisticas: "Estadísticas", ajustes: "Ajustes", avisos: "Avisos", equipo: "Equipo y permisos", accesos: "Historial de accesos" };
+  const titles = { calendario: "Calendario", panel: "Panel", bodas: "Bodas", estadisticas: "Estadísticas", ajustes: "Ajustes", avisos: "Avisos", equipo: "Equipo y permisos", accesos: "Historial de accesos", datos: "Base de datos" };
   const b = bodaActual();
   $("#title").textContent = ui.ruta === "boda" ? (b ? nombres(b) : "Boda") : titles[ui.ruta];
   document.title = "CRM Bodas IZONE";
@@ -1322,6 +1466,7 @@ function vista() {
   switch (ui.ruta) {
     case "equipo": return err + vistaEquipo();
     case "accesos": return err + vistaAccesos();
+    case "datos": return vistaBaseDatos();
     case "bodas": return err + vistaBodas();
     case "boda": return err + vistaBoda();
     case "estadisticas": return err + vistaStats();
@@ -1838,7 +1983,7 @@ document.addEventListener("submit", e => {
 document.addEventListener("input", e => {
   const el = e.target, D = el.dataset;
   if (!perfil()) return;
-  if (inputSeg(el) || inputPdf(el)) return;
+  if (inputSeg(el) || inputDb(el) || inputPdf(el)) return;
   if (D.b != null) { const b = bodaActual(); if (!b) return; setPath(b, D.b, val(el)); if (D.b === "presupuesto.estado" && el.value === "Aceptado" && !b.presupuesto.aceptado) b.presupuesto.aceptado = hoy(); guardarBoda(b); render(); }
   else if (D.pack != null) { const b = bodaActual(); if (b) cambiarPack(b, el.value); render(); }
   else if (D.s != null) { setPath(A, D.s, val(el)); guardarAjustes(); render(); }
@@ -1878,6 +2023,7 @@ document.addEventListener("click", async e => {
   if (act === "modal-bg") { if (e.target === el) { ui.modal = null; render(); } return; }
   if (el.closest("#umenu")) ui.menu = false;
   if (await accionSeg(act, el)) return;
+  if (await accionDb(act, el)) return;
   if (accionPdf(act, el, b)) return;
   switch (act) {
     case "nueva": abrirNueva(); break;
