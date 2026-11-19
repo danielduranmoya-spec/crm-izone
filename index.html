@@ -228,7 +228,7 @@ th{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--mute
 td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 td input{min-height:36px;padding:6px 10px}
-.rowcard{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) 110px auto;gap:10px;align-items:end;padding:12px;border-radius:16px;background:var(--glass-strong);border:1px solid var(--line)}
+.rowcard{display:grid;grid-template-columns:minmax(0,2.4fr) minmax(0,1.3fr) 90px auto;gap:10px;align-items:end;padding:12px;border-radius:16px;background:var(--glass-strong);border:1px solid var(--line)}
 
 /* detalle */
 .hero{padding:24px;display:flex;flex-wrap:wrap;gap:18px 26px;align-items:center}
@@ -1147,6 +1147,21 @@ function datalistEquipo(id, k, f, sinBoda) {
   const asig = asignacionesDia(f);
   return `<datalist id="${id}">${personasEquipo().filter(p => sirvePara(p, k)).map(p => `<option value="${esc(p.nombre)}" label="${esc(f ? textoEstado(estadoPersona(p.nombre, f, sinBoda, asig)) : p.puesto)}"></option>`).join("")}</datalist>`;
 }
+/* Desplegable de personas del equipo: solo las que sirven para ese puesto (DJs o auxiliares), con su disponibilidad ese día.
+   Quien ya está en otra fila del mismo apartado sale desactivado; un nombre antiguo que no esté en la plantilla se conserva. */
+function selEquipo({ id, attr, path, valor, label, k, f, sinBoda, otros = [] }) {
+  const asig = asignacionesDia(f), v = (valor || "").trim(), nv = normN(v), usados = new Set(otros.map(normN).filter(Boolean));
+  const P = personasEquipo().filter(p => sirvePara(p, k));
+  const ops = P.map(p => {
+    const n = normN(p.nombre), e = f ? estadoPersona(p.nombre, f, sinBoda, asig) : null;
+    const extra = e && e.tipo !== "libre" ? ` · ${e.tipo === "ausente" ? "no disponible" : "ocupado ese día"}` : "";
+    const rep = n !== nv && usados.has(n);
+    return `<option value="${esc(p.nombre)}" ${n === nv ? "selected" : ""} ${rep ? "disabled" : ""}>${esc(p.nombre)}${p.puesto === "DJ y auxiliar" ? " (DJ y auxiliar)" : ""}${rep ? " · ya asignado" : extra}</option>`;
+  });
+  if (v && !P.some(p => normN(p.nombre) === nv)) ops.unshift(`<option value="${esc(v)}" selected>${esc(v)} · fuera de la plantilla</option>`);
+  const vacio = P.length ? "Elige " + (k === "djs" ? "DJ" : "auxiliar") + "…" : "Añade personas en Disponibilidad";
+  return `<label class="f"><span>${label}</span><select id="${id}" ${attr}="${path}"><option value="" ${v ? "" : "selected"}>${vacio}</option>${ops.join("")}</select></label>`;
+}
 /* Resumen para el formulario de nueva boda */
 function resumenDisponibilidad(f) {
   if (!f) return `<p class="muted" style="margin:0;font-size:13.5px">Pon la fecha para ver quién está libre ese día.</p>`;
@@ -1192,7 +1207,7 @@ function vistaDisponibilidad() {
   const pl = plantilla(), au = ausencias();
   const gestion = edita ? `<section class="grid g2" style="align-items:start">
     <div class="panel glass"><h2 class="sec-h">Plantilla<span class="chip line">${pl.length}</span><span class="spacer"></span><button class="btn btn-sm" type="button" data-act="pl-add">${ICON.plus}Añadir</button></h2>
-      <p class="muted" style="font-size:13.5px;margin:-6px 0 12px">Las personas de la plantilla aparecen como sugerencia al asignar el equipo de una boda, con su disponibilidad.</p>
+      <p class="muted" style="font-size:13.5px;margin:-6px 0 12px">Las personas de la plantilla son las que aparecen en los desplegables de DJs y auxiliares de cada boda, con su disponibilidad. «DJ y auxiliar» sale en los dos.</p>
       ${sinFicha.length ? `<div class="banner glass" style="margin-bottom:12px"><div class="grow">${sinFicha.length} ${sinFicha.length === 1 ? "persona aparece" : "personas aparecen"} en bodas pero no en la plantilla: ${esc(sinFicha.map(p => p.nombre).join(", "))}.</div><button class="btn btn-sm" type="button" data-act="pl-importar">Añadirlas</button></div>` : ""}
       <div class="stack">${pl.map((p, i) => `<div class="rowcard disp-row">${sinp(`plantilla.${i}.nombre`, "Nombre")}<label class="f"><span>Puesto</span><select id="s-plantilla-${i}-puesto" data-s="plantilla.${i}.puesto">${PUESTOS.map(x => `<option ${p.puesto === x ? "selected" : ""}>${x}</option>`).join("")}</select></label>${sinp(`plantilla.${i}.tel`, "Teléfono", "tel")}<button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="pl-del" data-i="${i}" aria-label="Quitar a ${esc(p.nombre || "esta persona")}">${ICON.x}</button></div>`).join("") || `<p class="muted">Sin personas.</p>`}</div></div>
     <div class="panel glass"><h2 class="sec-h">Vacaciones y días libres<span class="chip line">${au.length}</span><span class="spacer"></span><button class="btn btn-sm" type="button" data-act="au-add" ${P.length ? "" : "disabled"}>${ICON.plus}Añadir</button></h2>
@@ -2222,9 +2237,8 @@ function personas(b, key, titulo, min) {
   const arr = b[key];
   return `<div class="panel glass"><h2 class="sec-h">${titulo}<span class="chip line">${arr.length}</span><span class="spacer"></span>${key === "auxiliares" ? "" : `<button class="btn btn-sm" type="button" data-act="add-persona" data-k="${key}">${ICON.plus}Añadir</button>`}</h2>
     ${key === "auxiliares" ? `<div class="fields" style="margin-bottom:12px">${selNumAux(`id="b-naux" data-naux="1"`, arr.length)}</div>` : ""}
-    ${datalistEquipo("pl-" + key, key, b.fecha, b.id)}
     <div class="stack">${arr.map((p, i) => `<div class="rowcard">
-      ${inp(`${key}.${i}.nombre`, "Nombre", "text", `list="pl-${key}" autocomplete="off"`)}${inp(`${key}.${i}.tel`, "Teléfono", "tel")}${inp(`${key}.${i}.horasExtra`, "Horas extra", "number")}
+      ${selEquipo({ id: fid("b", `${key}.${i}.nombre`), attr: "data-b", path: `${key}.${i}.nombre`, valor: p.nombre, label: key === "djs" ? "DJ" : "Auxiliar", k: key, f: b.fecha, sinBoda: b.id, otros: arr.filter((_, j) => j !== i).map(x => x.nombre) })}${inp(`${key}.${i}.tel`, "Teléfono", "tel")}${inp(`${key}.${i}.horasExtra`, "Horas extra", "number")}
       <button class="btn btn-sm btn-ghost btn-danger" type="button" data-act="del-persona" data-k="${key}" data-i="${i}" ${arr.length <= min ? "disabled title=\"Mínimo " + min + "\"" : ""} aria-label="Quitar">${ICON.x}</button>${avisoConflicto(b, key, i)}</div>`).join("") || `<p class="muted">Sin asignar.</p>`}</div>
     ${min ? `<p class="muted" style="font-size:13px;margin:10px 0 0">Mínimo ${min} por boda.</p>` : ""}</div>`;
 }
@@ -2531,8 +2545,8 @@ function vistaModal() {
       <label class="check"><input type="checkbox" class="switch" id="d-prov" data-d="packProvisional" ${d.packProvisional ? "checked" : ""}>Pack provisional (aún no han decidido)</label>
       <label class="check"><input type="checkbox" class="switch" id="d-hm" data-d="happyMoment" ${d.happyMoment ? "checked" : ""}>Happy moment contratado</label></fieldset>
     <fieldset><legend><i>4</i> Captación</legend><div class="fields"><label class="f"><span>¿Cómo nos conocieron?</span><select id="d-canal" data-d="captacion.canal">${A.canales.map(c => `<option ${canal === c ? "selected" : ""}>${esc(c)}</option>`).join("")}</select></label>${di("captacion.detalle", detLabel)}</div></fieldset>
-    <fieldset><legend><i>5</i> Equipo y música</legend><div class="fields">${di("djs.0.nombre", "DJ", "text", false, 'list="nd-djs" autocomplete="off"')}${selNumAux(`id="d-naux" data-dnaux="1"`, d.auxiliares.length)}${d.auxiliares.map((a, i) => di(`auxiliares.${i}.nombre`, `Auxiliar ${i + 1}`, "text", false, 'list="nd-aux" autocomplete="off"')).join("")}${di("playlist.url", "Enlace a la playlist", "url", true)}</div>
-      ${datalistEquipo("nd-djs", "djs", d.fecha, d.id)}${datalistLugares("nd-lugares")}${datalistEquipo("nd-aux", "auxiliares", d.fecha, d.id)}${resumenDisponibilidad(d.fecha)}
+    <fieldset><legend><i>5</i> Equipo y música</legend><div class="fields">${selEquipo({ id: fid("d", "djs.0.nombre"), attr: "data-d", path: "djs.0.nombre", valor: d.djs[0] && d.djs[0].nombre, label: "DJ", k: "djs", f: d.fecha, sinBoda: d.id })}${selNumAux(`id="d-naux" data-dnaux="1"`, d.auxiliares.length)}${d.auxiliares.map((a, i) => selEquipo({ id: fid("d", `auxiliares.${i}.nombre`), attr: "data-d", path: `auxiliares.${i}.nombre`, valor: a.nombre, label: `Auxiliar ${i + 1}`, k: "auxiliares", f: d.fecha, sinBoda: d.id, otros: d.auxiliares.filter((_, j) => j !== i).map(x => x.nombre) })).join("")}${di("playlist.url", "Enlace a la playlist", "url", true)}</div>
+      ${datalistLugares("nd-lugares")}${resumenDisponibilidad(d.fecha)}
       <p class="muted" style="margin:0;font-size:13.5px">Puedes añadir más DJs, auxiliares y horas extra después, dentro de la boda.</p></fieldset>
     ${ui.draftErr ? `<p class="err" role="alert">${esc(ui.draftErr)}</p>` : ""}
     <div class="foot"><button class="btn" type="button" data-act="cerrar-modal">Cancelar</button><button class="btn btn-primary" type="submit">Guardar y preparar presupuesto</button></div>
