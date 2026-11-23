@@ -1432,6 +1432,8 @@ function vistaReuniones() {
         <div><div class="eyebrow">Contraseña de la reunión</div><span class="mono">${esc(m.clave)}</span> <button class="btn btn-sm btn-ghost" type="button" data-act="copiar" data-txt="${esc(m.clave)}">Copiar</button></div>
         <div><div class="eyebrow">Creada</div>${fh(m.creado)}${m.creado_por ? " por " + esc(m.creado_por) : ""}</div>
         <div class="wide"><div class="eyebrow">Participantes (${m.participantes.length})</div>${m.participantes.map(id => { const a = as.find(x => x.user_id === id); return `<span class="chip ${a ? "ok" : "line"}" title="${a ? "Entró a las " + hora(a.entrada) : "No ha entrado"}">${esc(nombrePerfil(id))}${a ? " · entró " + hora(a.entrada) : ""}</span>`; }).join(" ") || "Nadie"}</div>
+        <div class="wide"><div class="eyebrow">Aviso por correo</div>${m.aviso_enviado ? `Enviado el ${fh(m.aviso_enviado)}${m.aviso_detalle && m.aviso_detalle.enviados ? ` a ${m.aviso_detalle.enviados.length} ${m.aviso_detalle.enviados.length === 1 ? "persona" : "personas"}` : ""}${m.aviso_detalle && m.aviso_detalle.fallos && m.aviso_detalle.fallos.length ? ` <span class="chip bad" title="${esc(m.aviso_detalle.fallos.join("\n"))}">${m.aviso_detalle.fallos.length} sin entregar</span>` : ""}` : `<span class="muted">${reu.sinCorreo ? "El envío automático no está configurado todavía." : "Sin enviar."}</span>`}
+          ${e === "Programada" || e === "En curso" ? `<span class="row" style="gap:6px;margin-top:6px"><button class="btn btn-sm" type="button" data-act="reu-avisar" data-id="${m.id}">${m.aviso_enviado ? "Reenviar aviso" : "Enviar aviso"}</button><button class="btn btn-sm btn-ghost" type="button" data-act="reu-mailto" data-id="${m.id}">Desde mi correo</button></span>` : ""}</div>
         ${m.notas ? `<div class="wide"><div class="eyebrow">Notas</div><span style="white-space:pre-line">${esc(m.notas)}</span></div>` : ""}
         ${m.cancelada ? `<div class="wide muted">Cancelada ${m.cancelada_el ? "el " + fh(m.cancelada_el) : ""}</div>` : ""}</div></div>`;
   }).join("");
@@ -1465,14 +1467,38 @@ async function crearReunion(f) {
   if (clave.length < 6) return fail("La contraseña de la reunión debe tener al menos 6 caracteres.");
   if (part.length < 2) return fail("Elige al menos un participante además de ti.");
   ui.formBusy = true; ui.formErr = ""; render();
-  const { error } = await sb.from("reuniones").insert({ titulo, desde: desde.toISOString(), hasta: hasta.toISOString(), clave, participantes: part, notas, creado_por: sec.yo.nombre });
+  const nueva = { id: crypto.randomUUID() };
+  const { error } = await sb.from("reuniones").insert({ id: nueva.id, titulo, desde: desde.toISOString(), hasta: hasta.toISOString(), clave, participantes: part, notas, creado_por: sec.yo.nombre });
   if (error) return fail("No se pudo crear: " + errTxt(error));
-  ui.formBusy = false; ui.modal = null; await cargarReuniones(); toast("Reunión creada. Pasa la contraseña a los participantes."); if (desde <= ahora()) setTimeout(vigilar, 600);
+  ui.formBusy = false; ui.modal = null; await cargarReuniones(); toast("Reunión creada. Enviando el aviso por correo…");
+  await avisarReunion(nueva.id, true); if (desde <= ahora()) setTimeout(vigilar, 600);
+}
+/* Aviso por correo a los participantes: lo envía el servidor; si aún no hay correo configurado, se abre el correo del administrador ya redactado */
+function textoAvisoReunion(m) {
+  const tz = { timeZone: "Europe/Madrid" }, f = new Date(m.desde).toLocaleDateString("es-ES", { ...tz, weekday: "long", day: "numeric", month: "long", year: "numeric" }), h = d => new Date(d).toLocaleTimeString("es-ES", { ...tz, hour: "2-digit", minute: "2-digit" });
+  return { asunto: `Reunión «${m.titulo}»: ${f}, ${h(m.desde)}`, cuerpo: `Hola:\n\nTienes una reunión en el CRM de IZONE.\n\nReunión: ${m.titulo}\nFecha: ${f}\nHorario: de ${h(m.desde)} a ${h(m.hasta)}\nContraseña de la reunión: ${m.clave}\n\nMientras dure, entra en ${location.origin + location.pathname} con tu correo y tu contraseña de siempre. Después el CRM te pedirá la contraseña de la reunión.${m.notas ? "\n\nNotas: " + m.notas : ""}\n\nNo compartas esta contraseña.\n${sec.yo.nombre}` };
+}
+function mailtoReunion(m) {
+  const yo = sec.yo.id, para = m.participantes.filter(id => id !== yo).map(id => (sec.perfiles[id] || {}).email).filter(Boolean), t = textoAvisoReunion(m);
+  location.href = `mailto:?bcc=${encodeURIComponent(para.join(","))}&subject=${encodeURIComponent(t.asunto)}&body=${encodeURIComponent(t.cuerpo)}`;
+}
+async function avisarReunion(id, alCrear) {
+  const m = reu.lista.find(x => x.id === id);
+  try {
+    const { data, error } = await sb.functions.invoke("avisar-reunion", { body: { reunion: id } });
+    if (error) throw error;
+    if (data && data.sinConfigurar) { reu.sinCorreo = true; render(); toast("El envío automático aún no está configurado: se abre tu correo con el aviso ya escrito."); if (m) setTimeout(() => mailtoReunion(m), 400); return; }
+    reu.sinCorreo = false; data.enviados = data.enviados || []; data.fallos = data.fallos || [];
+    toast(data.ok ? `Aviso enviado a ${data.enviados.length} ${data.enviados.length === 1 ? "participante" : "participantes"}${data.fallos.length ? `. Falló en ${data.fallos.length}` : ""}.` : "No se pudo enviar el aviso: " + ((data.fallos || [])[0] || data.error || "error"));
+  } catch (e) { toast((alCrear ? "Reunión creada, pero " : "") + "no se pudo enviar el aviso por correo. Usa «Desde mi correo»."); }
+  await cargarReuniones();
 }
 function accionReuniones(act, el) {
   if (!act.startsWith("reu-")) return false;
   if (!esAdmin()) { toast("Solo los administradores pueden hacer esto"); return true; }
   if (act === "reu-nueva") { const d0 = ahora(); d0.setMinutes(Math.ceil(d0.getMinutes() / 15) * 15, 0, 0); ui.reuDraft = { titulo: "", desde: dtLocal(d0), hasta: dtLocal(new Date(d0.getTime() + 3600000)), clave: generarClave(), part: [], notas: "" }; ui.formErr = ""; ui.formBusy = false; ui.modal = "reunion"; render(); setTimeout(() => { const n = $("#r-titulo"); n && n.focus(); }, 30); }
+  if (act === "reu-avisar") { toast("Enviando el aviso…"); avisarReunion(el.dataset.id, false); return true; }
+  if (act === "reu-mailto") { const m = reu.lista.find(x => x.id === el.dataset.id); if (m) mailtoReunion(m); return true; }
   if (act === "reu-gen") { const n = $("#r-clave"); if (n) n.value = generarClave(); }
   if (act === "reu-cancelar") { const m = reu.lista.find(x => x.id === el.dataset.id); if (m) confirmar(estadoReunion(m) === "En curso" ? `¿Terminar «${m.titulo}» ahora?` : `¿Cancelar «${m.titulo}»?`, "El acceso al CRM vuelve a ser normal para todo el equipo. La reunión queda en el registro.", estadoReunion(m) === "En curso" ? "Terminar" : "Cancelar reunión", async () => { const { error } = await sb.from("reuniones").update({ cancelada: true, cancelada_el: new Date().toISOString() }).eq("id", m.id); if (error) toast("No se pudo cambiar: " + errTxt(error)); await cargarReuniones(); }); }
   return true;
