@@ -1478,19 +1478,31 @@ function textoAvisoReunion(m) {
   const tz = { timeZone: "Europe/Madrid" }, f = new Date(m.desde).toLocaleDateString("es-ES", { ...tz, weekday: "long", day: "numeric", month: "long", year: "numeric" }), h = d => new Date(d).toLocaleTimeString("es-ES", { ...tz, hour: "2-digit", minute: "2-digit" });
   return { asunto: `Reunión «${m.titulo}»: ${f}, ${h(m.desde)}`, cuerpo: `Hola:\n\nTienes una reunión en el CRM de IZONE.\n\nReunión: ${m.titulo}\nFecha: ${f}\nHorario: de ${h(m.desde)} a ${h(m.hasta)}\nContraseña de la reunión: ${m.clave}\n\nMientras dure, entra en ${location.origin + location.pathname} con tu correo y tu contraseña de siempre. Después el CRM te pedirá la contraseña de la reunión.${m.notas ? "\n\nNotas: " + m.notas : ""}\n\nNo compartas esta contraseña.\n${sec.yo.nombre}` };
 }
-function mailtoReunion(m) {
-  const yo = sec.yo.id, para = m.participantes.filter(id => id !== yo).map(id => (sec.perfiles[id] || {}).email).filter(Boolean), t = textoAvisoReunion(m);
-  location.href = `mailto:?bcc=${encodeURIComponent(para.join(","))}&subject=${encodeURIComponent(t.asunto)}&body=${encodeURIComponent(t.cuerpo)}`;
+/* Sin envío automático: ventana con el aviso ya redactado para mandarlo con Gmail, Outlook o el programa de correo */
+function mailtoReunion(m) { ui.avisoReu = m.id; ui.modal = "aviso-reu"; render(); }
+function vistaModalAvisoReu() {
+  const m = reu.lista.find(x => x.id === ui.avisoReu); if (!m) return "";
+  const yo = sec.yo.id, para = m.participantes.filter(id => id !== yo).map(id => sec.perfiles[id] || {}).filter(p => p.email), t = textoAvisoReunion(m), E = encodeURIComponent, bcc = para.map(p => p.email).join(",");
+  const yoMail = E(sec.yo.email || "");
+  const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${yoMail}&bcc=${E(bcc)}&su=${E(t.asunto)}&body=${E(t.cuerpo)}`;
+  const outlook = `https://outlook.office.com/mail/deeplink/compose?to=${yoMail}&bcc=${E(bcc)}&subject=${E(t.asunto)}&body=${E(t.cuerpo)}`;
+  const mailto = `mailto:${yoMail}?bcc=${E(bcc)}&subject=${E(t.asunto)}&body=${E(t.cuerpo)}`;
+  return `<div class="modal" data-act="modal-bg"><div class="box glass" role="dialog" aria-modal="true" aria-labelledby="mt">
+    <div class="row" style="justify-content:space-between"><h2 id="mt">Enviar el aviso de la reunión</h2><button class="btn iconbtn btn-ghost" type="button" data-act="cerrar-modal" aria-label="Cerrar">${ICON.x}</button></div>
+    <p class="muted" style="margin:0">El envío automático desde el CRM aún no está configurado. Elige con qué lo mandas: el correo se abre ya escrito, con los participantes en copia oculta. Solo tienes que pulsar Enviar.</p>
+    <p style="margin:10px 0 0;font-size:14px"><b>Para:</b> tú (${esc(sec.yo.email || "")}), y en copia oculta: ${para.length ? para.map(p => esc(p.nombre + " <" + p.email + ">")).join(", ") : "ningún participante tiene correo"}</p>
+    <div class="row" style="gap:8px;margin:14px 0"><a class="btn btn-primary" href="${esc(gmail)}" target="_blank" rel="noopener">Abrir en Gmail</a><a class="btn" href="${esc(outlook)}" target="_blank" rel="noopener">Abrir en Outlook</a><a class="btn" href="${esc(mailto)}">Programa de correo</a><button class="btn btn-ghost" type="button" data-act="copiar" data-txt="${esc(t.asunto + "\n\n" + t.cuerpo)}">Copiar texto</button></div>
+    <pre style="white-space:pre-wrap;font:inherit;font-size:13.5px;background:var(--glass-strong);border:1px solid var(--line);border-radius:14px;padding:12px;margin:0;max-height:40vh;overflow:auto">${esc(t.asunto + "\n\n" + t.cuerpo)}</pre></div></div>`;
 }
 async function avisarReunion(id, alCrear) {
   const m = reu.lista.find(x => x.id === id);
   try {
     const { data, error } = await sb.functions.invoke("avisar-reunion", { body: { reunion: id } });
     if (error) throw error;
-    if (data && data.sinConfigurar) { reu.sinCorreo = true; render(); toast("El envío automático aún no está configurado: se abre tu correo con el aviso ya escrito."); if (m) setTimeout(() => mailtoReunion(m), 400); return; }
+    if (data && data.sinConfigurar) { reu.sinCorreo = true; render(); if (m) mailtoReunion(m); return; }
     reu.sinCorreo = false; data.enviados = data.enviados || []; data.fallos = data.fallos || [];
     toast(data.ok ? `Aviso enviado a ${data.enviados.length} ${data.enviados.length === 1 ? "participante" : "participantes"}${data.fallos.length ? `. Falló en ${data.fallos.length}` : ""}.` : "No se pudo enviar el aviso: " + ((data.fallos || [])[0] || data.error || "error"));
-  } catch (e) { toast((alCrear ? "Reunión creada, pero " : "") + "no se pudo enviar el aviso por correo. Usa «Desde mi correo»."); }
+  } catch (e) { toast((alCrear ? "Reunión creada, pero " : "") + "no se pudo enviar el aviso automático."); if (m) mailtoReunion(m); }
   await cargarReuniones();
 }
 function accionReuniones(act, el) {
@@ -2813,6 +2825,7 @@ function vistaAjustes() {
 function vistaModal() {
   if (["usuario", "clave", "temporal", "temporal-ok"].includes(ui.modal)) return vistaModalSeg();
   if (ui.modal === "reunion") return vistaModalReunion();
+  if (ui.modal === "aviso-reu") return vistaModalAvisoReu();
   if (ui.modal === "confirm") { const m = ui.confirm; return `<div class="modal" data-act="modal-bg"><div class="box glass small" role="dialog" aria-modal="true" aria-labelledby="mt"><h2 id="mt">${esc(m.titulo)}</h2><p class="muted" style="margin:0">${esc(m.texto)}</p><div class="foot"><button class="btn" type="button" data-act="cerrar-modal">Cancelar</button><button class="btn btn-primary" type="button" data-act="confirmar" id="btn-confirmar">${esc(m.boton)}</button></div></div></div>`; }
   const d = ui.draft;
   const g = p => esc(getPath(d, p) ?? "");
